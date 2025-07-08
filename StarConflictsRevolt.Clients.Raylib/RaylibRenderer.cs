@@ -20,6 +20,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     {
         _logger = logger;
         Window.Init(800, 600, "Star Conflicts Revolt");
+        Window.SetState(ConfigFlags.ResizableWindow | ConfigFlags.TopmostWindow);
         Graphics.ClearBackground(Color.Black);
         Input.EnableCursor();
         Input.SetExitKey(KeyboardKey.Escape);
@@ -68,6 +69,16 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
 
     private void HandleCameraInput()
     {
+        if (Input.IsMouseButtonDown(MouseButton.Left))
+        {
+            var delta = Input.GetMouseDelta();
+            if (delta.LengthSquared() > 0)
+            {
+                var currentPos = Window.GetPosition();
+                Window.SetPosition((int)(currentPos.X + delta.X), (int)(currentPos.Y + delta.Y));
+            }
+        }
+
         if (Input.IsMouseButtonDown(MouseButton.Middle))
         {
             var delta = Input.GetMouseDelta();
