@@ -21,12 +21,14 @@ public class GameUpdateService : BackgroundService
         {
             var planets = new List<PlanetDto>
             {
-                new PlanetDto(Guid.CreateVersion7(), "Earth", 50, 1.0f, 0.5f, 0.1f, 0.01f)
+                new(Guid.CreateVersion7(), "Earth", 10, 1.0f, 0.5f, 0.02f, 150),
+                new(Guid.CreateVersion7(), "Mars", 5, 0.5f, 0.4f, 0.01f, 250),
+                new(Guid.CreateVersion7(), "Jupiter", 25, 2.5f, 0.2f, 0.005f, 400)
             };
             
             var starSystems = new List<StarSystemDto>
             {
-                new StarSystemDto(Guid.CreateVersion7(), "Sol", planets, new Vector2(100, 100))
+                new(Guid.CreateVersion7(), "Sol", planets, new Vector2(0, 0))
             };
 
             var world = new WorldDto(Guid.CreateVersion7(), new GalaxyDto(Guid.CreateVersion7(), starSystems));
