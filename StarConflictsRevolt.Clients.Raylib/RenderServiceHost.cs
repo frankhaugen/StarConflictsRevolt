@@ -1,11 +1,26 @@
-﻿namespace StarConflictsRevolt.Clients.Raylib;
+﻿using StarConflictsRevolt.Clients.Shared;
 
-public class RenderServiceHost : IHostedService
+namespace StarConflictsRevolt.Clients.Raylib;
+
+public class ClientServiceHost : IHostedService
 {
-    private readonly RenderService _renderService;
-    public RenderServiceHost(RenderService renderService) => _renderService = renderService;
+    private readonly SignalRService _signalRService;
+    private readonly RenderContext _renderContext;
+    private readonly IGameRenderer _gameRenderer;
+    
+    public ClientServiceHost(SignalRService renderService, RenderContext renderContext, IGameRenderer gameRenderer)
+    {
+        _signalRService = renderService;
+        _renderContext = renderContext;
+        _gameRenderer = gameRenderer;
+    }
 
-    public Task StartAsync(CancellationToken cancellationToken) => _renderService.StartAsync(cancellationToken);
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _renderContext.CurrentView = GameView.Menu; // Set initial view to Menu
+        await _gameRenderer.RenderAsync(null, cancellationToken);
+        await _signalRService.StartAsync(cancellationToken);
+    }
 
-    public Task StopAsync(CancellationToken cancellationToken) => _renderService.StopAsync();
+    public Task StopAsync(CancellationToken cancellationToken) => _signalRService.StopAsync();
 }

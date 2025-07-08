@@ -11,7 +11,7 @@ public class Renderer : IGameRenderer
     public void SetCanvas(ICanvas canvas) => _canvas = canvas;
     
     /// <inheritdoc />
-    public async Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken)
+    public async Task<bool> RenderAsync(WorldDto? world, CancellationToken cancellationToken)
     {
         if (_canvas == null) return true;
 

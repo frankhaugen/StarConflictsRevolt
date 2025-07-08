@@ -59,12 +59,10 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi")
 //     .WaitFor(webappserver)
 //     ;
 
-// REMOVED: Raylib client from Aspire orchestrator
 // var raylib = builder.AddProject<StarConflictsRevolt_Clients_Raylib>("raylib")
+//     .WithReference(engine)
 //     .WithReference(webapi)
-//     .WithReference(webappserver)
 //     .WaitFor(engine)
-//     .WaitFor(webapi)
-//     .WithEnvironment("GameClientConfiguration__GameServerHubUrl", $"{engine.GetEndpoint("http")}/gamehub");
+//     .WaitFor(webapi);
 
 builder.Build().Run();

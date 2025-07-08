@@ -5,7 +5,7 @@ using StarConflictsRevolt.Clients.Shared;
 
 namespace StarConflictsRevolt.Clients.Raylib;
 
-public class RenderService
+public class SignalRService : IAsyncDisposable
 {
     private HubConnection? _hubConnection;
     private readonly IOptions<GameClientConfiguration> _gameClientConfiguration;
@@ -13,11 +13,10 @@ public class RenderService
     private IGameRenderer _gameRenderer;
     private CancellationTokenSource _cts = new();
 
-    public RenderService(IOptions<GameClientConfiguration> gameClientConfiguration, IClientWorldStore worldStore, IGameRenderer gameRenderer)
+    public SignalRService(IOptions<GameClientConfiguration> gameClientConfiguration, IClientWorldStore worldStore)
     {
         _gameClientConfiguration = gameClientConfiguration;
         _worldStore = worldStore;
-        _gameRenderer = gameRenderer;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -53,32 +52,11 @@ public class RenderService
         {
             Console.WriteLine($"Error connecting to game hub: {ex.Message}");
         }
-
-        // start continuous rendering
-        _ = Task.Run(() => RenderLoop(_cts.Token));
-    }
-
-    private async Task RenderLoop(CancellationToken cancellationToken)
-    {
-        var keepRendering = true;
-        while (!cancellationToken.IsCancellationRequested && keepRendering)
-        {
-            try
-            {
-                var world = _worldStore.GetCurrent();
-                keepRendering = await _gameRenderer.RenderAsync(world, cancellationToken);
-            }
-            catch (InvalidOperationException)
-            {
-                // world not ready yet
-            }
-            await Task.Delay(1000 / 30, cancellationToken);
-        }
     }
 
     public async Task StopAsync()
     {
-        _cts.Cancel();
+        await _cts.CancelAsync();
         if (_hubConnection != null)
         {
             await _hubConnection.StopAsync();
@@ -86,4 +64,13 @@ public class RenderService
         }
     }
 
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection != null) await _hubConnection.DisposeAsync();
+        if (_cts is IAsyncDisposable ctsAsyncDisposable)
+            await ctsAsyncDisposable.DisposeAsync();
+        else
+            _cts.Dispose();
+    }
 }

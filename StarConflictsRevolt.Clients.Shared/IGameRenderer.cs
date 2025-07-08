@@ -4,5 +4,5 @@ namespace StarConflictsRevolt.Clients.Shared;
 
 public interface IGameRenderer
 {
-    Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken);
+    Task<bool> RenderAsync(WorldDto? world, CancellationToken cancellationToken);
 }

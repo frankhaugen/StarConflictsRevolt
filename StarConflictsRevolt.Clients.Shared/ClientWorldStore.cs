@@ -8,14 +8,14 @@ namespace StarConflictsRevolt.Clients.Shared;
 public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
 {
     WorldDto? _current;
-    readonly List<WorldDto> _history = new();
+    readonly List<WorldDto?> _history = new();
 
-    public IReadOnlyList<WorldDto> History => _history;
+    public IReadOnlyList<WorldDto?> History => _history;
 
     /// <inheritdoc />
     public SessionDto? Session { get; set; }
 
-    public void ApplyFull(WorldDto world)
+    public void ApplyFull(WorldDto? world)
     {
         logger.LogInformation("ApplyFull called with world: {WorldId}, StarSystems: {StarSystemCount}",
             world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
@@ -61,10 +61,10 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
         Snapshot();
     }
 
-    public WorldDto GetCurrent()
+    public WorldDto? GetCurrent()
     {
         if (_current is null)
-            throw new InvalidOperationException("World not initialized");
+            return null;
         return _current with {
             Galaxy = _current.Galaxy with {
                 StarSystems = _current.Galaxy.StarSystems.Select(system => system with {
