@@ -21,13 +21,6 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     public RaylibRenderer(ILogger<RaylibRenderer> logger)
     {
         _logger = logger;
-        Window.Init(800, 600, "Star Conflicts Revolt");
-        Window.SetState(ConfigFlags.ResizableWindow | ConfigFlags.TopmostWindow);
-        Graphics.ClearBackground(Color.Black);
-        Input.EnableCursor();
-        Input.SetExitKey(KeyboardKey.Escape);
-        Input.SetMouseCursor(MouseCursor.Crosshair);
-        Time.SetTargetFPS(60);
         
         _camera = new Camera2D(new Vector2(Window.GetScreenWidth() / 2f, Window.GetScreenHeight() / 2f), new Vector2(0, 0), 0.0f, 1.0f);
         
@@ -43,17 +36,16 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     
     public Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken)
     {
-        if (_currentWorld?.Id != world.Id)
-        {
-            _logger.LogInformation("Switching to new world: {WorldId}", world.Id);
-            _currentWorld = world;
-        }
-        
+        _currentWorld = world;
         return Task.FromResult(true);
     }
     
     private void RenderLoop()
     {
+        Window.Init(800, 600, "Star Conflicts Revolt");
+        Input.SetExitKey(KeyboardKey.Escape);
+        Time.SetTargetFPS(60);
+        
         while (!Window.ShouldClose())
         {
             if (!_running) _running = true;
