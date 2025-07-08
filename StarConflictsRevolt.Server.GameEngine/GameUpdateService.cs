@@ -17,6 +17,8 @@ public class GameUpdateService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var worldId = Guid.CreateVersion7();
+        
         while (!stoppingToken.IsCancellationRequested)
         {
             var planets = new List<PlanetDto>
@@ -31,9 +33,8 @@ public class GameUpdateService : BackgroundService
                 new(Guid.CreateVersion7(), "Sol", planets, new Vector2(0, 0))
             };
 
-            var world = new WorldDto(Guid.CreateVersion7(), new GalaxyDto(Guid.CreateVersion7(), starSystems));
-            _logger.LogInformation("Sending full world update: {WorldId}, StarSystems: {StarSystemCount}",
-                world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
+            var world = new WorldDto(worldId, new GalaxyDto(Guid.CreateVersion7(), starSystems));
+            _logger.LogInformation("Sending full world update: {WorldId}, StarSystems: {StarSystemCount}", world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
             
             await _hubContext.Clients.All.SendAsync("FullWorld", world, stoppingToken);
             _logger.LogInformation("Full world update sent: {WorldId}", world.Id);

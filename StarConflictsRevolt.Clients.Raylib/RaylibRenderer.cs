@@ -20,6 +20,10 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     {
         _logger = logger;
         Window.Init(800, 600, "Star Conflicts Revolt");
+        Graphics.ClearBackground(Color.Black);
+        Input.EnableCursor();
+        Input.SetExitKey(KeyboardKey.Escape);
+        Input.SetMouseCursor(MouseCursor.Crosshair);
         Time.SetTargetFPS(60);
         
         _camera = new Camera2D(new Vector2(Window.GetScreenWidth() / 2f, Window.GetScreenHeight() / 2f), new Vector2(0, 0), 0.0f, 1.0f);
@@ -39,14 +43,6 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
             return Task.CompletedTask;
         }
         
-        if (world == null)
-        {
-            _logger.LogWarning("Render called with null world");
-            return Task.CompletedTask;
-        }
-        
-        _logger.LogInformation("Rendering world: {WorldId}, StarSystems: {StarSystemCount}",
-            world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
         if (world.Galaxy?.StarSystems == null || !world.Galaxy.StarSystems.Any())
         {
             _logger.LogWarning("No star systems to render in world: {WorldId}", world.Id);
@@ -66,7 +62,6 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         Graphics.EndMode2D();
 
         Graphics.EndDrawing();
-        _logger.LogInformation("Finished rendering world: {WorldId}", world.Id);
         
         return Task.CompletedTask;
     }
