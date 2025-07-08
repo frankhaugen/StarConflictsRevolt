@@ -1,4 +1,6 @@
-﻿namespace StarConflictsRevolt.Clients.Shared;
+﻿using StarConflictsRevolt.Clients.Models;
+
+namespace StarConflictsRevolt.Clients.Shared;
 
 public interface IGameRenderer
 {

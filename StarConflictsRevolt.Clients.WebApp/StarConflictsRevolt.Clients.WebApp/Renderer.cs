@@ -1,4 +1,5 @@
 ﻿using BlazorCanvas2d;
+using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
 
 namespace StarConflictsRevolt.Clients.WebApp;

@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Clients.Shared;
+﻿namespace StarConflictsRevolt.Clients.Models;
 
 public record PlanetDto(Guid Id, string Name, double Radius, double Mass, double RotationSpeed, double OrbitSpeed, double DistanceFromSun) : IGameObject
 {

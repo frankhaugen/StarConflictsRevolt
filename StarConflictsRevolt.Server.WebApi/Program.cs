@@ -1,4 +1,5 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
+using StarConflictsRevolt.Server.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 

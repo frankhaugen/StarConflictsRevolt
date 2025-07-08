@@ -1,6 +1,8 @@
 ﻿using System.Numerics;
 using StarConflictsRevolt.Server.Core;
 
+namespace StarConflictsRevolt.Server.WebApi;
+
 public class WorldService
 {
     public async Task<World> GetWorldAsync(CancellationToken contextRequestAborted)

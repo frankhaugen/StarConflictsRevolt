@@ -1,6 +1,8 @@
 ﻿using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Datastore.Extensions;
 
+namespace StarConflictsRevolt.Server.WebApi;
+
 public class SessionService
 {
     private readonly GameDbContext _dbContext;

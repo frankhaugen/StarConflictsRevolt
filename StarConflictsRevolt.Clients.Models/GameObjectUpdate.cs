@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Models;
 
 public record GameObjectUpdate(Guid Id, UpdateType Type, JsonElement? Data)
 {

@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Shared;
 
-public class ClientWorldStore : IClientWorldStore
+public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
 {
     WorldDto? _current;
     readonly List<WorldDto> _history = new();
@@ -16,6 +17,9 @@ public class ClientWorldStore : IClientWorldStore
 
     public void ApplyFull(WorldDto world)
     {
+        logger.LogInformation("ApplyFull called with world: {WorldId}, StarSystems: {StarSystemCount}",
+            world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
+        
         _current = world with { Galaxy = world.Galaxy with {
             StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
         }};
@@ -24,7 +28,13 @@ public class ClientWorldStore : IClientWorldStore
 
     public void ApplyDeltas(IEnumerable<GameObjectUpdate> deltas)
     {
+        logger.LogInformation("ApplyDeltas called with {DeltaCount} deltas", deltas.Count());
         if (_current is null) return;
+        if (_current.Galaxy is null || _current.Galaxy.StarSystems is null)
+        {
+            logger.LogWarning("Current world does not have a valid Galaxy or StarSystems");
+            return;
+        }
 
         var starSystems = _current.Galaxy.StarSystems.ToList();
         
@@ -66,6 +76,13 @@ public class ClientWorldStore : IClientWorldStore
 
     void Snapshot()
     {
+        if (_current is null)
+        {
+            logger.LogWarning("Snapshot called but current world is null");
+            return;
+        }
+        logger.LogInformation("Snapshotting current world: {WorldId}, StarSystems: {StarSystemCount}",
+            _current.Id, _current.Galaxy?.StarSystems?.Count() ?? 0);
         _history.Add(GetCurrent());
         if (_history.Count > 100)
             _history.RemoveAt(0);

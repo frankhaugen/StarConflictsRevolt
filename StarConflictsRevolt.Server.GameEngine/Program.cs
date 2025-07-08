@@ -1,4 +1,4 @@
-using StarConflictsRevolt.GameEngine;
+using StarConflictsRevolt.Server.GameEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHostedService<GameUpdateService>();

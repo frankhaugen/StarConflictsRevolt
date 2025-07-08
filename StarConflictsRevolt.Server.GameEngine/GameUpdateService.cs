@@ -1,43 +1,24 @@
 ﻿using System.Numerics;
-using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Shared;
-using StarConflictsRevolt.GameEngine;
+
+namespace StarConflictsRevolt.Server.GameEngine;
 
 public class GameUpdateService : BackgroundService
 {
     private readonly IHubContext<WorldHub> _hubContext;
+    private readonly ILogger<GameUpdateService> _logger;
 
-    public GameUpdateService(IHubContext<WorldHub> hubContext)
+    public GameUpdateService(IHubContext<WorldHub> hubContext, ILogger<GameUpdateService> logger)
     {
         _hubContext = hubContext;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Simulate a planet update
-            // var planet = new PlanetDto {
-            //     Id = Guid.NewGuid()
-            // };
-            //
-            // var updates = new List<GameObjectUpdate>
-            // {
-            //     new GameObjectUpdate()
-            //     {
-            //         Id = planet.Id,
-            //         Type = UpdateType.Added,
-            //         Data = JsonSerializer.SerializeToElement(planet)
-            //     }
-            // };
-            //
-            // await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, stoppingToken);
-            // await Task.Delay(1000, stoppingToken);
-            
-            // FullWorld update example
-            
             var planets = new List<PlanetDto>
             {
                 new PlanetDto(Guid.CreateVersion7(), "Earth", 50, 1.0f, 0.5f, 0.1f, 0.01f)
@@ -49,8 +30,14 @@ public class GameUpdateService : BackgroundService
             };
 
             var world = new WorldDto(Guid.CreateVersion7(), new GalaxyDto(Guid.CreateVersion7(), starSystems));
+            _logger.LogInformation("Sending full world update: {WorldId}, StarSystems: {StarSystemCount}",
+                world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
+            
             await _hubContext.Clients.All.SendAsync("FullWorld", world, stoppingToken);
+            _logger.LogInformation("Full world update sent: {WorldId}", world.Id);
+            
             // Wait for a while before the next update
+            _logger.LogInformation("Waiting for next update cycle...");
             await Task.Delay(5000, stoppingToken);
         }
     }

@@ -1,3 +1,3 @@
-﻿namespace StarConflictsRevolt.Clients.Shared;
+﻿namespace StarConflictsRevolt.Clients.Models;
 
 public enum UpdateType { Added, Changed, Removed }
