@@ -15,6 +15,8 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     private readonly ILogger<RaylibRenderer> _logger;
     private readonly List<Vector2> _backgroundStars = new();
     private Camera2D _camera;
+    private WorldDto? _currentWorld;
+    private bool _running = false;
 
     public RaylibRenderer(ILogger<RaylibRenderer> logger)
     {
@@ -34,37 +36,48 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         {
             _backgroundStars.Add(new Vector2(random.Next(-2000, 2000), random.Next(-2000, 2000)));
         }
+        
+        _logger.LogInformation("RaylibRenderer initialized with {StarCount} background stars", _backgroundStars.Count);
+        Task.Run(RenderLoop);
     }
     
     public Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken)
     {
-        if (Window.ShouldClose() || cancellationToken.IsCancellationRequested)
+        if (_currentWorld?.Id != world.Id)
         {
-            _logger.LogInformation("Render cancelled");
-            return Task.FromResult(false);
+            _logger.LogInformation("Switching to new world: {WorldId}", world.Id);
+            _currentWorld = world;
         }
-        
-        if (world.Galaxy?.StarSystems == null || !world.Galaxy.StarSystems.Any())
-        {
-            _logger.LogWarning("No star systems to render in world: {WorldId}", world.Id);
-            return Task.FromResult(true);
-        }
-
-        HandleCameraInput();
-        
-        Graphics.BeginDrawing();
-        Graphics.ClearBackground(Color.Black);
-
-        Graphics.BeginMode2D(_camera);
-        
-        DrawBackground();
-        DrawWorld(world);
-
-        Graphics.EndMode2D();
-
-        Graphics.EndDrawing();
         
         return Task.FromResult(true);
+    }
+    
+    private void RenderLoop()
+    {
+        while (!Window.ShouldClose())
+        {
+            if (!_running) _running = true;
+            Graphics.BeginDrawing();
+            Graphics.ClearBackground(Color.Black);
+            
+            // Update camera
+            HandleCameraInput();
+            Graphics.BeginMode2D(_camera);
+            
+            // Draw background stars
+            DrawBackground();
+            
+            // Draw the world
+            if (_currentWorld != null)
+            {
+                DrawWorld(_currentWorld);
+            }
+            
+            Graphics.EndMode2D();
+            Graphics.DrawText($"Zoom: {_camera.Zoom:F2}", 10, 10, 20, Color.White);
+            
+            Graphics.EndDrawing();
+        }
     }
 
     private void HandleCameraInput()
