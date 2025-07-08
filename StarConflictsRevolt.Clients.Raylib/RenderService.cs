@@ -60,12 +60,13 @@ public class RenderService
 
     private async Task RenderLoop(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        var keepRendering = true;
+        while (!cancellationToken.IsCancellationRequested && keepRendering)
         {
             try
             {
                 var world = _worldStore.GetCurrent();
-                await _gameRenderer.RenderAsync(world, cancellationToken);
+                keepRendering = await _gameRenderer.RenderAsync(world, cancellationToken);
             }
             catch (InvalidOperationException)
             {

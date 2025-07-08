@@ -35,18 +35,18 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         }
     }
     
-    public Task RenderAsync(WorldDto world, CancellationToken cancellationToken)
+    public Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
+        if (Window.ShouldClose() || cancellationToken.IsCancellationRequested)
         {
             _logger.LogInformation("Render cancelled");
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
         
         if (world.Galaxy?.StarSystems == null || !world.Galaxy.StarSystems.Any())
         {
             _logger.LogWarning("No star systems to render in world: {WorldId}", world.Id);
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         HandleCameraInput();
@@ -63,7 +63,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
 
         Graphics.EndDrawing();
         
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private void HandleCameraInput()

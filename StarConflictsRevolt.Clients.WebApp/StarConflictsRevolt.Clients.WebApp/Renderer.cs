@@ -11,9 +11,9 @@ public class Renderer : IGameRenderer
     public void SetCanvas(ICanvas canvas) => _canvas = canvas;
     
     /// <inheritdoc />
-    public async Task RenderAsync(WorldDto world, CancellationToken cancellationToken)
+    public async Task<bool> RenderAsync(WorldDto world, CancellationToken cancellationToken)
     {
-        if (_canvas == null) return;
+        if (_canvas == null) return true;
 
         var context = _canvas.RenderContext;
         
@@ -30,5 +30,16 @@ public class Renderer : IGameRenderer
                 context.Fill();
             }
         }
+        
+        // Draw planets
+        if (world.Galaxy?.StarSystems != null)
+        {
+        }
+        
+        
+        
+        
+        
+        return true;
     }
 }
