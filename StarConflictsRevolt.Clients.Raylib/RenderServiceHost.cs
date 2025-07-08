@@ -1,8 +1,11 @@
 ﻿namespace StarConflictsRevolt.Clients.Raylib;
 
-public class RenderServiceHost(RenderService renderService) : IHostedService
+public class RenderServiceHost : IHostedService
 {
-    public Task StartAsync(CancellationToken cancellationToken) => renderService.StartAsync(cancellationToken);
+    private readonly RenderService _renderService;
+    public RenderServiceHost(RenderService renderService) => _renderService = renderService;
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task StartAsync(CancellationToken cancellationToken) => _renderService.StartAsync(cancellationToken);
+
+    public Task StopAsync(CancellationToken cancellationToken) => _renderService.StopAsync();
 }

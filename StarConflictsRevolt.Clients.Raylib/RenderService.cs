@@ -11,6 +11,7 @@ public class RenderService
     private readonly IOptions<GameClientConfiguration> _gameClientConfiguration;
     private IClientWorldStore _worldStore;
     private IGameRenderer _gameRenderer;
+    private CancellationTokenSource _cts = new();
 
     public RenderService(IOptions<GameClientConfiguration> gameClientConfiguration, IClientWorldStore worldStore, IGameRenderer gameRenderer)
     {
@@ -21,7 +22,7 @@ public class RenderService
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(_gameClientConfiguration.Value.GameServerHubUrl)
             .WithAutomaticReconnect()
@@ -35,29 +36,53 @@ public class RenderService
         _hubConnection.On<WorldDto>("FullWorld", worldDto =>
         {
             _worldStore.ApplyFull(worldDto);
-            var world = _worldStore.GetCurrent();
-            _gameRenderer.RenderAsync(world, CancellationToken.None);
         });
         
         _hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates =>
         {
             _worldStore.ApplyDeltas(updates);
-            var world = _worldStore.GetCurrent();
-            _gameRenderer.RenderAsync(world, CancellationToken.None);
         });
 
         try
         {
-            await _hubConnection.StartAsync(cancellationToken);
+            await _hubConnection.StartAsync(_cts.Token);
+            // join the world group
+            await _hubConnection.SendAsync("JoinWorld", "world-1", _cts.Token);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error connecting to game hub: {ex.Message}");
-            // Handle connection error
         }
 
+        // start continuous rendering
+        _ = Task.Run(() => RenderLoop(_cts.Token));
+    }
+
+    private async Task RenderLoop(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var world = _worldStore.GetCurrent();
+                await _gameRenderer.RenderAsync(world, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                // world not ready yet
+            }
+            await Task.Delay(1000 / 30, cancellationToken);
+        }
+    }
+
+    public async Task StopAsync()
+    {
+        _cts.Cancel();
         if (_hubConnection != null)
+        {
+            await _hubConnection.StopAsync();
             await _hubConnection.DisposeAsync();
+        }
     }
 
 }

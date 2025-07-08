@@ -2,6 +2,6 @@
 
 public class GameClientConfiguration
 {
-    public string GameServerUrl { get; set; } = "https://localhost:5001";
-    public string GameServerHubUrl { get; set; } = "https://localhost:5001/gamehub";
+    public string GameServerUrl { get; set; } = "http://localhost:5153";
+    public string GameServerHubUrl { get; set; } = "http://localhost:5267/gamehub";
 }
