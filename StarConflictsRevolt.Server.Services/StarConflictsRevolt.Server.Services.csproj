@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
+      <ProjectReference Include="..\StarConflictsRevolt.Server.Core\StarConflictsRevolt.Server.Core.csproj" />
+      <ProjectReference Include="..\StarConflictsRevolt.Server.Datastore\StarConflictsRevolt.Server.Datastore.csproj" />
+      <ProjectReference Include="..\StarConflictsRevolt.Server.Eventing\StarConflictsRevolt.Server.Eventing.csproj" />
+    </ItemGroup>
+
+</Project>

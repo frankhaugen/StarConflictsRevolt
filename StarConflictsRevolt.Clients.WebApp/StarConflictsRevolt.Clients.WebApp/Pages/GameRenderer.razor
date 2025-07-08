@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Options
+@using StarConflictsRevolt.Clients.Models
+@using StarConflictsRevolt.Clients.Shared
+
+@inject IOptions<GameClientConfiguration> GameClientConfiguration
+@inject IGameRenderer Renderer
+@inject IClientWorldStore WorldStore
+
+@inherits LayoutComponentBase
+
+<Canvas Width="800" Height="600" OnCanvasReady="CanvasReadyHandler">
+</Canvas>
+
+@code {
+
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(GameClientConfiguration.Value.GameServerHubUrl)
+            .Build();
+        
+        _hubConnection.On<WorldDto>("FullWorld", worldDto =>
+        {
+            WorldStore.ApplyFull(worldDto);
+            Renderer.RenderAsync(worldDto, CancellationToken.None);
+        });
+        
+        _hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates =>
+        {
+            WorldStore.ApplyDeltas(updates);
+            var world = WorldStore.GetCurrent();
+            Renderer.RenderAsync(world, CancellationToken.None);
+        });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error connecting to game hub: {ex.Message}");
+            // Handle connection error
+        }
+    }
+
+    private Task CanvasReadyHandler(ICanvas arg)
+    {
+        // Optionally, you can start rendering immediately
+        var world = WorldStore.GetCurrent();
+        return Renderer.RenderAsync(world, CancellationToken.None);
+    }
+
+}
