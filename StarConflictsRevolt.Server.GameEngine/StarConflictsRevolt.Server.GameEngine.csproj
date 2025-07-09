@@ -15,6 +15,7 @@
       <ProjectReference Include="..\StarConflictsRevolt.Server.Services\StarConflictsRevolt.Server.Services.csproj" />
       <ProjectReference Include="..\StarConflictsRevolt.Server.Eventing\StarConflictsRevolt.Server.Eventing.csproj" />
       <ProjectReference Include="..\StarConflictsRevolt.Server.Core\StarConflictsRevolt.Server.Core.csproj" />
+      <ProjectReference Include="..\StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
     </ItemGroup>
     
 </Project>

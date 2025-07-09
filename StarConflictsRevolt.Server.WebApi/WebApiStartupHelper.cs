@@ -47,8 +47,6 @@ public static class WebApiStartupHelper
             });
         });
 
-        builder.AddServiceDefaults();
-
         // Add services to the container.
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -77,10 +75,8 @@ public static class WebApiStartupHelper
     
     public static void Configure(WebApplication app)
     {
-        var port = 5153;
-        
-        // Set port for the application:
-        app.Urls.Add($"http://localhost:{port}");
+        // Let Aspire handle port assignment dynamically
+        // Remove hardcoded port to allow Aspire to assign ports automatically
         
         app.MapDefaultEndpoints();
 

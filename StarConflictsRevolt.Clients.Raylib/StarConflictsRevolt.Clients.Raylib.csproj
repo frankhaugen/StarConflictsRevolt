@@ -17,5 +17,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" />
+      <ProjectReference Include="..\StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
     </ItemGroup>
 </Project>

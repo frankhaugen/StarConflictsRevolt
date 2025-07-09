@@ -2,9 +2,13 @@ using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Shared;
+using StarConflictsRevolt.Aspire.ServiceDefaults;
 using System.Text.Json;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Add ServiceDefaults for service discovery and observability
+builder.AddServiceDefaults();
 
 // Add custom file logging provider
 builder.Logging.AddProvider(new FileLoggerProvider());
@@ -39,7 +43,8 @@ builder.Services.AddHttpClient();
 // Configure TokenProvider options BEFORE registering the service
 builder.Services.Configure<TokenProviderOptions>(options =>
 {
-    options.TokenEndpoint = "http://localhost:5153/token";
+    // Use service discovery for the WebApi service
+    options.TokenEndpoint = "http://webapi/token";
     options.ClientId = clientId;
     options.Secret = "changeme";
 });
@@ -47,10 +52,12 @@ builder.Services.Configure<TokenProviderOptions>(options =>
 // Register TokenProvider AFTER configuration
 builder.Services.AddSingleton<ITokenProvider, CachingTokenProvider>();
 
+// Configure HTTP client with service discovery using HttpApiClient
 HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5153");
-    logger.LogInformation("Configured HttpApiClient with base address: {BaseAddress}", client.BaseAddress);
+    // Use service discovery to find the WebApi service
+    client.BaseAddress = new Uri("http://webapi");
+    logger.LogInformation("Configured HttpApiClient with service discovery for WebApi");
 });
 
 builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
