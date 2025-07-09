@@ -25,90 +25,85 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         _logger = logger;
         _views = views;
         _renderContext = renderContext;
-        _camera = new Camera2D(new Vector2(Window.GetScreenWidth() / 2f, Window.GetScreenHeight() / 2f), new Vector2(0, 0), 0.0f, 1.0f);
-        
-        var random = new Random();
-        for (var i = 0; i < 500; i++)
-        {
-            _backgroundStars.Add(new Vector2(random.Next(-2000, 2000), random.Next(-2000, 2000)));
-        }
-        
-        _logger.LogInformation("RaylibRenderer initialized with {StarCount} background stars", _backgroundStars.Count);
-        Task.Run(RenderLoop);
+        _logger.LogInformation("RaylibRenderer initialized with {ViewCount} views", _views.Count());
     }
-    
+
     public Task<bool> RenderAsync(WorldDto? world, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Starting RaylibRenderer render loop");
+        _running = true;
+        RenderLoop();
         return Task.FromResult(true);
     }
-    
+
     private void RenderLoop()
     {
-        _logger.LogInformation("Starting Raylib render loop");
-        
-        var aspectRatio = Window.GetScreenWidth() / Window.GetScreenHeight();
-        var height = 1280;
-        var width = (height * aspectRatio);
-        
-        Window.Init(width, height, "Star Conflicts Revolt");
-        Input.SetExitKey(KeyboardKey.Backspace);
+        _logger.LogInformation("Initializing Raylib window");
+        Window.Init(1200, 800, "Star Conflicts Revolt");
         Time.SetTargetFPS(60);
         
-        while (!Window.ShouldClose())
+        _logger.LogInformation("Setting up camera");
+        _camera = new Camera2D(Vector2.Zero, Vector2.Zero, 0.0f, 1.0f);
+        
+        _logger.LogInformation("Generating background stars");
+        var random = new Random();
+        for (int i = 0; i < 100; i++)
         {
-            // Update
+            _backgroundStars.Add(new Vector2(random.Next(0, 1200), random.Next(0, 800)));
+        }
+        
+        _logger.LogInformation("Starting render loop");
+        
+        while (!Window.ShouldClose() && _running)
+        {
             HandleCameraInput();
-
-            // Draw
+            
             Graphics.BeginDrawing();
             Graphics.ClearBackground(Color.Black);
             
-            Graphics.BeginMode2D(_camera);
             DrawBackground();
-            var viewType = _renderContext.CurrentView;
-            if (viewType != null && _views.Any(v => v.ViewType == viewType))
+            
+            Graphics.BeginMode2D(_camera);
+            
+            // Draw current view
+            var currentView = _views.FirstOrDefault(v => v.ViewType == _renderContext.CurrentView);
+            if (currentView != null)
             {
-                var view = _views.First(v => v.ViewType == viewType);
-                view.Draw();
+                currentView.Draw();
             }
+            else
+            {
+                _logger.LogWarning("No view found for current view type: {ViewType}", _renderContext.CurrentView);
+                Graphics.DrawText($"View not found: {_renderContext.CurrentView}", 10, 10, 20, Color.White);
+            }
+            
             Graphics.EndMode2D();
             
-            Graphics.DrawText($"Zoom: {_camera.Zoom:F2}", 10, 10, 20, Color.White);
-
+            // Draw UI elements that should be in screen space
+            DrawUI();
+            
             Graphics.EndDrawing();
         }
+        
+        _logger.LogInformation("Render loop ended, closing window");
+        Window.Close();
     }
 
     private void HandleCameraInput()
     {
-        if (Input.IsMouseButtonDown(MouseButton.Left))
+        var mouseDelta = Input.GetMouseDelta();
+        if (Input.IsMouseButtonDown(MouseButton.Right))
         {
-            var delta = Input.GetMouseDelta();
-            if (delta.LengthSquared() > 0)
-            {
-                var currentPos = Window.GetPosition();
-                Window.SetPosition((int)(currentPos.X + delta.X), (int)(currentPos.Y + delta.Y));
-            }
+            _camera.Target += mouseDelta;
+            _logger.LogDebug("Camera moved by delta: {Delta}", mouseDelta);
         }
-
-        if (Input.IsMouseButtonDown(MouseButton.Middle))
+        
+        var scroll = Input.GetMouseWheelMove();
+        if (scroll != 0)
         {
-            var delta = Input.GetMouseDelta();
-            delta = RayMath.Vector2Scale(delta, -1.0f / _camera.Zoom);
-            _camera.Target = RayMath.Vector2Add(_camera.Target, delta);
-        }
-
-        var wheel = Input.GetMouseWheelMove();
-        if (wheel != 0)
-        {
-            var mouseWorldPos = RayLibHelper.GetScreenToWorld2D(Input.GetMousePosition(), _camera);
-            _camera.Offset = Input.GetMousePosition();
-            _camera.Target = mouseWorldPos;
-            _camera.Zoom += wheel * 0.125f;
-            if (_camera.Zoom < 0.1f)
-            {
-                _camera.Zoom = 0.1f;
-            }
+            _camera.Zoom += scroll * 0.1f;
+            _camera.Zoom = Math.Max(0.1f, Math.Min(3.0f, _camera.Zoom));
+            _logger.LogDebug("Camera zoom changed to: {Zoom}", _camera.Zoom);
         }
     }
 
@@ -119,17 +114,35 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
             Graphics.DrawPixelV(star, Color.White);
         }
     }
-    
-    private void DrawStar(StarSystemDto system)
+
+    private void DrawUI()
     {
-        Graphics.DrawCircle((int)system.Coordinates.X, (int)system.Coordinates.Y, (float)10, Color.Yellow);
-        Graphics.DrawText(system.Name, (int)system.Coordinates.X - 20, (int)system.Coordinates.Y - 20, 10, Color.White);
+        // Draw UI elements in screen space
+        Graphics.DrawText($"FPS: {Time.GetFPS()}", 10, 10, 20, Color.White);
+        Graphics.DrawText($"View: {_renderContext.CurrentView}", 10, 35, 20, Color.White);
+        
+        if (_renderContext.GameState.FeedbackMessage != null)
+        {
+            Graphics.DrawText(_renderContext.GameState.FeedbackMessage, 10, 60, 20, Color.Yellow);
+        }
     }
 
+    private void DrawStar(StarSystemDto system)
+    {
+        // Simple coordinate conversion for now
+        var screenPos = system.Coordinates;
+        Graphics.DrawCircle((int)screenPos.X, (int)screenPos.Y, 5, Color.Yellow);
+        Graphics.DrawText(system.Name, (int)screenPos.X + 10, (int)screenPos.Y - 10, 12, Color.White);
+    }
 
-    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        Window.Close();
+        _logger.LogInformation("Disposing RaylibRenderer");
+        _running = false;
+        if (Window.IsReady())
+        {
+            Window.Close();
+            _logger.LogInformation("Raylib window closed");
+        }
     }
 }
