@@ -5,6 +5,7 @@ using StarConflictsRevolt.Server.Datastore.Extensions;
 using StarConflictsRevolt.Server.Datastore.SeedData;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.GameEngine;
+using StarConflictsRevolt.Server.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 

@@ -1,8 +1,7 @@
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.Core.Enums;
 
-namespace StarConflictsRevolt.Server.GameEngine;
+namespace StarConflictsRevolt.Server.Services;
 
 public class SessionAggregate
 {

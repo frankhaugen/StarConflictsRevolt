@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.Services;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 
