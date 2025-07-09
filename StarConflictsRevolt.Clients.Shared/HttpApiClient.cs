@@ -49,6 +49,10 @@ public class HttpApiClient
 
     public static void AddHttpApiClientWithAuth(IServiceCollection services, string clientName, Action<HttpClient>? configure = null)
     {
+        // Register Token provider
+        services.AddSingleton<ITokenProvider, CachingTokenProvider>();
+        // Ensure JwtTokenHandler is registered
+        services.AddTransient<JwtTokenHandler>();
         var builder = services.AddHttpClient(clientName)
             .AddHttpMessageHandler<JwtTokenHandler>()
             .AddPolicyHandler(GetRetryPolicy());

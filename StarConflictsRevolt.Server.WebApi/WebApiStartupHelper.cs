@@ -77,6 +77,10 @@ public static class WebApiStartupHelper
     
     public static void Configure(WebApplication app)
     {
+        var port = 5153;
+        
+        // Set port for the application:
+        app.Urls.Add($"http://localhost:{port}");
         
         app.MapDefaultEndpoints();
 
@@ -117,9 +121,6 @@ public static class WebApiStartupHelper
 
             await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
         });
-
-        // SignalR hub
-        app.MapHub<WorldHub>("/gamehub");
 
         // Leaderboard endpoints
         app.MapGet("/leaderboard/{sessionId}", async (Guid sessionId, LeaderboardService leaderboardService, CancellationToken ct) =>

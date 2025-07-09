@@ -13,8 +13,40 @@ builder.Logging.SetMinimumLevel(LogLevel.Debug);
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Starting StarConflictsRevolt Raylib Client");
 
+// Get or create client ID from app data first (needed for token provider configuration)
+var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StarConflictsRevolt");
+Directory.CreateDirectory(appDataPath);
+logger.LogInformation("App data directory: {AppDataPath}", appDataPath);
+
+var clientIdFile = Path.Combine(appDataPath, "client_id.txt");
+string clientId;
+
+if (!File.Exists(clientIdFile))
+{
+    clientId = $"client-{Guid.NewGuid().ToString().Substring(0, 8)}";
+    File.WriteAllText(clientIdFile, clientId);
+    logger.LogInformation("Created new client ID: {ClientId}", clientId);
+}
+else
+{
+    clientId = File.ReadAllText(clientIdFile);
+    logger.LogInformation("Using existing client ID: {ClientId}", clientId);
+}
+
 // Add HTTP client factory for Clients.Shared integration
 builder.Services.AddHttpClient();
+
+// Configure TokenProvider options BEFORE registering the service
+builder.Services.Configure<TokenProviderOptions>(options =>
+{
+    options.TokenEndpoint = "http://localhost:5153/token";
+    options.ClientId = clientId;
+    options.Secret = "changeme";
+});
+
+// Register TokenProvider AFTER configuration
+builder.Services.AddSingleton<ITokenProvider, CachingTokenProvider>();
+
 HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5153");
@@ -65,51 +97,23 @@ logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={Dis
 
 renderContext.GameState.PlayerName = userProfile.DisplayName;
 renderContext.GameState.PlayerId = userProfile.UserId;
+renderContext.ClientId = clientId;
 
-// Get or create client ID from app data
-logger.LogInformation("Setting up client ID from app data");
-var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StarConflictsRevolt");
-Directory.CreateDirectory(appDataPath);
-logger.LogInformation("App data directory: {AppDataPath}", appDataPath);
-
-var clientIdFile = Path.Combine(appDataPath, "client_id.txt");
-
-if (!File.Exists(clientIdFile))
-{
-    var clientId = $"client-{Guid.NewGuid().ToString().Substring(0, 8)}";
-    File.WriteAllText(clientIdFile, clientId);
-    logger.LogInformation("Created new client ID: {ClientId}", clientId);
-}
-else
-{
-    var existingClientId = File.ReadAllText(clientIdFile);
-    logger.LogInformation("Using existing client ID: {ClientId}", existingClientId);
-}
-
-renderContext.ClientId = File.ReadAllText(clientIdFile);
 logger.LogInformation("Client ID set: {ClientId}", renderContext.ClientId);
 
-// Obtain JWT access token from API using HttpApiClient
-logger.LogInformation("Attempting to obtain JWT access token from API");
-var httpApiClient = host.Services.GetRequiredService<HttpApiClient>();
-var tokenRequest = new { client_id = renderContext.ClientId, secret = "changeme" };
-logger.LogInformation("Sending token request with client_id: {ClientId}", renderContext.ClientId);
-
-var tokenResponse = await httpApiClient.PostAsync("/token", tokenRequest);
-
-if (tokenResponse.IsSuccessStatusCode)
+// Test token acquisition
+logger.LogInformation("Testing token acquisition");
+try
 {
-    var json = await tokenResponse.Content.ReadAsStringAsync();
-    var doc = JsonDocument.Parse(json);
-    renderContext.AccessToken = doc.RootElement.GetProperty("access_token").GetString();
+    var tokenProvider = host.Services.GetRequiredService<ITokenProvider>();
+    var token = await tokenProvider.GetTokenAsync();
+    renderContext.AccessToken = token;
     logger.LogInformation("Successfully obtained access token: {TokenPrefix}...", 
-        renderContext.AccessToken?.Substring(0, Math.Min(10, renderContext.AccessToken.Length)));
+        token.Substring(0, Math.Min(10, token.Length)));
 }
-else
+catch (Exception ex)
 {
-    var errorContent = await tokenResponse.Content.ReadAsStringAsync();
-    logger.LogWarning("Failed to obtain access token. Status: {StatusCode}, Error: {Error}", 
-        tokenResponse.StatusCode, errorContent);
+    logger.LogWarning(ex, "Failed to obtain access token during startup");
     renderContext.AccessToken = null;
 }
 
