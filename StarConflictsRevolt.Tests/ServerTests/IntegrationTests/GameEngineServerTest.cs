@@ -1,15 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Datastore;
-using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Net.Http.Json;
 

@@ -1,6 +1,5 @@
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.Core.Models;
-using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.Services;
 

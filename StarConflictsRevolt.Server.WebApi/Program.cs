@@ -1,8 +1,6 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Aspire.ServiceDefaults;

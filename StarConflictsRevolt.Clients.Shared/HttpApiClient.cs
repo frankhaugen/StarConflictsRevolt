@@ -1,11 +1,7 @@
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
-using System;
 using Microsoft.Extensions.Configuration;
 
 namespace StarConflictsRevolt.Clients.Shared;

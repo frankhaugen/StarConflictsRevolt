@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using StarConflictsRevolt.Server.Core;
 
 namespace StarConflictsRevolt.Server.Datastore.Entities;
 

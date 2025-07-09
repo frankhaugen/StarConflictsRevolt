@@ -1,6 +1,4 @@
-﻿using StarConflictsRevolt.Server.Datastore.Entities;
-
-namespace StarConflictsRevolt.Server.Datastore.Extensions
+﻿namespace StarConflictsRevolt.Server.Datastore.Extensions
 {
     // Mostly mapping extensions for Models into Entities
     public static class ModelExtensions

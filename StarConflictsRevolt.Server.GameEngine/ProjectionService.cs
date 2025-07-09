@@ -1,4 +1,3 @@
-using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using Microsoft.EntityFrameworkCore;

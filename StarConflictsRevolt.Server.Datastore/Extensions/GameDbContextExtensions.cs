@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Datastore.Entities;
 using Galaxy = StarConflictsRevolt.Server.Datastore.Entities.Galaxy;
 using Planet = StarConflictsRevolt.Server.Datastore.Entities.Planet;
 using Session = StarConflictsRevolt.Server.Datastore.Entities.Session;

@@ -1,7 +1,6 @@
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Services;
-using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 

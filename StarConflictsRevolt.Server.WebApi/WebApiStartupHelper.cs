@@ -6,17 +6,7 @@ using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
-using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
 // Ensure JwtConfig is available
-using StarConflictsRevolt.Server.WebApi;
 
 namespace StarConflictsRevolt.Server.WebApi;
 

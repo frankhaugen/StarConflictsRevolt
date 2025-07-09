@@ -4,7 +4,6 @@ using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 var builder = Host.CreateApplicationBuilder(args);
 
