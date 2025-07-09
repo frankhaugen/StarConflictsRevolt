@@ -18,4 +18,5 @@
   <Project Path="StarConflictsRevolt.Server.GameEngine\StarConflictsRevolt.Server.GameEngine.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Server.Services\StarConflictsRevolt.Server.Services.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" Type="Classic C#" />
+  <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" Type="Classic C#" />
 </Solution>
