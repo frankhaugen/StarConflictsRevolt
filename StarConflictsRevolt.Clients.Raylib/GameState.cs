@@ -77,11 +77,3 @@ public class GameState
         ConfirmationAction = null;
     }
 }
-
-public enum GameSpeed
-{
-    Paused,
-    Slow,
-    Normal,
-    Fast
-} 

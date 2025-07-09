@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
 using System;
+using Microsoft.Extensions.Configuration;
 
 namespace StarConflictsRevolt.Clients.Shared;
 
@@ -47,8 +48,10 @@ public class HttpApiClient
         services.AddTransient(sp => new HttpApiClient(sp.GetRequiredService<IHttpClientFactory>(), clientName));
     }
 
-    public static void AddHttpApiClientWithAuth(IServiceCollection services, string clientName, Action<HttpClient>? configure = null)
+    public static void AddHttpApiClientWithAuth(IServiceCollection services, string clientName, IConfiguration configuration, Action<HttpClient>? configure = null)
     {
+        // Register configuration for the client
+        services.Configure<TokenProviderOptions>(configuration.GetSection(nameof(TokenProviderOptions)));
         // Register Token provider
         services.AddSingleton<ITokenProvider, CachingTokenProvider>();
         // Ensure JwtTokenHandler is registered
@@ -65,5 +68,5 @@ public class HttpApiClient
         HttpPolicyExtensions
             .HandleTransientHttpError()
             .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            .WaitAndRetryAsync(2, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            .WaitAndRetryAsync(0, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 } 

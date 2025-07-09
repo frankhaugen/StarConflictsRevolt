@@ -1,24 +1,8 @@
-using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace StarConflictsRevolt.Clients.Shared;
-
-public interface ITokenProvider
-{
-    Task<string> GetTokenAsync(CancellationToken ct = default);
-}
-
-public class TokenProviderOptions
-{
-    public string TokenEndpoint { get; set; } = "http://localhost:5153/token";
-    public string ClientId { get; set; } = string.Empty;
-    public string Secret { get; set; } = "changeme";
-}
 
 public class CachingTokenProvider : ITokenProvider
 {
@@ -91,4 +75,4 @@ public class CachingTokenProvider : ITokenProvider
         public string access_token { get; set; } = string.Empty;
         public int expires_in { get; set; }
     }
-} 
+}

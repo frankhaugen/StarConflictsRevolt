@@ -20,8 +20,6 @@ using StarConflictsRevolt.Server.WebApi;
 
 namespace StarConflictsRevolt.Server.WebApi;
 
-public record TokenRequest(string ClientId, string Secret);
-
 public static class WebApiStartupHelper
 {
     public static void RegisterServices(WebApplicationBuilder builder)
@@ -132,6 +130,9 @@ public static class WebApiStartupHelper
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync("Invalid request");
+                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TokenEndpoint");
+                logger.LogCritical("Invalid token request: {Request}", request);
                 return;
             }
 

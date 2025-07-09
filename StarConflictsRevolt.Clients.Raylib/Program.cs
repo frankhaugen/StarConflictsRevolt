@@ -64,7 +64,7 @@ builder.Services.AddSingleton<ITokenProvider>(sp =>
 });
 
 // Configure HTTP client with service discovery using HttpApiClient
-HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", client =>
+HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", builder.Configuration, client =>
 {
     // Use service discovery to find the WebApi service
     client.BaseAddress = new Uri("http://webapi");
