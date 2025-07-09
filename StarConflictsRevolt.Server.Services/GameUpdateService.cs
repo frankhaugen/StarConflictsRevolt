@@ -13,31 +13,33 @@ public class GameUpdateService : BackgroundService
 {
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
-    // Session state and command queues
-    private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates = new();
+    private readonly SessionAggregateManager _aggregateManager;
     private readonly CommandQueue<IGameEvent> _commandQueue = new();
     private readonly IEventStore _eventStore;
     private readonly Dictionary<Guid, int> _eventCounts = new();
 
-    public GameUpdateService(IHubContext<WorldHub> hubContext, ILogger<GameUpdateService> logger, IEventStore eventStore)
+    public GameUpdateService(
+        IHubContext<WorldHub> hubContext, 
+        ILogger<GameUpdateService> logger, 
+        IEventStore eventStore,
+        SessionAggregateManager aggregateManager)
     {
         _hubContext = hubContext;
         _logger = logger;
         _eventStore = eventStore;
+        _aggregateManager = aggregateManager;
     }
 
     // Add this method to create a new session/world
     public void CreateSession(Guid sessionId, World initialWorld)
     {
-        var aggregate = new SessionAggregate(sessionId, initialWorld);
-        // Replay events from event store if available
-        if (_eventStore is StarConflictsRevolt.Server.Eventing.RavenEventStore ravenStore)
-        {
-            var events = ravenStore.GetEventsForWorld(sessionId).Select(e => e.Event);
-            aggregate.ReplayEvents(events);
-        }
-        _aggregates[sessionId] = aggregate;
+        _aggregateManager.GetOrCreateAggregate(sessionId, initialWorld);
         _eventCounts[sessionId] = 0;
+    }
+
+    public async Task<bool> SessionExistsAsync(Guid worldId)
+    {
+        return _aggregateManager.HasAggregate(worldId);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,8 +49,10 @@ public class GameUpdateService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            foreach (var (sessionId, sessionAggregate) in _aggregates)
+            foreach (var sessionAggregate in _aggregateManager.GetAllAggregates())
             {
+                var sessionId = sessionAggregate.SessionId;
+                
                 // Process all queued commands for this session
                 while (_commandQueue.TryDequeue(sessionId, out var command))
                 {
@@ -73,11 +77,5 @@ public class GameUpdateService : BackgroundService
             }
             await Task.Delay(1000, stoppingToken); // 1 tick per second
         }
-    }
-
-    public async Task<bool> SessionExistsAsync  (Guid worldId)
-    {
-        // Check if a session with the given worldId exists
-        return _aggregates.ContainsKey(worldId);
     }
 }

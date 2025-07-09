@@ -1,29 +1,34 @@
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Services;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 
 public class AiTurnService : BackgroundService
 {
-    private readonly CommandQueue<Eventing.IGameEvent> _commandQueue;
+    private readonly CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> _commandQueue;
     private readonly ILogger<AiTurnService> _logger;
-    private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates;
+    private readonly SessionAggregateManager _aggregateManager;
 
-    public AiTurnService(CommandQueue<Eventing.IGameEvent> commandQueue, ILogger<AiTurnService> logger)
+    public AiTurnService(
+        CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> commandQueue, 
+        ILogger<AiTurnService> logger, 
+        SessionAggregateManager aggregateManager)
     {
         _commandQueue = commandQueue;
         _logger = logger;
-        _aggregates = new ConcurrentDictionary<Guid, SessionAggregate>();
+        _aggregateManager = aggregateManager;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            foreach (var (sessionId, sessionAggregate) in _aggregates)
+            foreach (var sessionAggregate in _aggregateManager.GetAllAggregates())
             {
+                var sessionId = sessionAggregate.SessionId;
+                
                 // Find AI players in this session
                 var aiPlayers = GetAiPlayers(sessionAggregate.World);
                 
