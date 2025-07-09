@@ -27,6 +27,8 @@ public class WebApiTestServer : IDisposable
         // Create a new web application builder for the test server
         var builder = WebApplication.CreateBuilder();
         
+        WebApiStartupHelper.RegisterServices(builder);
+        
         // Configure the web application with the necessary services and middleware
         builder.WebHost.UseUrls($"{_scheme}://localhost:{_port}"); // Set the URL for the server
         builder.Services.AddControllers(); // Add controllers or other services as needed
