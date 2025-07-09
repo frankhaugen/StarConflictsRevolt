@@ -2,4 +2,4 @@
 
 namespace StarConflictsRevolt.Server.Core.Models;
 
-public record Structure(string Name, StructureVariant Variant, Planet Pla) : GameObject;
+public record Structure(StructureVariant Variant, Planet Planet) : GameObject;
