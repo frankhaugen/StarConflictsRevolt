@@ -18,7 +18,6 @@ var gameDb = builder.AddSqlServer("gameDb", builder.AddParameter("sqlserver-pass
 var ravenDb = builder.AddRavenDB("ravenDb", RavenDBServerSettings.Unsecured())
     .WithDataVolume("ravenDb-data")
     .WithLifetime(ContainerLifetime.Persistent)
-    .AddDatabase("StarConflictsRevolt")
     ;
 
 var engine = builder.AddProject<StarConflictsRevolt_Server_GameEngine>("engine")

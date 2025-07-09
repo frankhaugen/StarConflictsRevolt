@@ -47,7 +47,7 @@ renderContext.ClientId = File.ReadAllText(clientIdFile);
 
 // Obtain JWT access token from API
 var httpClient = new HttpClient();
-var tokenResponse = await httpClient.PostAsync("http://localhost:5000/token", new StringContent($"{{\"client_id\":\"{renderContext.ClientId}\",\"secret\":\"changeme\"}}", System.Text.Encoding.UTF8, "application/json"));
+var tokenResponse = await httpClient.PostAsync("http://localhost:5153/token", new StringContent($"{{\"client_id\":\"{renderContext.ClientId}\",\"secret\":\"changeme\"}}", System.Text.Encoding.UTF8, "application/json"));
 if (tokenResponse.IsSuccessStatusCode)
 {
     var json = await tokenResponse.Content.ReadAsStringAsync();

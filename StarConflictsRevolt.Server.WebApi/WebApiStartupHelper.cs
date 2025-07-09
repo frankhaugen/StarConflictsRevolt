@@ -1,6 +1,8 @@
-﻿using Raven.Client.Documents;
+﻿using Microsoft.EntityFrameworkCore;
+using Raven.Client.Documents;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
 
@@ -40,6 +42,17 @@ public static class WebApiStartupHelper
             Urls = [builder.Configuration.GetConnectionString("ravenDB")],
             Database = "StarConflictsRevolt"
         }.Initialize());
+    }
+    
+    public static void RegisterGameEngineDbContext(WebApplicationBuilder builder)
+    {
+        // Register GameDbContext with RavenDB DocumentStore
+        builder.Services.AddDbContext<GameDbContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("gameDB"));
+            options.EnableSensitiveDataLogging();
+            options.EnableDetailedErrors();
+        });
     }
     
     public static void Configure(WebApplication app)
