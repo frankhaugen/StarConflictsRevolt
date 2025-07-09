@@ -10,18 +10,15 @@ public static class WebApiStartupHelper
 {
     public static void RegisterServices(WebApplicationBuilder builder)
     {
-        // Register RavenDB DocumentStore
-        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
-        {
-            Urls = [builder.Configuration.GetConnectionString("ravenDB")],
-            Database = "StarConflictsRevolt"
-        }.Initialize());
 
         // Register RavenEventStore as IEventStore
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
 
         // Register CommandQueue as singleton for DI
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+
+        // Register SessionAggregateManager
+        builder.Services.AddSingleton<SessionAggregateManager>();
 
         // Register services
         builder.Services.AddScoped<SessionService>();
@@ -33,6 +30,16 @@ public static class WebApiStartupHelper
         // Add services to the container.
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+    }
+    
+    public static void RegisterRavenDb(WebApplicationBuilder builder)
+    {
+        // Register RavenDB DocumentStore
+        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
+        {
+            Urls = [builder.Configuration.GetConnectionString("ravenDB")],
+            Database = "StarConflictsRevolt"
+        }.Initialize());
     }
     
     public static void Configure(WebApplication app)
@@ -53,6 +60,27 @@ public static class WebApiStartupHelper
             await context.Response.WriteAsync("Welcome to Star Conflicts Revolt API!");
         });
 
+        // Leaderboard endpoints
+        app.MapGet("/leaderboard/{sessionId}", async (Guid sessionId, LeaderboardService leaderboardService, CancellationToken ct) =>
+        {
+            var leaderboard = await leaderboardService.GetLeaderboardAsync(sessionId, ct);
+            return Results.Ok(leaderboard);
+        });
+
+        app.MapGet("/leaderboard/{sessionId}/player/{playerId}", async (Guid sessionId, Guid playerId, LeaderboardService leaderboardService, CancellationToken ct) =>
+        {
+            var stats = await leaderboardService.GetPlayerStatsAsync(sessionId, playerId, ct);
+            if (stats == null)
+                return Results.NotFound();
+            return Results.Ok(stats);
+        });
+
+        app.MapGet("/leaderboard/top", async (LeaderboardService leaderboardService, int count = 10, CancellationToken ct = default) =>
+        {
+            var topPlayers = await leaderboardService.GetTopPlayersAsync(count, ct);
+            return Results.Ok(topPlayers);
+        });
+
         app.MapGet("/game/state", async context =>
             {
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
@@ -71,7 +99,9 @@ public static class WebApiStartupHelper
         app.MapPost("/game/session", async context =>
             {
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
-                var gameUpdateService = context.RequestServices.GetRequiredService<GameUpdateService>();
+                var gameUpdateService = context.RequestServices.GetServices<IHostedService>()
+                    .OfType<GameUpdateService>()
+                    .FirstOrDefault() ?? throw new InvalidOperationException("GameUpdateService not found in the service provider");
                 var sessionName = await context.Request.ReadFromJsonAsync<string>(context.RequestAborted);
                 if (string.IsNullOrWhiteSpace(sessionName))
                 {

@@ -17,6 +17,7 @@ public class GameUpdateService : BackgroundService
     private readonly CommandQueue<IGameEvent> _commandQueue = new();
     private readonly IEventStore _eventStore;
     private readonly Dictionary<Guid, int> _eventCounts = new();
+    private readonly Dictionary<Guid, World> _previousWorldStates = new();
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext, 
@@ -35,6 +36,22 @@ public class GameUpdateService : BackgroundService
     {
         _aggregateManager.GetOrCreateAggregate(sessionId, initialWorld);
         _eventCounts[sessionId] = 0;
+        _previousWorldStates[sessionId] = initialWorld;
+        
+        // Send initial world state to clients
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var deltas = ChangeTracker.ComputeDeltas(new World(Guid.Empty, new Galaxy(Guid.Empty, new List<StarSystem>())), initialWorld);
+                await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas);
+                _logger.LogInformation("Sent initial world state for session {SessionId} with {DeltaCount} updates", sessionId, deltas.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending initial world state for session {SessionId}", sessionId);
+            }
+        });
     }
 
     public async Task<bool> SessionExistsAsync(Guid worldId)
@@ -61,9 +78,19 @@ public class GameUpdateService : BackgroundService
                     _eventCounts[sessionId] = _eventCounts.GetValueOrDefault(sessionId, 0) + 1;
                 }
 
-                // Compute deltas (stub: use ChangeTracker)
-                var deltas = ChangeTracker.ComputeDeltas(sessionAggregate.World, sessionAggregate.World);
-                await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
+                // Compute deltas by comparing with previous state
+                if (_previousWorldStates.TryGetValue(sessionId, out var previousWorld))
+                {
+                    var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
+                    if (deltas.Count > 0)
+                    {
+                        await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
+                        _logger.LogInformation("Sent {DeltaCount} updates for session {SessionId}", deltas.Count, sessionId);
+                    }
+                }
+                
+                // Update the previous state
+                _previousWorldStates[sessionId] = sessionAggregate.World;
 
                 // Snapshot every 100 events
                 if (_eventCounts[sessionId] > 0 && _eventCounts[sessionId] % 100 == 0)

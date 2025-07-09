@@ -1,12 +1,15 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
+using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -61,7 +64,19 @@ public class GameEngineServerTest
         await app.StartAsync();
         await hubConnection.StartAsync(); // Start the SignalR connection
         
-        await Task.Delay(2000).ConfigureAwait(false);
+        // Create a test session to trigger updates
+        var sessionId = Guid.NewGuid();
+        var testWorld = CreateTestWorld(sessionId);
+        var gameUpdateService = serviceProvider.GetServices<IHostedService>()
+            .OfType<GameUpdateService>()
+            .FirstOrDefault() ?? throw new InvalidOperationException("GameUpdateService not found in the service provider");
+        gameUpdateService.CreateSession(sessionId, testWorld);
+        
+        // Join the session group
+        await hubConnection.SendAsync("JoinWorld", sessionId.ToString());
+        
+        // Wait for updates to be sent
+        await Task.Delay(3000).ConfigureAwait(false);
         
         // Assert: Check if the application is running and can respond to requests
         var clientWorldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
@@ -77,17 +92,21 @@ public class GameEngineServerTest
             await Context.Current.OutputWriter.WriteLineAsync($"Update: {update}");
         }
         
-        // var world = clientWorldStore.GetCurrent();
-        // world.Should().NotBeNull("because the world should be initialized and ready for use");
-        // world.Galaxy.Should().NotBeNull("because the galaxy should be initialized in the world");
-        // world.Galaxy.StarSystems.Should().NotBeEmpty("because the galaxy should contain at least one star system");
-        // world.Galaxy.StarSystems.First().Planets.Should().NotBeEmpty("because the first star system should contain at least one planet");
-        // world.Galaxy.StarSystems.First().Planets.First().Name.Should().NotBeNullOrEmpty("because the first planet should have a name");
-        
         // Gracefully stop the SignalR connection
         await hubConnection.StopAsync();
         
         // Stop the application after tests
         await app.StopAsync();
+    }
+    
+    private static World CreateTestWorld(Guid sessionId)
+    {
+        var starSystem = new StarSystem(Guid.NewGuid(), "Test System", new List<Planet>
+        {
+            new(Guid.NewGuid(), "Test Planet", 1000.0, 5.97e24, 1.0, 1.0, 149.6e6, new List<Fleet>(), new List<Structure>())
+        }, new System.Numerics.Vector2(0, 0));
+        
+        var galaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { starSystem });
+        return new World(sessionId, galaxy);
     }
 }

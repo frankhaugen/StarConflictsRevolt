@@ -25,9 +25,6 @@ public static class GameEngineStartupHelper
         builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
         
-        // Register Services for the game engine
-        builder.Services.AddSingleton<SessionAggregate>();
-        
         // Register SignalR services
         builder.Services.AddSignalR(config =>
         {

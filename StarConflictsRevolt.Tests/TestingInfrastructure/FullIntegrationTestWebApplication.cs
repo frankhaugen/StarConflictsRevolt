@@ -24,6 +24,10 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
 
     private readonly int _port = FindRandomUnusedPort();
     
+    // Static flag to prevent multiple RavenDB server starts
+    private static bool _ravenServerStarted = false;
+    private static readonly object _ravenLock = new();
+    
     public IConfigurationManager ConfigurationManager => _appBuilder.Configuration;
     public ILoggingBuilder LoggingBuilder => _appBuilder.Logging;
     public IServiceCollection Services => _appBuilder.Services;
@@ -33,19 +37,30 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     public WebApplication Build()
     {
         // Initialize the in-memory RavenDB document store
-        try
+        lock (_ravenLock)
         {
-            EmbeddedServer.Instance.StartServer(new ServerOptions() 
+            if (!_ravenServerStarted)
             {
-                // ServerDirectory = "StarConflictsRevoltTestServer", // Specify a directory for the server
-                DataDirectory = "StarConflictsRevoltTest", // Specify a directory for the in-memory database
-                // ServerUrl = "http://localhost:8181", // Set the server URL
-            });
+                try
+                {
+                    EmbeddedServer.Instance.StartServer(new ServerOptions() 
+                    {
+                        DataDirectory = "StarConflictsRevoltTest", // Specify a directory for the in-memory database
+                    });
+                    _ravenServerStarted = true;
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("already started"))
+                {
+                    // Server is already started, which is fine
+                    _ravenServerStarted = true;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Warning: RavenDB server startup issue: {e.Message}");
+                }
+            }
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        
         _documentStore = EmbeddedServer.Instance.GetDocumentStore("StarConflictsRevolt");
         
         // Open the SQLite connection for the in-memory database
