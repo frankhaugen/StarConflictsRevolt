@@ -70,4 +70,5 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
     public DbSet<Fleet> Fleets { get; set; }
     public DbSet<Ship> Ships { get; set; }
     public DbSet<Structure> Structures { get; set; }
+    public DbSet<PlayerStats> PlayerStats { get; set; }
 }

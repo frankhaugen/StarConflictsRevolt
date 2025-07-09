@@ -23,6 +23,11 @@ public static class WebApiStartupHelper
         // Register CommandQueue as singleton for DI
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
 
+        // Register services
+        builder.Services.AddScoped<SessionService>();
+        builder.Services.AddScoped<WorldService>();
+        builder.Services.AddScoped<LeaderboardService>();
+
         builder.AddServiceDefaults();
 
         // Add services to the container.

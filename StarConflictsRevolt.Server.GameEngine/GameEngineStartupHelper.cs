@@ -17,8 +17,10 @@ public static class GameEngineStartupHelper
         // Register CommandQueue as singleton for DI
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
 
+        // Register services from the Services project
         builder.Services.AddHostedService<GameUpdateService>();
         builder.Services.AddHostedService<AiTurnService>();
+        builder.Services.AddHostedService<ProjectionService>();
 
         builder.Services.AddSignalR(config =>
         {

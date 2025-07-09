@@ -10,6 +10,7 @@ builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
 builder.Services.AddSingleton<RenderContext>();
 builder.Services.AddSingleton<IView, MenuView>();
 builder.Services.AddSingleton<IView, GalaxyView>();
+builder.Services.AddSingleton<IView, TacticalBattleView>();
 
 // Bind GameClientConfiguration from configuration
 builder.Services.Configure<GameClientConfiguration>(

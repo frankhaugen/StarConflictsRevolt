@@ -1,38 +1,60 @@
-using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Services;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 
 public class AiTurnService : BackgroundService
 {
-    private readonly IEventStore _eventStore;
+    private readonly CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> _commandQueue;
     private readonly ILogger<AiTurnService> _logger;
-    private readonly Random _random = new();
+    private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates;
 
-    public AiTurnService(IEventStore eventStore, ILogger<AiTurnService> logger)
+    public AiTurnService(CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> commandQueue, ILogger<AiTurnService> logger, ConcurrentDictionary<Guid, SessionAggregate> aggregates)
     {
-        _eventStore = eventStore;
+        _commandQueue = commandQueue;
         _logger = logger;
+        _aggregates = aggregates;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            // TODO: Replace with real AI logic. For now, publish a random event every 10 seconds.
-            var aiPlayerId = Guid.NewGuid(); // TODO: Use real AI player IDs
-            var worldId = Guid.Empty; // TODO: Use real world/session ID
-            var eventType = _random.Next(4);
-            IGameEvent aiEvent = eventType switch
+            foreach (var (sessionId, sessionAggregate) in _aggregates)
             {
-                0 => new MoveFleetEvent(aiPlayerId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()),
-                1 => new BuildStructureEvent(aiPlayerId, Guid.NewGuid(), "Mine"),
-                2 => new AttackEvent(aiPlayerId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()),
-                3 => new DiplomacyEvent(aiPlayerId, Guid.NewGuid(), "Alliance", "Let's be friends!"),
-                _ => new MoveFleetEvent(aiPlayerId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid())
-            };
-            _logger.LogInformation("AI publishing event: {EventType}", aiEvent.GetType().Name);
-            await _eventStore.PublishAsync(worldId, aiEvent);
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                // Find AI players in this session
+                var aiPlayers = GetAiPlayers(sessionAggregate.World);
+                
+                foreach (var aiPlayer in aiPlayers)
+                {
+                    try
+                    {
+                        var commands = aiPlayer.GenerateCommands(sessionAggregate.World);
+                        foreach (var command in commands)
+                        {
+                            _commandQueue.Enqueue(sessionId, command);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error generating AI commands for player {PlayerId} in session {SessionId}", 
+                            aiPlayer.PlayerId, sessionId);
+                    }
+                }
+            }
+            
+            await Task.Delay(2000, stoppingToken); // AI turns every 2 seconds
         }
+    }
+
+    private List<PlayerController> GetAiPlayers(World world)
+    {
+        // For now, create a simple AI player for demonstration
+        // In a real implementation, this would look up actual AI players from the world state
+        var aiPlayer = new AiController(Guid.NewGuid(), _logger);
+        return new List<PlayerController> { aiPlayer };
     }
 } 

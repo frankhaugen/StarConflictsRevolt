@@ -5,6 +5,7 @@ public enum GameView
     Menu,
     Galaxy,
     System,
-    Planet
+    Planet,
+    TacticalBattle
 }
 

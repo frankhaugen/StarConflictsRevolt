@@ -1,5 +1,6 @@
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.Core.Enums;
 
 namespace StarConflictsRevolt.Server.Services;
 
@@ -46,7 +47,12 @@ public class SessionAggregate
                     var planet = system.Planets.FirstOrDefault(p => p.Id == build.PlanetId);
                     if (planet != null)
                     {
-                        // For simplicity, create a new StructureType with a random Guid and the given variant name
+                        // Create a new Structure with the given variant
+                        var structure = new Structure(
+                            Enum.TryParse<StructureVariant>(build.StructureType, out var variant) ? variant : StructureVariant.ConstructionYard,
+                            planet
+                        );
+                        planet.Structures.Add(structure);
                     }
                 }
                 break;
