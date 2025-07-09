@@ -65,20 +65,38 @@ public static class WebApiStartupHelper
     
     public static void RegisterRavenDb(WebApplicationBuilder builder)
     {
-        // Register RavenDB DocumentStore
-        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
+        // Register RavenDB DocumentStore using Aspire service discovery
+        builder.Services.AddSingleton<IDocumentStore>(sp =>
         {
-            Urls = [builder.Configuration.GetConnectionString("ravenDB")],
-            Database = "StarConflictsRevolt"
-        }.Initialize());
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var ravenDbConnectionString = configuration.GetConnectionString("ravenDb");
+            
+            // Parse the connection string to extract the URL
+            string ravenDbUrl;
+            if (ravenDbConnectionString?.StartsWith("URL=") == true)
+            {
+                ravenDbUrl = ravenDbConnectionString.Substring(4); // Remove "URL=" prefix
+            }
+            else
+            {
+                ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
+            }
+            
+            return new DocumentStore
+            {
+                Urls = [ravenDbUrl],
+                Database = "StarConflictsRevolt"
+            }.Initialize();
+        });
     }
     
     public static void RegisterGameEngineDbContext(WebApplicationBuilder builder)
     {
-        // Register GameDbContext with RavenDB DocumentStore
+        // Register GameDbContext with SQL Server using Aspire service discovery
         builder.Services.AddDbContext<GameDbContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("gameDB"));
+            var connectionString = builder.Configuration.GetConnectionString("gameDb");
+            options.UseSqlServer(connectionString);
             options.EnableSensitiveDataLogging();
             options.EnableDetailedErrors();
         });

@@ -3,6 +3,7 @@ using StarConflictsRevolt.Clients.Raylib;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -37,20 +38,30 @@ else
     logger.LogInformation("Using existing client ID: {ClientId}", clientId);
 }
 
-// Add HTTP client factory for Clients.Shared integration
-builder.Services.AddHttpClient();
-
 // Configure TokenProvider options BEFORE registering the service
 builder.Services.Configure<TokenProviderOptions>(options =>
 {
     // Use service discovery for the WebApi service
-    options.TokenEndpoint = "http://webapi/token";
+    options.TokenEndpoint = "/token"; // Use relative path since we'll use a named client
     options.ClientId = clientId;
     options.Secret = "changeme";
 });
 
-// Register TokenProvider AFTER configuration
-builder.Services.AddSingleton<ITokenProvider, CachingTokenProvider>();
+// Add named HttpClient for TokenProvider with service discovery
+builder.Services.AddHttpClient("TokenProvider", client =>
+{
+    client.BaseAddress = new Uri("http://webapi");
+    logger.LogInformation("Configured TokenProvider HttpClient with service discovery for WebApi");
+});
+
+// Register TokenProvider AFTER configuration - use the named HttpClient
+builder.Services.AddSingleton<ITokenProvider>(sp =>
+{
+    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("TokenProvider");
+    var logger = sp.GetRequiredService<ILogger<CachingTokenProvider>>();
+    var options = sp.GetRequiredService<IOptions<TokenProviderOptions>>();
+    return new CachingTokenProvider(httpClient, logger, options);
+});
 
 // Configure HTTP client with service discovery using HttpApiClient
 HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", client =>

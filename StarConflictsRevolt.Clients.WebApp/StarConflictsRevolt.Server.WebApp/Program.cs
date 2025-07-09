@@ -1,8 +1,10 @@
 using StarConflictsRevolt.Server.WebApp.Components;
+using StarConflictsRevolt.Aspire.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Add ServiceDefaults for service discovery and observability
+builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -24,7 +26,6 @@ else
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 
