@@ -49,7 +49,10 @@ public static class ChangeTracker
                     updates.Add(new GameObjectUpdate(newPlanet.Id, UpdateType.Added, newPlanet));
                     continue;
                 }
-                if (!Equals(oldPlanet, newPlanet))
+                
+                // Check if planet has changed (e.g., structures added)
+                var planetChanged = !Equals(oldPlanet, newPlanet);
+                if (planetChanged)
                 {
                     updates.Add(new GameObjectUpdate(newPlanet.Id, UpdateType.Changed, newPlanet));
                 }

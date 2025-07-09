@@ -9,6 +9,7 @@ using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using TUnit;
+using System.Collections.Concurrent;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -17,7 +18,14 @@ public class FullStackIntegrationTest
     [Test]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta()
     {
+        // Log sink for capturing logs
+        var logSink = new ConcurrentBag<string>();
+
         using var appBuilderHost = new FullIntegrationTestWebApplicationBuilder();
+        
+        // Add our log provider to capture all logs from the application
+        appBuilderHost.LoggingBuilder.AddProvider(new TestLoggerProvider(logSink));
+        
         var app = appBuilderHost.WebApplication;
         
         // Ensure the database is created
@@ -70,6 +78,7 @@ public class FullStackIntegrationTest
         
         var world = await worldResponse.Content.ReadFromJsonAsync<World>();
         await Context.Current.OutputWriter.WriteLineAsync($"World state retrieved: {world?.Id}");
+        await Context.Current.OutputWriter.WriteLineAsync($"World before build command: {System.Text.Json.JsonSerializer.Serialize(world)}");
         
         if (world?.Galaxy?.StarSystems?.FirstOrDefault()?.Planets?.FirstOrDefault() is not Planet planet)
         {
@@ -99,6 +108,11 @@ public class FullStackIntegrationTest
         
         await Context.Current.OutputWriter.WriteLineAsync("Build command sent successfully");
 
+        // 4.5. Get the world state after the build command
+        var worldAfterResponse = await httpClient.GetAsync("/game/state");
+        var worldAfter = await worldAfterResponse.Content.ReadFromJsonAsync<World>();
+        await Context.Current.OutputWriter.WriteLineAsync($"World after build command: {System.Text.Json.JsonSerializer.Serialize(worldAfter)}");
+
         // 5. Wait for a delta update via SignalR
         await Task.Delay(5000); // Give more time for the command to be processed
         await Context.Current.OutputWriter.WriteLineAsync($"Total received deltas: {_receivedDeltas.Count}");
@@ -111,13 +125,72 @@ public class FullStackIntegrationTest
             await Context.Current.OutputWriter.WriteLineAsync($"Session exists: {sessionExists}");
         }
         
-        await Assert.That(_receivedDeltas).IsNotEmpty();
-        
         // 6. Gracefully stop the application and SignalR connection
         await _hubConnection.StopAsync();
         await app.StopAsync();
         await app.DisposeAsync();
+        
+        // 7. Assertions - these should fail if there are errors
+        await Assert.That(_receivedDeltas).IsNotEmpty();
+        
+        // Debug: Log all received deltas
+        await Context.Current.OutputWriter.WriteLineAsync($"Received {_receivedDeltas.Count} deltas:");
+        foreach (var delta in _receivedDeltas)
+        {
+            await Context.Current.OutputWriter.WriteLineAsync($"  Delta: Id={delta.Id}, Type={delta.Type}, HasData={delta.Data.HasValue}");
+            if (delta.Data.HasValue)
+            {
+                await Context.Current.OutputWriter.WriteLineAsync($"    Data: {delta.Data.Value}");
+                await Context.Current.OutputWriter.WriteLineAsync($"    Data (raw JSON): {delta.Data.Value.GetRawText()}");
+            }
+        }
+        
+        // Check that we received the expected delta (structure added to planet)
+        var structureDelta = _receivedDeltas.FirstOrDefault(d => d.Type == UpdateType.Added);
+        await Assert.That(structureDelta).IsNotNull();
+        
+        // Verify the structure was added to the correct planet
+        if (structureDelta?.Data.HasValue == true)
+        {
+            var structureData = structureDelta.Data.Value;
+            await Assert.That(structureData.TryGetProperty("Variant", out var variant)).IsTrue();
+            await Assert.That(variant.GetString()).IsEqualTo("Mine");
+        }
+
+        // 8. Assert no critical errors/warnings in logs
+        var errorLogs = logSink.Where(msg =>
+            msg.Contains("ObjectDisposedException") ||
+            msg.Contains("Failed to replay events") ||
+            msg.Contains("BackgroundService failed") ||
+            msg.Contains("TaskCanceledException") ||
+            msg.Contains("The HostOptions.BackgroundServiceExceptionBehavior is configured to StopHost")
+        ).ToList();
+        await Context.Current.OutputWriter.WriteLineAsync("Captured error logs:");
+        foreach (var log in errorLogs)
+            await Context.Current.OutputWriter.WriteLineAsync(log);
+        await Assert.That(errorLogs).IsEmpty();
     }
 
     private record SessionResponse(Guid SessionId);
+}
+
+// Logger provider for capturing logs
+public class TestLoggerProvider : ILoggerProvider
+{
+    private readonly ConcurrentBag<string> _sink;
+    public TestLoggerProvider(ConcurrentBag<string> sink) => _sink = sink;
+    public ILogger CreateLogger(string categoryName) => new TestLogger(_sink, categoryName);
+    public void Dispose() { }
+    private class TestLogger : ILogger
+    {
+        private readonly ConcurrentBag<string> _sink;
+        private readonly string _category;
+        public TestLogger(ConcurrentBag<string> sink, string category) { _sink = sink; _category = category; }
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            _sink.Add($"{logLevel}: {_category}: {formatter(state, exception)}{(exception != null ? " " + exception : "")}");
+        }
+    }
 } 

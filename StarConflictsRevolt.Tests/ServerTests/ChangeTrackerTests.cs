@@ -1,0 +1,112 @@
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.Core.Enums;
+using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Services;
+using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.Core;
+using TUnit;
+using System.Collections.Concurrent;
+
+namespace StarConflictsRevolt.Tests.ServerTests;
+
+public class ChangeTrackerTests
+{
+    private readonly IServiceProvider _provider;
+    private readonly ConcurrentBag<string> _logSink = new();
+
+    public ChangeTrackerTests()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(b => b.AddProvider(new TestLoggerProvider(_logSink)).SetMinimumLevel(LogLevel.Debug));
+        _provider = services.BuildServiceProvider();
+    }
+
+    [Test]
+    public async Task Detects_Structure_Added()
+    {
+        var planetId = Guid.NewGuid();
+        var oldPlanet = new Planet(planetId, "A", 1, 1, 1, 1, 1, new(), new());
+        var newStructure = new Structure(StructureVariant.Mine, oldPlanet);
+        var newPlanet = oldPlanet with { Structures = new List<Structure> { newStructure } };
+        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
+        var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
+        var oldGalaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { oldSystem });
+        var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
+        var oldWorld = new World(Guid.NewGuid(), oldGalaxy);
+        var newWorld = new World(oldWorld.Id, newGalaxy);
+
+        var deltas = ChangeTracker.ComputeDeltas(oldWorld, newWorld);
+        await Assert.That(deltas.Any(d => d.Type == UpdateType.Added)).IsTrue();
+    }
+
+    [Test]
+    public async Task Detects_Structure_Removed()
+    {
+        var planetId = Guid.NewGuid();
+        var structure = new Structure(StructureVariant.Mine, null!);
+        var oldPlanet = new Planet(planetId, "A", 1, 1, 1, 1, 1, new(), new List<Structure> { structure });
+        var newPlanet = oldPlanet with { Structures = new List<Structure>() };
+        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
+        var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
+        var oldGalaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { oldSystem });
+        var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
+        var oldWorld = new World(Guid.NewGuid(), oldGalaxy);
+        var newWorld = new World(oldWorld.Id, newGalaxy);
+
+        var deltas = ChangeTracker.ComputeDeltas(oldWorld, newWorld);
+        await Assert.That(deltas.Any(d => d.Type == UpdateType.Removed)).IsTrue();
+    }
+
+    [Test]
+    public async Task SessionAggregate_Apply_BuildStructureEvent_MutatesWorld()
+    {
+        var logger = _provider.GetRequiredService<ILogger<SessionAggregate>>();
+        var planet = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
+        var system = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { planet }, new System.Numerics.Vector2(0, 0));
+        var galaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { system });
+        var world = new World(Guid.NewGuid(), galaxy);
+        var aggregate = new SessionAggregate(Guid.NewGuid(), world, logger);
+        var buildEvent = new BuildStructureEvent(Guid.NewGuid(), planet.Id, StructureVariant.Mine.ToString());
+        aggregate.Apply(buildEvent);
+        var mutatedPlanet = aggregate.World.Galaxy.StarSystems.SelectMany(s => s.Planets).First(p => p.Id == planet.Id);
+        await Assert.That(mutatedPlanet.Structures.Any(s => s.Variant == StructureVariant.Mine)).IsTrue();
+    }
+
+    [Test]
+    public async Task CommandQueue_Enqueue_Dequeue_Logs()
+    {
+        var logger = _provider.GetRequiredService<ILogger<CommandQueue<string>>>();
+        var queue = new CommandQueue<string>(logger);
+        var sessionId = Guid.NewGuid();
+        queue.Enqueue(sessionId, "test");
+        var dequeued = queue.TryDequeue(sessionId, out var result);
+        await Assert.That(dequeued).IsTrue();
+        await Assert.That(result).IsEqualTo("test");
+        await Assert.That(_logSink.Any(msg => msg.Contains("Enqueued command"))).IsTrue();
+        await Assert.That(_logSink.Any(msg => msg.Contains("Dequeued command"))).IsTrue();
+    }
+}
+
+// Logger provider for capturing logs (same as in integration test)
+public class TestLoggerProvider : ILoggerProvider
+{
+    private readonly ConcurrentBag<string> _sink;
+    public TestLoggerProvider(ConcurrentBag<string> sink) => _sink = sink;
+    public ILogger CreateLogger(string categoryName) => new TestLogger(_sink, categoryName);
+    public void Dispose() { }
+    private class TestLogger : ILogger
+    {
+        private readonly ConcurrentBag<string> _sink;
+        private readonly string _category;
+        public TestLogger(ConcurrentBag<string> sink, string category) { _sink = sink; _category = category; }
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            _sink.Add($"{logLevel}: {_category}: {formatter(state, exception)}{(exception != null ? " " + exception : "")}");
+        }
+    }
+} 
