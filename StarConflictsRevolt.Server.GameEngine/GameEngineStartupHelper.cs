@@ -22,6 +22,8 @@ public static class GameEngineStartupHelper
 
         // Register services from the Services project
         builder.Services.AddHostedService<GameUpdateService>();
+        builder.Services.AddSingleton<GameUpdateService>(sp =>
+            (GameUpdateService)sp.GetServices<IHostedService>().First(s => s is GameUpdateService));
         builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
         

@@ -111,8 +111,9 @@ public static class WebApiStartupHelper
                 }
 
                 var sessionId = await sessionService.CreateSessionAsync(sessionName, context.RequestAborted);
-                // Create a default world for the new session
-                var world = new StarConflictsRevolt.Server.Core.Models.World(sessionId, new StarConflictsRevolt.Server.Core.Models.Galaxy(Guid.NewGuid(), new List<StarConflictsRevolt.Server.Core.Models.StarSystem>()));
+                // Create a default world for the new session with planets
+                var worldService = context.RequestServices.GetRequiredService<WorldService>();
+                var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
                 gameUpdateService.CreateSession(sessionId, world);
                 context.Response.StatusCode = 201;
                 await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
@@ -190,7 +191,7 @@ public static class WebApiStartupHelper
                 return;
             }
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
-            var world = await worldService.GetWorldAsync(context.RequestAborted);
+            var world = await worldService.GetWorldAsync(worldId, context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.PlanetId);
             if (planet == null)
             {

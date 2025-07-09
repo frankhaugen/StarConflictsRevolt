@@ -1,16 +1,45 @@
 ﻿using System.Numerics;
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Services;
 
 namespace StarConflictsRevolt.Server.WebApi;
 
 public class WorldService
 {
+    private readonly SessionAggregateManager _aggregateManager;
+
+    public WorldService(SessionAggregateManager aggregateManager)
+    {
+        _aggregateManager = aggregateManager;
+    }
+
     public async Task<World> GetWorldAsync(CancellationToken contextRequestAborted)
     {
-        // Simulate a delay to mimic an asynchronous operation
-        await Task.Delay(1000, contextRequestAborted);
+        // For now, return the first available session's world
+        // In a real implementation, this would take a sessionId parameter
+        var aggregates = _aggregateManager.GetAllAggregates();
+        if (aggregates.Any())
+        {
+            return aggregates.First().World;
+        }
 
+        // If no sessions exist, create a default world
+        return CreateDefaultWorld();
+    }
+
+    public async Task<World> GetWorldAsync(Guid sessionId, CancellationToken contextRequestAborted)
+    {
+        if (_aggregateManager.HasAggregate(sessionId))
+        {
+            return _aggregateManager.GetOrCreateAggregate(sessionId, CreateDefaultWorld()).World;
+        }
+
+        return CreateDefaultWorld();
+    }
+
+    private static World CreateDefaultWorld()
+    {
         // Create a sample world with planets
         var planets = new List<Planet>
         {
