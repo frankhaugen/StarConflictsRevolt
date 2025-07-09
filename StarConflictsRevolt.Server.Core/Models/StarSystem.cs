@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
 
-namespace StarConflictsRevolt.Server.Core;
+namespace StarConflictsRevolt.Server.Core.Models;
 
 public record StarSystem(Guid Id, string Name, IEnumerable<Planet> Planets, Vector2 Coordinates) : GameObject;

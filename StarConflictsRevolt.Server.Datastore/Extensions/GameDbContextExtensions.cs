@@ -1,5 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Datastore.Entities;
+using Galaxy = StarConflictsRevolt.Server.Datastore.Entities.Galaxy;
+using Planet = StarConflictsRevolt.Server.Datastore.Entities.Planet;
+using Session = StarConflictsRevolt.Server.Datastore.Entities.Session;
+using StarSystem = StarConflictsRevolt.Server.Datastore.Entities.StarSystem;
+using World = StarConflictsRevolt.Server.Datastore.Entities.World;
 
 namespace StarConflictsRevolt.Server.Datastore.Extensions;
 
@@ -33,7 +40,7 @@ public static class GameDbContextExtensions
     
     public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, CancellationToken cancellationToken = default)
     {
-        var session = new Session
+        var session = new Session()
         {
             Id = IGameObject.CreateId(),
             SessionName = sessionName,

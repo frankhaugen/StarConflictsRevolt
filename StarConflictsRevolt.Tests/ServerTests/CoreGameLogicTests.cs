@@ -4,6 +4,10 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Enums;
+using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Datastore.Extensions;
+using StarConflictsRevolt.Server.Datastore.SeedData;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.GameEngine;
 
@@ -17,7 +21,7 @@ public class CoreGameLogicTests
         // Arrange
         var planetA = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1);
         var planetB = new Planet(Guid.NewGuid(), "B", 1, 1, 1, 1, 2);
-        var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { ShipCollection.XWing }, FleetStatus.Idle, planetA.Id);
+        var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { ShipCollection.XWing.ToModel() });
         var system = new StarSystem(Guid.NewGuid(), "Sys", new[] { planetA, planetB }, new Vector2(0, 0));
         var galaxy = new Galaxy(Guid.NewGuid(), new[] { system });
         var world = new World(Guid.NewGuid(), galaxy);

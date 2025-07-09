@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Datastore.Entities;
+using StarConflictsRevolt.Server.Datastore.SeedData;
 
 namespace StarConflictsRevolt.Server.Datastore;
 

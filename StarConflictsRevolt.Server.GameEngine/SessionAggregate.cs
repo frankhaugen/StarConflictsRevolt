@@ -1,4 +1,5 @@
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Eventing;
 
 namespace StarConflictsRevolt.Server.GameEngine;

@@ -2,6 +2,7 @@
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Eventing;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.Core.Models;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Models;
 
 namespace StarConflictsRevolt.Server.WebApi;
 
