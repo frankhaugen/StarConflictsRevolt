@@ -2,16 +2,19 @@
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
+using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public class GalaxyView : IView
 {
     private readonly RenderContext _renderContext;
+    private readonly GameCommandService _commandService;
 
-    public GalaxyView(RenderContext renderContext)
+    public GalaxyView(RenderContext renderContext, GameCommandService commandService)
     {
         _renderContext = renderContext;
+        _commandService = commandService;
     }
     
     /// <inheritdoc />
@@ -20,15 +23,43 @@ public class GalaxyView : IView
     /// <inheritdoc />
     public void Draw()
     {
+        Graphics.ClearBackground(UIHelper.Colors.Background);
+        
         var currentWorld = _renderContext.World;
         if (currentWorld == null)
+        {
+            UIHelper.DrawText("No world data available", 400, 300, UIHelper.FontSizes.Large, Color.White, true);
             return;
+        }
 
-        // Draw a galaxy backdrop with systems oversized:
-        var systems = currentWorld.Galaxy.StarSystems;
+        // Draw title
+        UIHelper.DrawText("Galaxy View", 400, 20, UIHelper.FontSizes.Large, Color.White, true);
+        
+        // Draw star systems and planets
+        DrawGalaxy(currentWorld);
+        
+        // Handle mouse selection
+        HandleMouseSelection(currentWorld);
+        
+        // Draw action panel
+        DrawActionPanel();
+        
+        // Draw minimap
+        UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, currentWorld);
+        
+        // Draw status bar
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {_renderContext.GameState.SelectedObject?.GetType().Name ?? "None"}");
+        
+        // Handle keyboard input
+        HandleKeyboardInput();
+    }
+    
+    private void DrawGalaxy(WorldDto world)
+    {
+        var systems = world.Galaxy?.StarSystems;
         if (systems == null || !systems.Any())
         {
-            Graphics.DrawText("No systems found in the galaxy.", 10, 10, 20, Color.RayWhite);
+            UIHelper.DrawText("No systems found in the galaxy.", 400, 300, UIHelper.FontSizes.Medium, Color.White, true);
             return;
         }
 
@@ -49,112 +80,154 @@ public class GalaxyView : IView
                 {
                     var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
                     var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
-                    Graphics.DrawCircle(px, py, 6, Color.Blue);
+                    
+                    // Highlight selected planet
+                    var planetColor = (_renderContext.GameState.SelectedObject?.Id == planet.Id) ? Color.Red : Color.Blue;
+                    Graphics.DrawCircle(px, py, 6, planetColor);
                     Graphics.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
                     i++;
                 }
             }
         }
-
-        // Selection logic (mouse click)
-        if (Input.IsMouseButtonPressed(MouseButton.Left))
-        {
-            var mouse = Input.GetMousePosition();
-            foreach (var system in systems)
-            {
-                var dist = Math.Sqrt(Math.Pow(mouse.X - system.Coordinates.X, 2) + Math.Pow(mouse.Y - system.Coordinates.Y, 2));
-                if (dist < 16)
-                {
-                    _renderContext.SelectedObject = system;
-                    break;
-                }
-                if (system.Planets != null)
-                {
-                    double angleStep = 2 * Math.PI / Math.Max(1, system.Planets.Count());
-                    int radius = 32;
-                    int i = 0;
-                    foreach (var planet in system.Planets)
-                    {
-                        var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
-                        var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
-                        var pdist = Math.Sqrt(Math.Pow(mouse.X - px, 2) + Math.Pow(mouse.Y - py, 2));
-                        if (pdist < 6)
-                        {
-                            _renderContext.SelectedObject = planet;
-                            break;
-                        }
-                        i++;
-                    }
-                }
-            }
-        }
-
-        // Info panel for selected object
-        var selected = _renderContext.SelectedObject;
-        string feedback = string.Empty;
-        if (selected != null)
-        {
-            string info = selected switch
-            {
-                var s when s.GetType().Name.Contains("StarSystemDto") => $"System: {((dynamic)s).Name}",
-                var p when p.GetType().Name.Contains("PlanetDto") => $"Planet: {((dynamic)p).Name}",
-                _ => $"Selected: {selected.GetType().Name}"
-            };
-            Graphics.DrawRectangle(0, Window.GetScreenHeight() - 80, Window.GetScreenWidth(), 80, Color.DarkGray);
-            Graphics.DrawText(info, 10, Window.GetScreenHeight() - 70, 20, Color.White);
-            Graphics.DrawText("[M]ove  [B]uild  [A]ttack  [D]iplomacy", 10, Window.GetScreenHeight() - 40, 18, Color.LightGray);
-            if (!string.IsNullOrEmpty(feedback))
-                Graphics.DrawText(feedback, 10, Window.GetScreenHeight() - 20, 16, Color.Green);
-
-            // Action keys
-            if (Input.IsKeyPressed(KeyboardKey.M))
-            {
-                // MoveFleetEvent example (stub: use real IDs)
-                _ = SendActionAsync("/game/move-fleet", new { PlayerId = Guid.NewGuid(), FleetId = Guid.NewGuid(), FromPlanetId = Guid.NewGuid(), ToPlanetId = Guid.NewGuid() });
-                feedback = "Move command sent.";
-            }
-            if (Input.IsKeyPressed(KeyboardKey.B))
-            {
-                _ = SendActionAsync("/game/build-structure", new { PlayerId = Guid.NewGuid(), PlanetId = Guid.NewGuid(), StructureType = "Mine" });
-                feedback = "Build command sent.";
-            }
-            if (Input.IsKeyPressed(KeyboardKey.A))
-            {
-                _ = SendActionAsync("/game/attack", new { PlayerId = Guid.NewGuid(), AttackerFleetId = Guid.NewGuid(), DefenderFleetId = Guid.NewGuid(), LocationPlanetId = Guid.NewGuid() });
-                feedback = "Attack command sent.";
-            }
-            if (Input.IsKeyPressed(KeyboardKey.D))
-            {
-                _ = SendActionAsync("/game/diplomacy", new { PlayerId = Guid.NewGuid(), TargetPlayerId = Guid.NewGuid(), ProposalType = "Alliance", Message = "Let's be friends!" });
-                feedback = "Diplomacy command sent.";
-            }
-        }
-
-        // Keyboard shortcuts for view switching (F1-F7)
-        if (Input.IsKeyPressed(KeyboardKey.F1)) _renderContext.CurrentView = GameView.Menu;
-        // Add more as needed for other views
-        if (Input.IsKeyPressed(KeyboardKey.Escape) || Input.IsKeyPressed(KeyboardKey.Q))
-        {
-            _renderContext.CurrentView = GameView.Menu;
-        }
-        Graphics.DrawText($"Current View: {ViewType}", 10, 10, 20, Color.RayWhite);
     }
-
-    private async Task SendActionAsync(string endpoint, object payload)
+    
+    private void HandleMouseSelection(WorldDto world)
     {
-        try
+        if (!Input.IsMouseButtonPressed(MouseButton.Left)) return;
+        
+        var mouse = Input.GetMousePosition();
+        var systems = world.Galaxy?.StarSystems;
+        if (systems == null) return;
+        
+        foreach (var system in systems)
         {
-            using var httpClient = new System.Net.Http.HttpClient();
-            if (!string.IsNullOrEmpty(_renderContext.AccessToken))
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _renderContext.AccessToken);
-            var json = System.Text.Json.JsonSerializer.Serialize(payload);
-            var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync($"http://localhost:5267{endpoint}", content);
-            // Optionally handle response
+            var dist = Math.Sqrt(Math.Pow(mouse.X - system.Coordinates.X, 2) + Math.Pow(mouse.Y - system.Coordinates.Y, 2));
+            if (dist < 16)
+            {
+                _renderContext.GameState.SelectedObject = system;
+                _renderContext.GameState.SetFeedback($"Selected system: {system.Name}", TimeSpan.FromSeconds(2));
+                return;
+            }
+            
+            if (system.Planets != null)
+            {
+                double angleStep = 2 * Math.PI / Math.Max(1, system.Planets.Count());
+                int radius = 32;
+                int i = 0;
+                foreach (var planet in system.Planets)
+                {
+                    var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
+                    var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
+                    var pdist = Math.Sqrt(Math.Pow(mouse.X - px, 2) + Math.Pow(mouse.Y - py, 2));
+                    if (pdist < 6)
+                    {
+                        _renderContext.GameState.SelectedObject = planet;
+                        _renderContext.GameState.SetFeedback($"Selected planet: {planet.Name}", TimeSpan.FromSeconds(2));
+                        return;
+                    }
+                    i++;
+                }
+            }
         }
-        catch (Exception ex)
+    }
+    
+    private void DrawActionPanel()
+    {
+        var selected = _renderContext.GameState.SelectedObject;
+        if (selected == null) return;
+        
+        // Draw info panel
+        var info = new List<(string Label, string Value)>();
+        
+        if (selected is PlanetDto planet)
         {
-            // Optionally log error
+            info.Add(("Planet", planet.Name));
+            info.Add(("Radius", $"{planet.Radius:F1}"));
+            info.Add(("Mass", $"{planet.Mass:F1}"));
+            info.Add(("Distance", $"{planet.DistanceFromSun:F1}"));
         }
+        else if (selected is StarSystemDto system)
+        {
+            info.Add(("System", system.Name));
+            info.Add(("Planets", $"{system.Planets?.Count() ?? 0}"));
+            info.Add(("Coordinates", $"({system.Coordinates.X:F0}, {system.Coordinates.Y:F0})"));
+        }
+        
+        UIHelper.DrawInfoPanel(10, Window.GetScreenHeight() - 200, 300, 150, "Selected Object", info);
+        
+        // Draw action buttons
+        var buttonY = Window.GetScreenHeight() - 80;
+        var buttonWidth = 100;
+        var buttonHeight = 30;
+        var spacing = 20;
+        var startX = 320;
+        
+        if (UIHelper.DrawButton("Move Fleet", startX, buttonY, buttonWidth, buttonHeight))
+        {
+            ShowMoveFleetDialog();
+        }
+        
+        if (UIHelper.DrawButton("Build Structure", startX + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight))
+        {
+            ShowBuildStructureDialog();
+        }
+        
+        if (UIHelper.DrawButton("Attack", startX + (buttonWidth + spacing) * 2, buttonY, buttonWidth, buttonHeight))
+        {
+            ShowAttackDialog();
+        }
+        
+        if (UIHelper.DrawButton("Diplomacy", startX + (buttonWidth + spacing) * 3, buttonY, buttonWidth, buttonHeight))
+        {
+            ShowDiplomacyDialog();
+        }
+    }
+    
+    private void HandleKeyboardInput()
+    {
+        if (Input.IsKeyPressed(KeyboardKey.Escape))
+        {
+            _renderContext.GameState.NavigateTo(GameView.Menu);
+        }
+        
+        if (Input.IsKeyPressed(KeyboardKey.F1))
+        {
+            _renderContext.GameState.NavigateTo(GameView.Menu);
+        }
+        
+        if (Input.IsKeyPressed(KeyboardKey.F2))
+        {
+            _renderContext.GameState.NavigateTo(GameView.FleetFinder);
+        }
+        
+        if (Input.IsKeyPressed(KeyboardKey.F3))
+        {
+            _renderContext.GameState.NavigateTo(GameView.GameOptions);
+        }
+        
+        if (Input.IsKeyPressed(KeyboardKey.F4))
+        {
+            _renderContext.GameState.NavigateTo(GameView.PlanetaryFinder);
+        }
+    }
+    
+    private void ShowMoveFleetDialog()
+    {
+        _renderContext.GameState.SetFeedback("Move fleet dialog not implemented yet", TimeSpan.FromSeconds(3));
+    }
+    
+    private void ShowBuildStructureDialog()
+    {
+        _renderContext.GameState.SetFeedback("Build structure dialog not implemented yet", TimeSpan.FromSeconds(3));
+    }
+    
+    private void ShowAttackDialog()
+    {
+        _renderContext.GameState.SetFeedback("Attack dialog not implemented yet", TimeSpan.FromSeconds(3));
+    }
+    
+    private void ShowDiplomacyDialog()
+    {
+        _renderContext.GameState.SetFeedback("Diplomacy dialog not implemented yet", TimeSpan.FromSeconds(3));
     }
 }
