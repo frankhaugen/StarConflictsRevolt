@@ -40,6 +40,12 @@ public static class UIHelper
     
     public static void DrawText(string text, int x, int y, int fontSize, Color color, bool centered = false)
     {
+        // Prevent crashes from null or empty text
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+        
         // TODO: Implement proper text centering when MeasureText is available
         Graphics.DrawText(text, x, y, fontSize, color);
     }
@@ -59,9 +65,12 @@ public static class UIHelper
         Graphics.DrawRectangleLines(x, y, width, height, Colors.Light);
         
         // Draw button text
-        var textX = x + 10; // Simple left alignment for now
-        var textY = y + (height - FontSizes.Medium) / 2;
-        Graphics.DrawText(text, textX, textY, FontSizes.Medium, textCol);
+        if (!string.IsNullOrEmpty(text))
+        {
+            var textX = x + 10; // Simple left alignment for now
+            var textY = y + (height - FontSizes.Medium) / 2;
+            Graphics.DrawText(text, textX, textY, FontSizes.Medium, textCol);
+        }
         
         return isPressed;
     }
@@ -94,7 +103,10 @@ public static class UIHelper
         // Draw text or placeholder
         var displayText = string.IsNullOrEmpty(currentText) ? placeholder : currentText;
         var textColor = string.IsNullOrEmpty(currentText) ? Color.Gray : Color.Black;
-        Graphics.DrawText(displayText, x + 5, y + (height - FontSizes.Medium) / 2, FontSizes.Medium, textColor);
+        if (!string.IsNullOrEmpty(displayText))
+        {
+            Graphics.DrawText(displayText, x + 5, y + (height - FontSizes.Medium) / 2, FontSizes.Medium, textColor);
+        }
         
         // Draw cursor if focused
         if (isFocused && (DateTime.UtcNow.Millisecond / 500) % 2 == 0)
@@ -123,7 +135,10 @@ public static class UIHelper
         DrawPanel(dialogX, dialogY, dialogWidth, dialogHeight, Colors.Background, Colors.Light);
         
         // Draw message
-        DrawText(message, dialogX + dialogWidth / 2, dialogY + 40, FontSizes.Medium, Color.White, true);
+        if (!string.IsNullOrEmpty(message))
+        {
+            DrawText(message, dialogX + dialogWidth / 2, dialogY + 40, FontSizes.Medium, Color.White, true);
+        }
         
         // Draw buttons
         var buttonWidth = 80;
@@ -147,7 +162,10 @@ public static class UIHelper
         
         Graphics.DrawRectangle(0, y, screenWidth, height, bg);
         Graphics.DrawRectangleLines(0, y, screenWidth, height, Colors.Light);
-        Graphics.DrawText(status, 10, y + 5, FontSizes.Small, Color.White);
+        if (!string.IsNullOrEmpty(status))
+        {
+            Graphics.DrawText(status, 10, y + 5, FontSizes.Small, Color.White);
+        }
     }
     
     public static void DrawInfoPanel(int x, int y, int width, int height, string title, List<(string Label, string Value)> info)
@@ -155,13 +173,20 @@ public static class UIHelper
         DrawPanel(x, y, width, height);
         
         // Draw title
-        Graphics.DrawText(title, x + 10, y + 10, FontSizes.Large, Color.White);
+        if (!string.IsNullOrEmpty(title))
+        {
+            Graphics.DrawText(title, x + 10, y + 10, FontSizes.Large, Color.White);
+        }
         
         // Draw info items
         var infoY = y + 40;
         foreach (var (label, value) in info)
         {
-            Graphics.DrawText($"{label}: {value}", x + 10, infoY, FontSizes.Small, Color.White);
+            var infoText = $"{label}: {value}";
+            if (!string.IsNullOrEmpty(infoText))
+            {
+                Graphics.DrawText(infoText, x + 10, infoY, FontSizes.Small, Color.White);
+            }
             infoY += 20;
         }
     }

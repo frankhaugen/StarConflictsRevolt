@@ -37,6 +37,14 @@ else
     logger.LogInformation("Using existing client ID: {ClientId}", clientId);
 }
 
+// Debug configuration
+logger.LogInformation("Configuration sections: {Sections}", 
+    string.Join(", ", builder.Configuration.GetChildren().Select(c => c.Key)));
+logger.LogInformation("TokenProviderOptions section exists: {Exists}", 
+    builder.Configuration.GetSection("TokenProviderOptions").Exists());
+logger.LogInformation("TokenProviderOptions ClientId: {ClientId}", 
+    builder.Configuration["TokenProviderOptions:ClientId"]);
+
 // Configure HTTP client with service discovery using HttpApiClient
 builder.Services.AddHttpApiClientWithAuth("GameApi", builder.Configuration, client =>
 {
@@ -93,7 +101,7 @@ renderContext.ClientId = clientId;
 
 logger.LogInformation("Client ID set: {ClientId}", renderContext.ClientId);
 
-// Test token acquisition
+// Test token acquisition (optional during startup)
 logger.LogInformation("Testing token acquisition");
 try
 {
@@ -105,7 +113,7 @@ try
 }
 catch (Exception ex)
 {
-    logger.LogWarning(ex, "Failed to obtain access token during startup");
+    logger.LogWarning(ex, "Failed to obtain access token during startup - will retry when needed");
     renderContext.AccessToken = null;
 }
 

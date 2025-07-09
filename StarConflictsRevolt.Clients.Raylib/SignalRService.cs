@@ -29,7 +29,7 @@ public class SignalRService : IAsyncDisposable
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         // Use service discovery for the GameEngine service (SignalR is in GameEngine)
-        var hubUrl = "http://engine/gamehub";
+        var hubUrl = _gameClientConfiguration.Value.GameServerHubUrl;
         _logger.LogInformation("Starting SignalR connection to: {HubUrl}", hubUrl);
         
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

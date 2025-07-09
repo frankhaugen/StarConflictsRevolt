@@ -47,9 +47,10 @@ public class MenuView : IView
             _renderContext.GameState.ClearFeedback();
         }
         
-        if (!string.IsNullOrEmpty(_renderContext.GameState.FeedbackMessage))
+        var feedbackMessage = _renderContext.GameState.FeedbackMessage;
+        if (!string.IsNullOrEmpty(feedbackMessage))
         {
-            UIHelper.DrawText(_renderContext.GameState.FeedbackMessage, 400, 100, UIHelper.FontSizes.Medium, UIHelper.Colors.Success, true);
+            UIHelper.DrawText(feedbackMessage, 400, 100, UIHelper.FontSizes.Medium, UIHelper.Colors.Success, true);
         }
         
         if (_menuState == 0)
@@ -70,7 +71,9 @@ public class MenuView : IView
         }
         
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {_renderContext.GameState.PlayerName ?? "Not set"} | Session: {_renderContext.GameState.Session?.SessionName ?? "None"}");
+        var playerName = _renderContext.GameState.PlayerName ?? "Not set";
+        var sessionName = _renderContext.GameState.Session?.SessionName ?? "None";
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName}");
     }
     
     private void DrawMainMenu()

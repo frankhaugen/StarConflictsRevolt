@@ -6,24 +6,29 @@ namespace StarConflictsRevolt.Clients.Shared;
 
 public class CachingTokenProvider : ITokenProvider
 {
-    private readonly HttpClient _client;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<CachingTokenProvider> _logger;
     private readonly TokenProviderOptions _options;
     private string? _cachedToken;
     private DateTime _expiresAt;
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    public CachingTokenProvider(ILogger<CachingTokenProvider> logger, IOptions<TokenProviderOptions> options)
+    public CachingTokenProvider(IHttpClientFactory httpClientFactory, ILogger<CachingTokenProvider> logger, IOptions<TokenProviderOptions> options)
     {
-        _client = new HttpClient();
-        _client.BaseAddress = new Uri(options.Value.TokenEndpoint);
-        _client.DefaultRequestHeaders.Add("Accept", "application/json");
-        _client.DefaultRequestHeaders.Add("User-Agent", "StarConflictsRevolt.Clients.Shared");
-        _client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
         _options = options.Value;
-        _logger.LogInformation("CachingTokenProvider initialized with endpoint: {Endpoint}, ClientId: {ClientId}", 
-            _options.TokenEndpoint, _options.ClientId);
+        _logger.LogInformation("CachingTokenProvider initialized with endpoint: {Endpoint}, ClientId: {ClientId}, Secret: {Secret}", 
+            _options.TokenEndpoint, _options.ClientId, string.IsNullOrEmpty(_options.Secret) ? "EMPTY" : "SET");
+        
+        if (string.IsNullOrEmpty(_options.ClientId))
+        {
+            _logger.LogError("ClientId is null or empty in TokenProviderOptions");
+        }
+        if (string.IsNullOrEmpty(_options.Secret))
+        {
+            _logger.LogError("Secret is null or empty in TokenProviderOptions");
+        }
     }
 
     public async Task<string> GetTokenAsync(CancellationToken ct = default)
@@ -45,8 +50,19 @@ public class CachingTokenProvider : ITokenProvider
             }
 
             _logger.LogInformation("Requesting new token from endpoint: {Endpoint}", _options.TokenEndpoint);
-            var response = await _client.PostAsJsonAsync(_options.TokenEndpoint, 
-                new { client_id = _options.ClientId, secret = _options.Secret }, ct);
+            _logger.LogDebug("Token request payload: ClientId={ClientId}, Secret={Secret}", 
+                _options.ClientId, string.IsNullOrEmpty(_options.Secret) ? "EMPTY" : "SET");
+            
+            // Use HttpClientFactory to get a client with service discovery and resilience
+            var client = _httpClientFactory.CreateClient("TokenProvider");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("User-Agent", "StarConflictsRevolt.Clients.Shared");
+            client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+            
+            var tokenRequest = new { client_id = _options.ClientId, secret = _options.Secret };
+            _logger.LogDebug("Sending token request: {Request}", System.Text.Json.JsonSerializer.Serialize(tokenRequest));
+            
+            var response = await client.PostAsJsonAsync(_options.TokenEndpoint, tokenRequest, ct);
             
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: ct);

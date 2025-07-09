@@ -102,7 +102,8 @@ public static class WebApiStartupHelper
             app.MapOpenApi();
         }
 
-        app.UseHttpsRedirection();
+        // Note: HTTPS redirection is handled by Aspire in production
+        // app.UseHttpsRedirection();
         
         // Use CORS
         app.UseCors();
