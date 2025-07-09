@@ -1,3 +1,8 @@
-﻿namespace StarConflictsRevolt.Server.Core.Models;
+﻿using System.Collections.Generic;
 
-public record Galaxy(Guid Id, IEnumerable<StarSystem> StarSystems) : GameObject;
+namespace StarConflictsRevolt.Server.Core.Models;
+
+public record Galaxy(
+    Guid Id,
+    List<StarSystem> StarSystems
+);

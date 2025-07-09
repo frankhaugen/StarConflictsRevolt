@@ -1,3 +1,10 @@
-﻿namespace StarConflictsRevolt.Server.Core.Models;
+﻿using System.Collections.Generic;
 
-record Player(Guid Id, string Name, PlayerController Controller) : GameObject;
+namespace StarConflictsRevolt.Server.Core.Models;
+
+public record Player(
+    Guid Id,
+    string Name,
+    PlayerController Controller,
+    List<Fleet> Fleets
+);

@@ -14,8 +14,8 @@ public class WorldService
         // Create a sample world with planets
         var planets = new List<Planet>
         {
-            new Planet(Guid.NewGuid(), "Earth", 6371, 5.972e24, 1670, 29.78, 149.6e6),
-            new Planet(Guid.NewGuid(), "Mars", 3389.5, 0.64171e24, 868, 24.077, 227.9e6)
+            new Planet(Guid.NewGuid(), "Earth", 6371, 5.972e24, 1670, 29.78, 149.6e6, new(), new()),
+            new Planet(Guid.NewGuid(), "Mars", 3389.5, 0.64171e24, 868, 24.077, 227.9e6, new(), new()),
         };
         
         var systems = new List<StarSystem>

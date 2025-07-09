@@ -4,4 +4,4 @@ public record Ship(
     Guid Id,
     string Model,
     bool IsUnderConstruction
-) : GameObject;
+);

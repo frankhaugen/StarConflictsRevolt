@@ -7,12 +7,12 @@ public static class EntityExtensions
 {
     public static Galaxy ToModel(this Entities.Galaxy galaxy)
     {
-        return new Galaxy(galaxy.Id, galaxy.StarSystems.Select(x => x.ToModel()));
+        return new Galaxy(galaxy.Id, galaxy.StarSystems.Select(x => x.ToModel()).ToList());
     }
     
     public static StarSystem ToModel(this Entities.StarSystem starSystem)
     {
-        return new StarSystem(starSystem.Id, starSystem.Name, starSystem.Planets.Select(x => x.ToModel()), starSystem.Coordinates);
+        return new StarSystem(starSystem.Id, starSystem.Name, starSystem.Planets.Select(x => x.ToModel()).ToList(), starSystem.Coordinates);
     }
     
     public static Session ToModel(this Entities.Session session)
@@ -24,9 +24,10 @@ public static class EntityExtensions
         return new World(world.Id, world.Galaxy.ToModel());
     }
     
+    // Basic mapping for simple cases
     public static Planet ToModel(this Entities.Planet planet)
     {
-        return new Planet(planet.Id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun);
+        return new Planet(planet.Id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun, new(), new());
     }
     
     public static Ship ToModel(this Entities.Ship ship)

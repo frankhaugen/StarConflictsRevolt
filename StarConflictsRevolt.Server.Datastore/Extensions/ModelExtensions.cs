@@ -1,4 +1,6 @@
-﻿namespace StarConflictsRevolt.Server.Datastore.Extensions
+﻿using StarConflictsRevolt.Server.Datastore.Entities;
+
+namespace StarConflictsRevolt.Server.Datastore.Extensions
 {
     // Mostly mapping extensions for Models into Entities
     public static class ModelExtensions
@@ -9,7 +11,7 @@
             {
                 Id = model.Id,
                 Name = model.Name,
-                Ships = model.Ships.Select(s => s.ToEntity()).ToList()
+                Ships = model.Ships.Select(s => StarConflictsRevolt.Server.Datastore.Extensions.ModelExtensions.ToEntity(s)).ToList()
             };
         }
     
@@ -25,10 +27,16 @@
     
         public static StarConflictsRevolt.Server.Datastore.Entities.Planet ToEntity(this StarConflictsRevolt.Server.Core.Models.Planet model)
         {
+            // Only map persistent properties; Fleets and Structures are not persisted directly
             return new StarConflictsRevolt.Server.Datastore.Entities.Planet
             {
                 Id = model.Id,
-                Name = model.Name
+                Name = model.Name,
+                Radius = model.Radius,
+                Mass = model.Mass,
+                RotationSpeed = model.RotationSpeed,
+                OrbitSpeed = model.OrbitSpeed,
+                DistanceFromSun = model.DistanceFromSun
             };
         }
     
@@ -39,7 +47,7 @@
                 Id = model.Id,
                 Name = model.Name,
                 Coordinates = model.Coordinates,
-                Planets = model.Planets.Select(p => p.ToEntity()).ToList()
+                Planets = model.Planets.Select(p => StarConflictsRevolt.Server.Datastore.Extensions.ModelExtensions.ToEntity(p)).ToList()
             };
         }
     

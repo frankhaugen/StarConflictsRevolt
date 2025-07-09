@@ -2,8 +2,7 @@
 
 namespace StarConflictsRevolt.Server.Core.Models;
 
-public record StructureType : GameObject
-{
-    /// <inheritdoc />
-    public StructureVariant Variant { get; set; }
-}
+public record StructureType(
+    Guid Id,
+    StructureVariant Variant
+);

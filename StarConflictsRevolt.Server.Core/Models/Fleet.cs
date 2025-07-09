@@ -5,4 +5,6 @@ namespace StarConflictsRevolt.Server.Core.Models;
 public record Fleet(
     Guid Id,
     string Name,
-    List<Ship> Ships) : GameObject;
+    List<Ship> Ships,
+    Guid? LocationPlanetId
+) : GameObject;

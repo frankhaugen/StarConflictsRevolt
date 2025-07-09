@@ -6,7 +6,7 @@ public record Session(
     DateTime Created,
     bool IsActive,
     DateTime? Ended
-) : GameObject
+)
 {
     public static Session Create(string sessionName)
     {
