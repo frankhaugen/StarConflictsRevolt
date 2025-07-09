@@ -41,7 +41,7 @@ public class MenuView : IView
     {
         Graphics.ClearBackground(Color.Black);
         Graphics.DrawText("Star Conflicts Revolt", 10, 10, 28, Color.RayWhite);
-        Graphics.DrawText($"Current View: {_views[_selectedView].Title}", 10, 40, 20, Color.LightBlue);
+        Graphics.DrawText($"Current View: {_views[_selectedView].Title}", 10, 40, 20, Color.SkyBlue);
         if (_menuState == 0)
         {
             Graphics.DrawText("1. Create New Session", 10, 60, 20, Color.RayWhite);

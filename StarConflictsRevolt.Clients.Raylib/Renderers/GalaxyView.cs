@@ -50,7 +50,7 @@ public class GalaxyView : IView
                     var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
                     var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
                     Graphics.DrawCircle(px, py, 6, Color.Blue);
-                    Graphics.DrawText(planet.Name, px + 8, py - 8, 10, Color.LightBlue);
+                    Graphics.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
                     i++;
                 }
             }
@@ -155,47 +155,6 @@ public class GalaxyView : IView
         catch (Exception ex)
         {
             // Optionally log error
-        }
-    }
-}
-
-public class MenuView : IView
-{
-    private readonly RenderContext _renderContext;
-
-    public MenuView(RenderContext renderContext)
-    {
-        _renderContext = renderContext;
-    }
-    
-    /// <inheritdoc />
-    public GameView ViewType => GameView.Menu;
-    
-    /// <inheritdoc />
-    public void Draw()
-    {
-        // Draw the menu background
-        Graphics.ClearBackground(Color.Black);
-        
-        // Draw menu title
-        Graphics.DrawText("Galaxy Menu", 10, 10, 20, Color.RayWhite);
-        
-        // Draw options
-        Graphics.DrawText("1. View Galaxy", 10, 50, 20, Color.RayWhite);
-        Graphics.DrawText("2. Exit", 10, 80, 20, Color.RayWhite);
-        
-        // Handle input for menu selection (not implemented here)
-        if (Input.IsKeyPressed(KeyboardKey.One))
-        {
-            _renderContext.CurrentView = GameView.Galaxy; // Switch to Galaxy view
-        }
-        if (Input.IsKeyPressed(KeyboardKey.Two))
-        {
-            Window.Close(); // Exit the application
-        }
-        else if (Input.IsKeyPressed(KeyboardKey.Escape) || Input.IsKeyPressed(KeyboardKey.Q))
-        {
-            Window.Close(); // Exit the application
         }
     }
 }
