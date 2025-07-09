@@ -193,28 +193,6 @@ public class TwoPlayerIntegrationTest
         // Both players should have received the same number of deltas
         await Assert.That(mariellReceivedDeltas.Count).IsEqualTo(frankReceivedDeltas.Count);
         
-        // Debug: Log all received deltas for Mariell
-        await Context.Current.OutputWriter.WriteLineAsync($"Mariell received {mariellReceivedDeltas.Count} deltas:");
-        foreach (var delta in mariellReceivedDeltas)
-        {
-            await Context.Current.OutputWriter.WriteLineAsync($"  Delta: Id={delta.Id}, Type={delta.Type}, HasData={delta.Data.HasValue}");
-            if (delta.Data.HasValue)
-            {
-                await Context.Current.OutputWriter.WriteLineAsync($"    Data: {delta.Data.Value}");
-            }
-        }
-        
-        // Debug: Log all received deltas for Frank
-        await Context.Current.OutputWriter.WriteLineAsync($"Frank received {frankReceivedDeltas.Count} deltas:");
-        foreach (var delta in frankReceivedDeltas)
-        {
-            await Context.Current.OutputWriter.WriteLineAsync($"  Delta: Id={delta.Id}, Type={delta.Type}, HasData={delta.Data.HasValue}");
-            if (delta.Data.HasValue)
-            {
-                await Context.Current.OutputWriter.WriteLineAsync($"    Data: {delta.Data.Value}");
-            }
-        }
-        
         // Check that we received the expected deltas (structures added to planet)
         var mariellStructureDelta = mariellReceivedDeltas.FirstOrDefault(d =>
             (d.Type == UpdateType.Added || d.Type == UpdateType.Changed) &&

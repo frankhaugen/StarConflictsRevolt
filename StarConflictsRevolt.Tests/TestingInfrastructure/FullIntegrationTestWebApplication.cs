@@ -56,7 +56,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Warning: RavenDB server startup issue: {e.Message}");
+                    // Ignore any other exceptions related to starting the server
                 }
             }
         }
