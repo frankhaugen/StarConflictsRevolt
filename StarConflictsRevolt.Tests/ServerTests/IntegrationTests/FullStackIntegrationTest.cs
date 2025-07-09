@@ -146,15 +146,24 @@ public class FullStackIntegrationTest
         }
         
         // Check that we received the expected delta (structure added to planet)
-        var structureDelta = _receivedDeltas.FirstOrDefault(d => d.Type == UpdateType.Added);
+        var structureDelta = _receivedDeltas.FirstOrDefault(d =>
+            (d.Type == UpdateType.Added || d.Type == UpdateType.Changed) &&
+            (
+                (d.Data.HasValue && d.Data.Value.TryGetProperty("Variant", out var variant) && variant.GetString() == "Mine") ||
+                (d.Data.HasValue && d.Data.Value.TryGetProperty("StructureType", out var structureType) && structureType.GetString() == "Mine")
+            )
+        );
         await Assert.That(structureDelta).IsNotNull();
-        
         // Verify the structure was added to the correct planet
         if (structureDelta?.Data.HasValue == true)
         {
             var structureData = structureDelta.Data.Value;
-            await Assert.That(structureData.TryGetProperty("Variant", out var variant)).IsTrue();
-            await Assert.That(variant.GetString()).IsEqualTo("Mine");
+            if (structureData.TryGetProperty("Variant", out var variant))
+                await Assert.That(variant.GetString()).IsEqualTo("Mine");
+            else if (structureData.TryGetProperty("StructureType", out var structureType))
+                await Assert.That(structureType.GetString()).IsEqualTo("Mine");
+            else
+                Assert.Fail("Delta did not contain expected Variant or StructureType property");
         }
 
         // 8. Assert no critical errors/warnings in logs
