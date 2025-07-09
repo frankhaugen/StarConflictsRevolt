@@ -1,22 +1,21 @@
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Services;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 
 public class AiTurnService : BackgroundService
 {
-    private readonly CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> _commandQueue;
+    private readonly CommandQueue<Eventing.IGameEvent> _commandQueue;
     private readonly ILogger<AiTurnService> _logger;
     private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates;
 
-    public AiTurnService(CommandQueue<StarConflictsRevolt.Server.Eventing.IGameEvent> commandQueue, ILogger<AiTurnService> logger, ConcurrentDictionary<Guid, SessionAggregate> aggregates)
+    public AiTurnService(CommandQueue<Eventing.IGameEvent> commandQueue, ILogger<AiTurnService> logger)
     {
         _commandQueue = commandQueue;
         _logger = logger;
-        _aggregates = aggregates;
+        _aggregates = new ConcurrentDictionary<Guid, SessionAggregate>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

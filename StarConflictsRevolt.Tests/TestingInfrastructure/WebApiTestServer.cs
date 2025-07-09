@@ -60,7 +60,8 @@ public class WebApiTestServer : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        // TODO release managed resources here
+        // Dispose of any resources if necessary
+        // In this case, we don't have any disposable resources, but you can add cleanup logic here if needed
     }
 
     public string GetScheme()

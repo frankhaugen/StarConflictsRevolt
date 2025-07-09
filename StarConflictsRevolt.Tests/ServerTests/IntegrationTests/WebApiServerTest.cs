@@ -6,19 +6,12 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 public class WebApiServerTest
 {
-    private readonly WebApiTestServer _webApiServer = new();
-    
-    public WebApiServerTest()
-    {
-        // Initialize the web API test server
-        _webApiServer.SetScheme("http");
-    }
-    
     [Test]
     public void WebApiServer_ShouldStartAndRespond()
     {
         // Arrange: Get the web application from the test server
-        var app = _webApiServer.GetWebApplication();
+        using var webApiServerBuilder = new FullIntegrationTestWebApplicationBuilder();
+        var app = webApiServerBuilder.Build();
         
         // Act: Start the application
         app.StartAsync().GetAwaiter().GetResult();
@@ -27,12 +20,12 @@ public class WebApiServerTest
         app.Services.GetService(typeof(IEventStore))
             .Should().NotBeNull("because the event store should be registered in the service provider");
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"{_webApiServer.GetScheme()}://localhost:{_webApiServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{webApiServerBuilder.GetPort()}") };
         var response = httpClient.GetAsync("/").GetAwaiter().GetResult();
         response.IsSuccessStatusCode.Should().BeTrue("because the root endpoint should respond successfully");
         
         Context.Current.OutputWriter.WriteLine(
-            $"Web API server started at {_webApiServer.GetScheme()}://localhost:{_webApiServer.GetPort()} and responded successfully with status code {response.StatusCode} and content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}"
+            $"Web API server started at http://localhost:{webApiServerBuilder.GetPort()} and responded successfully with status code {response.StatusCode} and content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}"
         );
         
         // Stop the application after tests

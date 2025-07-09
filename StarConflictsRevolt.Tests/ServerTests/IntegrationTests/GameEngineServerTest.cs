@@ -17,10 +17,10 @@ public class GameEngineServerTest
     public async Task GameEngineServer_ShouldStartAndRespond()
     {
         // Arrange: Create a test server for the game engine
-        using var signalRTestServer = new SignalRTestServer();
+        using var signalRTestServer = new FullIntegrationTestWebApplicationBuilder();
         
         // Arrange: Get the web application from the test server
-        var app = signalRTestServer.GetWebApplication();
+        var app = signalRTestServer.Build();
         
         // Fill the database with test data if necessary
         using var scope = app.Services.CreateScope();
