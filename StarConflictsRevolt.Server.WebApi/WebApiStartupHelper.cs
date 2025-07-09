@@ -41,6 +41,11 @@ public static class WebApiStartupHelper
 
         app.UseHttpsRedirection();
 
+        app.MapGet("/", async context =>
+        {
+            await context.Response.WriteAsync("Welcome to Star Conflicts Revolt API!");
+        });
+
         app.MapGet("/game/state", async context =>
             {
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
