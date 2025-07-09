@@ -1,8 +1,6 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Builder;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using TestSessionContext = Microsoft.Testing.Platform.TestHost.TestSessionContext;
 
 namespace StarConflictsRevolt.Tests.IntegrationTests;
 
