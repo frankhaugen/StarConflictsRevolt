@@ -12,11 +12,13 @@ var redis = builder.AddRedis("redis")
 var gameDb = builder.AddSqlServer("gameDb", builder.AddParameter("sqlserver-password", "My!Password123"))
     .WithDataVolume("gameDb-data")
     .WithLifetime(ContainerLifetime.Persistent)
+    .AddDatabase("StarConflictsRevolt")
     ;
 
 var ravenDb = builder.AddRavenDB("ravenDb", RavenDBServerSettings.Unsecured())
     .WithDataVolume("ravenDb-data")
     .WithLifetime(ContainerLifetime.Persistent)
+    .AddDatabase("StarConflictsRevolt")
     ;
 
 var engine = builder.AddProject<StarConflictsRevolt_Server_GameEngine>("engine")

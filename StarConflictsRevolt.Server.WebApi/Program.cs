@@ -6,24 +6,7 @@ using StarConflictsRevolt.Server.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register RavenDB DocumentStore
-builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
-{
-    Urls = new[] { "http://localhost:8080" }, // TODO: Make configurable
-    Database = "StarConflictsRevolt"
-}.Initialize());
-
-// Register RavenEventStore as IEventStore
-builder.Services.AddSingleton<IEventStore, RavenEventStore>();
-
-// Register CommandQueue as singleton for DI
-builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
-
-builder.AddServiceDefaults();
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+WebApiStartupHelper.RegisterServices(builder);
 
 var app = builder.Build();
 
@@ -172,3 +155,28 @@ app.MapPost("/game/{worldId}/snapshot", async context =>
 });
 
 app.Run();
+
+public static class WebApiStartupHelper
+{
+    public static void RegisterServices(WebApplicationBuilder builder)
+    {
+        // Register RavenDB DocumentStore
+        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
+        {
+            Urls = [builder.Configuration.GetConnectionString("ravenDB")],
+            Database = "StarConflictsRevolt"
+        }.Initialize());
+
+        // Register RavenEventStore as IEventStore
+        builder.Services.AddSingleton<IEventStore, RavenEventStore>();
+
+        // Register CommandQueue as singleton for DI
+        builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+
+        builder.AddServiceDefaults();
+
+        // Add services to the container.
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddOpenApi();
+    }
+}
