@@ -2,7 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="LICENSE" />
-    <File Path="DESIGN.md" />
     <File Path="README.md" />
   </Folder>
   <Project Path="StarConflictsRevolt.Aspire.AppHost\StarConflictsRevolt.Aspire.AppHost.csproj" Type="Classic C#" />
