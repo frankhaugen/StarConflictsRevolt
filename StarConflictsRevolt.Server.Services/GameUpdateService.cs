@@ -133,7 +133,7 @@ public class GameUpdateService : BackgroundService
                     }
                     
                     // Update the previous state
-                    _previousWorldStates[sessionId] = sessionAggregate.World;
+                    _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
 
                     // Snapshot every 100 events
                     if (_eventCounts[sessionId] > 0 && _eventCounts[sessionId] % 100 == 0)
@@ -162,5 +162,11 @@ public class GameUpdateService : BackgroundService
         }
         
         _logger.LogInformation("GameUpdateService stopped");
+    }
+
+    private static World DeepCloneWorld(World world)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(world);
+        return System.Text.Json.JsonSerializer.Deserialize<World>(json)!;
     }
 }

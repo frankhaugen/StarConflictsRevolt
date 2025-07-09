@@ -127,7 +127,10 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        ((IDisposable)_app)?.Dispose();
+        if (_app is IAsyncDisposable asyncApp)
+            asyncApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        else
+            ((IDisposable)_app)?.Dispose();
         _sqliteConnection.Dispose();
         _documentStore?.Dispose();
     }
