@@ -17,6 +17,9 @@ builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
 // Register RavenEventStore as IEventStore
 builder.Services.AddSingleton<IEventStore, RavenEventStore>();
 
+// Register CommandQueue as singleton for DI
+builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+
 builder.AddServiceDefaults();
 
 // Add services to the container.
@@ -69,7 +72,7 @@ app.MapPost("/game/session", async context =>
 
 app.MapPost("/game/move-fleet", async context =>
 {
-    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
     var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
     if (dto == null)
     {
@@ -77,13 +80,15 @@ app.MapPost("/game/move-fleet", async context =>
         await context.Response.WriteAsync("Invalid MoveFleetEvent");
         return;
     }
-    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    // TODO: Get session/world ID from query/body/auth
+    var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+    commandQueue.Enqueue(worldId, dto);
     context.Response.StatusCode = 202;
 });
 
 app.MapPost("/game/build-structure", async context =>
 {
-    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
     var dto = await context.Request.ReadFromJsonAsync<BuildStructureEvent>(context.RequestAborted);
     if (dto == null)
     {
@@ -91,13 +96,14 @@ app.MapPost("/game/build-structure", async context =>
         await context.Response.WriteAsync("Invalid BuildStructureEvent");
         return;
     }
-    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+    commandQueue.Enqueue(worldId, dto);
     context.Response.StatusCode = 202;
 });
 
 app.MapPost("/game/attack", async context =>
 {
-    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
     var dto = await context.Request.ReadFromJsonAsync<AttackEvent>(context.RequestAborted);
     if (dto == null)
     {
@@ -105,13 +111,14 @@ app.MapPost("/game/attack", async context =>
         await context.Response.WriteAsync("Invalid AttackEvent");
         return;
     }
-    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+    commandQueue.Enqueue(worldId, dto);
     context.Response.StatusCode = 202;
 });
 
 app.MapPost("/game/diplomacy", async context =>
 {
-    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
     var dto = await context.Request.ReadFromJsonAsync<DiplomacyEvent>(context.RequestAborted);
     if (dto == null)
     {
@@ -119,7 +126,8 @@ app.MapPost("/game/diplomacy", async context =>
         await context.Response.WriteAsync("Invalid DiplomacyEvent");
         return;
     }
-    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+    commandQueue.Enqueue(worldId, dto);
     context.Response.StatusCode = 202;
 });
 
