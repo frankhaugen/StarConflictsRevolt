@@ -4,13 +4,12 @@ namespace StarConflictsRevolt.Server.Datastore.Entities;
 
 public class Fleet : GameObject
 {
-    public Fleet(Guid parse, string rebelFlagship, List<Ship> ships, FleetStatus idle, object o)
+    public Fleet(Guid parse, string rebelFlagship, List<Ship> ships, FleetStatus idle)
     {
         Id = parse;
         Name = rebelFlagship;
         Ships = ships;
         Status = idle;
-        OrbitingPlanetId = o as Guid?;
     }
 
     public Fleet()
@@ -22,5 +21,4 @@ public class Fleet : GameObject
     public Guid OwnerId { get; set; }
     public IEnumerable<Ship> Ships { get; set; }
     public FleetStatus Status { get; set; }
-    public Guid? OrbitingPlanetId { get; set; }
 }

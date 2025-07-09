@@ -2,34 +2,36 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
-namespace StarConflictsRevolt.Tests.IntegrationTests;
+namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 public class GameEngineServerTest
 {
-    private readonly SignalRTestServer _signalRTestServer = new();
-    
     [Test]
-    public void GameEngineServer_ShouldStartAndRespond()
+    public async Task GameEngineServer_ShouldStartAndRespond()
     {
+        // Arrange: Create a test server for the game engine
+        using var signalRTestServer = new SignalRTestServer();
+        
         // Arrange: Get the web application from the test server
-        var app = _signalRTestServer.GetWebApplication();
+        var app = signalRTestServer.GetWebApplication();
         
         // Fill the database with test data if necessary
         using var scope = app.Services.CreateScope();
         var serviceProvider = scope.ServiceProvider;
         var dbContext = serviceProvider.GetRequiredService<GameDbContext>();
-        dbContext.Database.EnsureCreated(); // Ensure the database is created
+        await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
         // Listen to SignalR events and persist them in memory for assertions:
         var worldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(_signalRTestServer.GetGameServerHubUrl())
+            .WithUrl(signalRTestServer.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -38,33 +40,54 @@ public class GameEngineServerTest
             })
             .Build();
         
-        hubConnection.On<WorldDto>("FullWorld", worldDto =>
+        
+        var updatesReceived = new List<GameObjectUpdate>();
+        
+        hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updatesReceivedList =>
         {
-            worldStore.ApplyFull(worldDto);
+            updatesReceived.AddRange(updatesReceivedList);
+            worldStore.ApplyDeltas(updatesReceivedList);
         });
         
-        hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates =>
-        {
-            worldStore.ApplyDeltas(updates);
-        });
+        // Ensure the raven event store database is created
+        var ravenDbStore = serviceProvider.GetRequiredService<IDocumentStore>();
+        ravenDbStore.Initialize(); // Initialize the RavenDB store
+        ravenDbStore.Database.Should().NotBeNull("because the RavenDB store should be initialized and ready for use");
+        ravenDbStore.Database.Should().NotBeEmpty("because the RavenDB store should have a database created");
+        ravenDbStore.Database.Should().Be("StarConflictsRevolt", "because this is the expected database name for the game engine server");
+        
         
         // Act: Start the application
-        app.StartAsync().GetAwaiter().GetResult();
+        await app.StartAsync();
+        await hubConnection.StartAsync(); // Start the SignalR connection
+        
+        await Task.Delay(2000).ConfigureAwait(false);
+        
+        // Assert: Check if the application is running and can respond to requests
+        var clientWorldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
+        clientWorldStore.Should().NotBeNull("because the client world store should be registered in the service provider");
+        
+        updatesReceived.Should().NotBeEmpty("because we should have received some updates from the game engine server");
+        updatesReceived.Count.Should().BeGreaterThan(0, "because we expect to receive at least one update from the game engine server");
+        
+        // Write to the test output for debugging purposes:
+        await Context.Current.OutputWriter.WriteLineAsync("Received updates from the game engine server:");
+        foreach (var update in updatesReceived)
+        {
+            await Context.Current.OutputWriter.WriteLineAsync($"Update: {update}");
+        }
+        
+        // var world = clientWorldStore.GetCurrent();
+        // world.Should().NotBeNull("because the world should be initialized and ready for use");
+        // world.Galaxy.Should().NotBeNull("because the galaxy should be initialized in the world");
+        // world.Galaxy.StarSystems.Should().NotBeEmpty("because the galaxy should contain at least one star system");
+        // world.Galaxy.StarSystems.First().Planets.Should().NotBeEmpty("because the first star system should contain at least one planet");
+        // world.Galaxy.StarSystems.First().Planets.First().Name.Should().NotBeNullOrEmpty("because the first planet should have a name");
+        
+        // Gracefully stop the SignalR connection
+        await hubConnection.StopAsync();
         
         // Stop the application after tests
-        app.StopAsync().GetAwaiter().GetResult();
+        await app.StopAsync();
     }
-    
-        // Example of a test server that starts and responds correctly:
-        // // Assert: Check if the application is running and can respond to requests
-        // app.Services.GetService(typeof(IEventStore))
-        //     .Should().NotBeNull("because the event store should be registered in the service provider");
-        //
-        // var httpClient = new HttpClient { BaseAddress = new Uri($"{_webApiServer.GetScheme()}://localhost:{_webApiServer.GetPort()}") };
-        // var response = httpClient.GetAsync("/").GetAwaiter().GetResult();
-        // response.IsSuccessStatusCode.Should().BeTrue("because the root endpoint should respond successfully");
-        //
-        // Context.Current.OutputWriter.WriteLine(
-        //     $"Web API server started at {_webApiServer.GetScheme()}://localhost:{_webApiServer.GetPort()} and responded successfully with status code {response.StatusCode} and content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}"
-        // );
 }

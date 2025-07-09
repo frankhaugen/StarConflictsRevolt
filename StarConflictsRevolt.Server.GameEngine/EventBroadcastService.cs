@@ -46,7 +46,7 @@ public class EventBroadcastService : BackgroundService
             if (updates.Count > 0)
             {
                 // Broadcast to the world group
-                await _hubContext.Clients.Group(envelope.WorldId.ToString()).SendAsync("ReceiveUpdates", updates);
+                await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken: stoppingToken);
             }
         }, stoppingToken);
         await Task.Delay(-1, stoppingToken); // Keep service alive

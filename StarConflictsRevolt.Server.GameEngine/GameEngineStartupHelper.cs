@@ -10,25 +10,11 @@ public static class GameEngineStartupHelper
 {
     public static void RegisterGameEngineServices(WebApplicationBuilder builder)
     {
-        
-        // Register RavenDB DocumentStore
-        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
-        {
-            Urls = new[] { "http://localhost:8080" }, // TODO: Make configurable
-            Database = "StarConflictsRevolt"
-        }.Initialize());
-
         // Register RavenEventStore as IEventStore
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
         
         // Register CommandQueue as singleton for DI
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
-        
-        // Register DbContext for game state
-        builder.Services.AddDbContext<GameDbContext>(options =>
-        {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("gameDB"));
-        });
 
         builder.Services.AddHostedService<GameUpdateService>();
         builder.Services.AddHostedService<AiTurnService>();
@@ -41,6 +27,27 @@ public static class GameEngineStartupHelper
 
         // Register event broadcasting service
         builder.Services.AddHostedService<EventBroadcastService>();
+    }
+    
+    public static void RegisterGameEngineDocumentStore(WebApplicationBuilder builder)
+    {
+        // Register RavenDB DocumentStore
+        builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
+        {
+            Urls = new[] { "http://localhost:8080" }, // TODO: Make configurable
+            Database = "StarConflictsRevolt"
+        }.Initialize());
+    }
+    
+    public static void RegisterGameEngineDbContext(WebApplicationBuilder builder)
+    {
+        // Register GameDbContext with RavenDB DocumentStore
+        builder.Services.AddDbContext<GameDbContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("gameDB"));
+            options.EnableSensitiveDataLogging();
+            options.EnableDetailedErrors();
+        });
     }
     
     public static void ConfigureGameEngine(WebApplication app)

@@ -5,6 +5,8 @@ using StarConflictsRevolt.Server.Eventing;
 var builder = WebApplication.CreateBuilder(args);
 
 GameEngineStartupHelper.RegisterGameEngineServices(builder);
+GameEngineStartupHelper.RegisterGameEngineDbContext(builder);
+GameEngineStartupHelper.RegisterGameEngineDocumentStore(builder);
 
 var app = builder.Build();
 
