@@ -1,12 +1,8 @@
-using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Shared;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
-using System.IO;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();

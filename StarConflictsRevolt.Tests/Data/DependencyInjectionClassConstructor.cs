@@ -1,6 +1,6 @@
 ﻿using TUnit.Core.Interfaces;
 
-namespace StarConflictsRevolt.Tests;
+namespace StarConflictsRevolt.Tests.Data;
 
 public class DependencyInjectionClassConstructor : IClassConstructor
 {

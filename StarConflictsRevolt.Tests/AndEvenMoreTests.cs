@@ -1,4 +1,6 @@
-﻿namespace StarConflictsRevolt.Tests;
+﻿using StarConflictsRevolt.Tests.Data;
+
+namespace StarConflictsRevolt.Tests;
 
 [ClassDataSource<DataClass>]
 [ClassConstructor<DependencyInjectionClassConstructor>]

@@ -1,7 +1,5 @@
 namespace StarConflictsRevolt.Server.Core;
 
-public record HyperdriveRating(float Current, float Optimal);
-
 public record Ship(
     Guid Id,
     string Model,

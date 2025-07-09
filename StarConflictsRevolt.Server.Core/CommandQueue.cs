@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace StarConflictsRevolt.Server.GameEngine;
+namespace StarConflictsRevolt.Server.Core;
 
 public class CommandQueue<TCommand>
 {

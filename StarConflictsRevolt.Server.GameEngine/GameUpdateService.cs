@@ -1,8 +1,4 @@
-﻿using System.Numerics;
-using Microsoft.AspNetCore.SignalR;
-using StarConflictsRevolt.Clients.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Eventing;
 using System.Collections.Concurrent;

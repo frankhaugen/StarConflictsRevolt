@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-
 namespace StarConflictsRevolt.Server.Core;
-
-public enum FleetStatus { Idle, EnRoute, Blockading, InCombat }
 
 public record Fleet(
     Guid Id,

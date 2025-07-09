@@ -2,11 +2,7 @@ using Raylib_CSharp.Colors;
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
-using System;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
-using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 

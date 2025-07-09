@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.Core;
 

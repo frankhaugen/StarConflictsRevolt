@@ -1,6 +1,6 @@
 ﻿using Frank.Security.Cryptography;
 
-namespace StarConflictsRevolt.Server.WebApi;
+namespace StarConflictsRevolt.Clients.Shared;
 
 public static class SecurityHelper
 {
