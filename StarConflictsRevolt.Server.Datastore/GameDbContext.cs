@@ -31,6 +31,17 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
         
         modelBuilder.Entity<Session>()
             .HasKey(s => s.Id);
+
+        // --- Static Data Seeding ---
+        modelBuilder.Entity<Ship>().HasData(
+            new List<Ship>(new ShipCollection())
+        );
+        modelBuilder.Entity<Fleet>().HasData(
+            new List<Fleet>(new FleetCollection())
+        );
+        modelBuilder.Entity<StructureType>().HasData(
+            new List<StructureType>(new StructureTypeCollection())
+        );
     }
 
     public DbSet<Session> Sessions { get; set; }

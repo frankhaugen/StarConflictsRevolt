@@ -1,6 +1,11 @@
 ﻿using System.Numerics;
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Clients.Models;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Eventing;
+using System.Collections.Concurrent;
 
 namespace StarConflictsRevolt.Server.GameEngine;
 
@@ -8,6 +13,9 @@ public class GameUpdateService : BackgroundService
 {
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
+    // Session state and command queues
+    private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates = new();
+    private readonly CommandQueue<IGameEvent> _commandQueue = new();
 
     public GameUpdateService(IHubContext<WorldHub> hubContext, ILogger<GameUpdateService> logger)
     {
@@ -17,31 +25,33 @@ public class GameUpdateService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var worldId = Guid.CreateVersion7();
-        
+        // For demo: create a single session/world
+        var worldId = Guid.NewGuid();
+        var initialWorld = new World(worldId, new Galaxy(Guid.NewGuid(), new List<StarSystem>()));
+        var aggregate = new SessionAggregate(worldId, initialWorld);
+        _aggregates[worldId] = aggregate;
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            var planets = new List<PlanetDto>
+            foreach (var (sessionId, sessionAggregate) in _aggregates)
             {
-                new(Guid.CreateVersion7(), "Earth", 10, 1.0f, 0.5f, 0.02f, 150),
-                new(Guid.CreateVersion7(), "Mars", 5, 0.5f, 0.4f, 0.01f, 250),
-                new(Guid.CreateVersion7(), "Jupiter", 25, 2.5f, 0.2f, 0.005f, 400)
-            };
-            
-            var starSystems = new List<StarSystemDto>
-            {
-                new(Guid.CreateVersion7(), "Sol", planets, new Vector2(0, 0))
-            };
+                // Process all queued commands for this session
+                while (_commandQueue.TryDequeue(sessionId, out var command))
+                {
+                    sessionAggregate.Apply(command);
+                    // TODO: Persist event to RavenDB, update SQL projections, etc.
+                }
 
-            var world = new WorldDto(worldId, new GalaxyDto(Guid.CreateVersion7(), starSystems));
-            _logger.LogInformation("Sending full world update: {WorldId}, StarSystems: {StarSystemCount}", world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
-            
-            await _hubContext.Clients.All.SendAsync("FullWorld", world, stoppingToken);
-            _logger.LogInformation("Full world update sent: {WorldId}", world.Id);
-            
-            // Wait for a while before the next update
-            _logger.LogInformation("Waiting for next update cycle...");
-            await Task.Delay(5000, stoppingToken);
+                // Compute deltas (stub: use ChangeTracker)
+                // TODO: Keep previous world state for diffing
+                var deltas = ChangeTracker.ComputeDeltas(sessionAggregate.World, sessionAggregate.World);
+
+                // Broadcast deltas to clients (stub)
+                await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
+            }
+
+            // Wait for next tick
+            await Task.Delay(1000, stoppingToken); // 1 tick per second
         }
     }
 }
