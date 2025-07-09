@@ -39,7 +39,7 @@ public class GameUpdateService : BackgroundService
         _logger.LogInformation("Creating session {SessionId} with world {WorldId}", sessionId, initialWorld.Id);
         _aggregateManager.GetOrCreateAggregate(sessionId, initialWorld);
         _eventCounts[sessionId] = 0;
-        _previousWorldStates[sessionId] = initialWorld;
+        _previousWorldStates[sessionId] = DeepCloneWorld(initialWorld);
         
         // Send initial world state to clients
         _ = Task.Run(async () =>
@@ -101,39 +101,48 @@ public class GameUpdateService : BackgroundService
                     if (commandsProcessed > 0)
                     {
                         _logger.LogInformation("Processed {CommandCount} commands for session {SessionId}", commandsProcessed, sessionId);
-                    }
-
-                    // Compute deltas by comparing with previous state
-                    if (_previousWorldStates.TryGetValue(sessionId, out var previousWorld))
-                    {
-                        var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
-                        _logger.LogInformation("Computed {DeltaCount} deltas for session {SessionId}", deltas.Count, sessionId);
                         
-                        if (deltas.Count > 0)
+                        // Only compute deltas when commands were actually processed
+                        if (_previousWorldStates.TryGetValue(sessionId, out var previousWorld))
                         {
-                            try
+                            var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
+                            _logger.LogInformation("Computed {DeltaCount} deltas for session {SessionId}", deltas.Count, sessionId);
+                            
+                            if (deltas.Count > 0)
                             {
-                                _logger.LogInformation("Sending {DeltaCount} deltas to session {SessionId} group", deltas.Count, sessionId);
-                                await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
-                                _logger.LogInformation("Successfully sent {DeltaCount} deltas to session {SessionId}", deltas.Count, sessionId);
+                                try
+                                {
+                                    _logger.LogInformation("Sending {DeltaCount} deltas to session {SessionId} group", deltas.Count, sessionId);
+                                    await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
+                                    _logger.LogInformation("Successfully sent {DeltaCount} deltas to session {SessionId}", deltas.Count, sessionId);
+                                    
+                                    // Only update the previous state after successfully sending deltas
+                                    _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Error sending deltas to session {SessionId}", sessionId);
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                _logger.LogError(ex, "Error sending deltas to session {SessionId}", sessionId);
+                                _logger.LogDebug("No deltas to send for session {SessionId} (no changes detected)", sessionId);
+                                // Still update the previous state even if no deltas were computed
+                                _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
                             }
                         }
                         else
                         {
-                            _logger.LogDebug("No deltas to send for session {SessionId}", sessionId);
+                            _logger.LogWarning("No previous world state found for session {SessionId}", sessionId);
+                            // Initialize the previous state
+                            _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
                         }
                     }
                     else
                     {
-                        _logger.LogWarning("No previous world state found for session {SessionId}", sessionId);
+                        // No commands processed, no need to compute deltas or update state
+                        _logger.LogDebug("No commands processed for session {SessionId}, skipping delta computation", sessionId);
                     }
-                    
-                    // Update the previous state
-                    _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
 
                     // Snapshot every 100 events
                     if (_eventCounts[sessionId] > 0 && _eventCounts[sessionId] % 100 == 0)
