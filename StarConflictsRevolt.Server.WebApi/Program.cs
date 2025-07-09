@@ -1,7 +1,21 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.WebApi;
+using Raven.Client.Documents;
+using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.Eventing; // For IGameEvent and events
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register RavenDB DocumentStore
+builder.Services.AddSingleton<IDocumentStore>(_ => new DocumentStore
+{
+    Urls = new[] { "http://localhost:8080" }, // TODO: Make configurable
+    Database = "StarConflictsRevolt"
+}.Initialize());
+
+// Register RavenEventStore as IEventStore
+builder.Services.AddSingleton<IEventStore, RavenEventStore>();
 
 builder.AddServiceDefaults();
 
@@ -52,5 +66,102 @@ app.MapPost("/game/session", async context =>
         await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
     })
     .WithName("CreateGameSession");
+
+app.MapPost("/game/move-fleet", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
+    if (dto == null)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid MoveFleetEvent");
+        return;
+    }
+    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    context.Response.StatusCode = 202;
+});
+
+app.MapPost("/game/build-structure", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var dto = await context.Request.ReadFromJsonAsync<BuildStructureEvent>(context.RequestAborted);
+    if (dto == null)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid BuildStructureEvent");
+        return;
+    }
+    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    context.Response.StatusCode = 202;
+});
+
+app.MapPost("/game/attack", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var dto = await context.Request.ReadFromJsonAsync<AttackEvent>(context.RequestAborted);
+    if (dto == null)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid AttackEvent");
+        return;
+    }
+    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    context.Response.StatusCode = 202;
+});
+
+app.MapPost("/game/diplomacy", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>();
+    var dto = await context.Request.ReadFromJsonAsync<DiplomacyEvent>(context.RequestAborted);
+    if (dto == null)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid DiplomacyEvent");
+        return;
+    }
+    await eventStore.PublishAsync(Guid.Empty, dto); // TODO: Use actual world/session ID
+    context.Response.StatusCode = 202;
+});
+
+app.MapGet("/game/{worldId}/events", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>() as RavenEventStore;
+    if (eventStore == null)
+    {
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("Event store not available");
+        return;
+    }
+    var worldIdStr = context.Request.RouteValues["worldId"]?.ToString();
+    if (!Guid.TryParse(worldIdStr, out var worldId))
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid worldId");
+        return;
+    }
+    var events = eventStore.GetEventsForWorld(worldId);
+    await context.Response.WriteAsJsonAsync(events);
+});
+
+app.MapPost("/game/{worldId}/snapshot", async context =>
+{
+    var eventStore = context.RequestServices.GetRequiredService<IEventStore>() as RavenEventStore;
+    if (eventStore == null)
+    {
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("Event store not available");
+        return;
+    }
+    var worldIdStr = context.Request.RouteValues["worldId"]?.ToString();
+    if (!Guid.TryParse(worldIdStr, out var worldId))
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Invalid worldId");
+        return;
+    }
+    var worldState = await context.Request.ReadFromJsonAsync<object>(context.RequestAborted);
+    eventStore.SnapshotWorld(worldId, worldState!);
+    context.Response.StatusCode = 201;
+});
 
 app.Run();

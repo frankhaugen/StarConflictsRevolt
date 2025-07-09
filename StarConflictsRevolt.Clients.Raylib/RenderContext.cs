@@ -25,4 +25,6 @@ public class RenderContext
     
     public IGameObject? SelectedObject { get; set; }
     public GameView CurrentView { get; set; } = GameView.Menu;
+    public string? AccessToken { get; set; }
+    public string? ClientId { get; set; }
 }

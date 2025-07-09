@@ -1,5 +1,7 @@
 ﻿using System.Threading.Channels;
 using Raven.Client.Documents;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace StarConflictsRevolt.Server.Eventing;
 
@@ -50,6 +52,21 @@ public class RavenEventStore : IEventStore
             foreach (var sub in _subscribers.ToArray())
                 await sub(env);
         }
+    }
+
+    // --- Snapshotting and Replay ---
+    public IEnumerable<EventEnvelope> GetEventsForWorld(Guid worldId)
+    {
+        using var session = _store.OpenSession();
+        return session.Query<EventEnvelope>().Where(e => e.WorldId == worldId).OrderBy(e => e.Timestamp).ToList();
+    }
+
+    public void SnapshotWorld(Guid worldId, object worldState)
+    {
+        using var session = _store.OpenSession();
+        var snapshotDocId = $"WorldSnapshots/{worldId}/{DateTime.UtcNow:yyyyMMddHHmmss}";
+        session.Store(worldState, snapshotDocId);
+        session.SaveChanges();
     }
 
     public async ValueTask DisposeAsync()
