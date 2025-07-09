@@ -3,8 +3,6 @@ using StarConflictsRevolt.Clients.Raylib;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Shared;
 using System.Text.Json;
-using System.Security.Principal;
-using System.Runtime.InteropServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -27,6 +25,7 @@ builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
 builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
 builder.Services.AddSingleton<RenderContext>();
 builder.Services.AddSingleton<GameCommandService>();
+builder.Services.AddSingleton<GameState>();
 
 // Register all view renderers
 builder.Services.AddSingleton<IView, MenuView>(sp => 
@@ -60,7 +59,7 @@ var renderContext = host.Services.GetRequiredService<RenderContext>();
 
 // Get user profile information
 logger.LogInformation("Retrieving Windows user profile");
-var userProfile = GetUserProfile();
+var userProfile = UserProfile.GetUserProfile();
 logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={DisplayName}, UserName={UserName}", 
     userProfile.UserId, userProfile.DisplayName, userProfile.UserName);
 
@@ -117,57 +116,3 @@ else
 logger.LogInformation("Client setup completed. Starting host...");
 
 host.Run();
-
-// Helper method to get Windows user profile
-static UserProfile GetUserProfile()
-{
-    try
-    {
-        var identity = WindowsIdentity.GetCurrent();
-        var name = identity?.Name ?? "Unknown User";
-        
-        // Try to get display name from Windows
-        string displayName = name;
-        try
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var userPrincipal = System.DirectoryServices.AccountManagement.UserPrincipal.Current;
-                if (userPrincipal != null)
-                {
-                    displayName = userPrincipal.DisplayName ?? userPrincipal.Name ?? name;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Fallback to username if display name lookup fails
-            displayName = name;
-            Console.WriteLine($"Failed to get display name: {ex.Message}");
-        }
-        
-        return new UserProfile
-        {
-            UserId = identity?.User?.Value ?? Guid.NewGuid().ToString(),
-            DisplayName = displayName,
-            UserName = name
-        };
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Failed to get Windows identity: {ex.Message}");
-        return new UserProfile
-        {
-            UserId = Guid.NewGuid().ToString(),
-            DisplayName = "Unknown User",
-            UserName = "Unknown"
-        };
-    }
-}
-
-public record UserProfile
-{
-    public string UserId { get; init; } = string.Empty;
-    public string DisplayName { get; init; } = string.Empty;
-    public string UserName { get; init; } = string.Empty;
-}
