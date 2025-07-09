@@ -9,8 +9,8 @@ public record Planet(
     double OrbitSpeed,
     double DistanceFromSun,
     List<Fleet> Fleets,
-    List<StructureType> Structures
+    List<Structure> Structures
 ) : GameObject
 {
-    public Planet() : this(Guid.Empty, string.Empty, 0, 0, 0, 0, 0, new List<Fleet>(), new List<StructureType>()) { }
+    public Planet() : this(Guid.Empty, string.Empty, 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>()) { }
 }

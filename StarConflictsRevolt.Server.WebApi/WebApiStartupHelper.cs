@@ -2,7 +2,8 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.WebApi;
+
+namespace StarConflictsRevolt.Server.WebApi;
 
 public static class WebApiStartupHelper
 {

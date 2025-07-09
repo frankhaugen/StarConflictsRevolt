@@ -1,6 +1,6 @@
-﻿using StarConflictsRevolt.Tests.Data;
+﻿using StarConflictsRevolt.Tests.ExampleTests.Data;
 
-namespace StarConflictsRevolt.Tests;
+namespace StarConflictsRevolt.Tests.ExampleTests;
 
 public class Tests
 {

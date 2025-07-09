@@ -1,6 +1,6 @@
 ﻿using TUnit.Core.Interfaces;
 
-namespace StarConflictsRevolt.Tests.Data;
+namespace StarConflictsRevolt.Tests.ExampleTests.Data;
 
 public class DataClass : IAsyncInitializer, IAsyncDisposable
 {

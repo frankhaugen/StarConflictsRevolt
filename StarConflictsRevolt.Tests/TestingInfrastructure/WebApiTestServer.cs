@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using StarConflictsRevolt.Server.WebApi;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 

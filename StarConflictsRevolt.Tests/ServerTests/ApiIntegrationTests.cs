@@ -1,15 +1,10 @@
-using System;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using System.Text.Json;
-using StarConflictsRevolt.Server.Eventing;
-using TUnit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using StarConflictsRevolt.Server.Eventing;
 
-namespace StarConflictsRevolt.Tests;
+namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class ApiIntegrationTests
 {
@@ -56,9 +51,3 @@ public class ApiIntegrationTests
 }
 
 // Minimal in-memory event store for test DI
-public class InMemoryEventStore : IEventStore
-{
-    public Task PublishAsync(Guid worldId, IGameEvent @event) => Task.CompletedTask;
-    public Task SubscribeAsync(Func<EventEnvelope, Task> handler, CancellationToken ct) => Task.CompletedTask;
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-} 

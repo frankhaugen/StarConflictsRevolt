@@ -2,7 +2,7 @@
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
-namespace StarConflictsRevolt.Tests.IntegrationTests;
+namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 public class WebApiServerTest
 {

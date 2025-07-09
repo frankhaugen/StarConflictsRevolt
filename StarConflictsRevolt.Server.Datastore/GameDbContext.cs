@@ -47,8 +47,8 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
         modelBuilder.Entity<Fleet>().HasData(
             new List<Fleet>(new FleetCollection())
         );
-        modelBuilder.Entity<StructureType>().HasData(
-            new List<StructureType>(new StructureTypeCollection())
+        modelBuilder.Entity<Structure>().HasData(
+            new List<Structure>(new StructureCollection())
         );
     }
 
@@ -67,4 +67,7 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
     public DbSet<Galaxy> Galaxies { get; set; }
     public DbSet<StarSystem> StarSystems { get; set; }
     public DbSet<Planet> Planets { get; set; }
+    public DbSet<Fleet> Fleets { get; set; }
+    public DbSet<Ship> Ships { get; set; }
+    public DbSet<Structure> Structures { get; set; }
 }

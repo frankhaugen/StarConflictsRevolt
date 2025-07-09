@@ -5,7 +5,7 @@
 [assembly: Retry(3)]
 [assembly: System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 
-namespace StarConflictsRevolt.Tests;
+namespace StarConflictsRevolt.Tests.ExampleTests;
 
 public class GlobalHooks
 {

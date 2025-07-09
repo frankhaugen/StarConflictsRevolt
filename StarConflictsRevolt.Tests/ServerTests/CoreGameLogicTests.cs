@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
-using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Core.Enums;
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Datastore.Extensions;
@@ -11,7 +6,7 @@ using StarConflictsRevolt.Server.Datastore.SeedData;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.GameEngine;
 
-namespace StarConflictsRevolt.Tests;
+namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class CoreGameLogicTests
 {

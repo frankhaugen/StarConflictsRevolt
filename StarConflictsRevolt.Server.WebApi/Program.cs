@@ -1,3 +1,5 @@
+using StarConflictsRevolt.Server.WebApi;
+
 var builder = WebApplication.CreateBuilder(args);
 
 WebApiStartupHelper.RegisterServices(builder);
