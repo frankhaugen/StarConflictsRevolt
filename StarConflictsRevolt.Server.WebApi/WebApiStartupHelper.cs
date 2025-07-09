@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.Core;
@@ -6,6 +7,16 @@ using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
 using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+// Ensure JwtConfig is available
+using StarConflictsRevolt.Server.WebApi;
 
 namespace StarConflictsRevolt.Server.WebApi;
 
@@ -76,8 +87,7 @@ public static class WebApiStartupHelper
     public static void Configure(WebApplication app)
     {
         // Let Aspire handle port assignment dynamically
-        // Remove hardcoded port to allow Aspire to assign ports automatically
-        
+        // Do NOT set app.Urls or use Kestrel endpoints here; Aspire will assign ports.
         app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
@@ -107,23 +117,41 @@ public static class WebApiStartupHelper
                 return;
             }
 
-            // Simple token generation (replace with proper JWT implementation)
+            // TODO: Validate clientId/secret against your store
+            // For demo, accept any non-empty
+
+            var claims = new[]
+            {
+                new System.Security.Claims.Claim("client_id", request.ClientId)
+            };
+            var now = DateTime.UtcNow;
+            var jwt = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+                issuer: JwtConfig.Issuer,
+                audience: JwtConfig.Audience,
+                claims: claims,
+                notBefore: now,
+                expires: now.AddHours(1),
+                signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(
+                    JwtConfig.GetSymmetricSecurityKey(),
+                    Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256)
+            );
+            var tokenString = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(jwt);
             var token = new
             {
-                access_token = $"token_{request.ClientId}_{Guid.NewGuid()}",
+                access_token = tokenString,
                 expires_in = 3600,
                 token_type = "Bearer"
             };
-
             await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
         });
 
         // Leaderboard endpoints
+        // Protect endpoints with authentication
         app.MapGet("/leaderboard/{sessionId}", async (Guid sessionId, LeaderboardService leaderboardService, CancellationToken ct) =>
         {
             var leaderboard = await leaderboardService.GetLeaderboardAsync(sessionId, ct);
             return Results.Ok(leaderboard);
-        });
+        }).RequireAuthorization();
 
         app.MapGet("/leaderboard/{sessionId}/player/{playerId}", async (Guid sessionId, Guid playerId, LeaderboardService leaderboardService, CancellationToken ct) =>
         {
@@ -131,13 +159,13 @@ public static class WebApiStartupHelper
             if (stats == null)
                 return Results.NotFound();
             return Results.Ok(stats);
-        });
+        }).RequireAuthorization();
 
         app.MapGet("/leaderboard/top", async (LeaderboardService leaderboardService, int count = 10, CancellationToken ct = default) =>
         {
             var topPlayers = await leaderboardService.GetTopPlayersAsync(count, ct);
             return Results.Ok(topPlayers);
-        });
+        }).RequireAuthorization();
 
         app.MapGet("/game/state", async context =>
             {
@@ -152,7 +180,8 @@ public static class WebApiStartupHelper
 
                 await context.Response.WriteAsJsonAsync(world, context.RequestAborted);
             })
-            .WithName("GetGameState");
+            .WithName("GetGameState")
+            .RequireAuthorization();
 
         app.MapPost("/game/session", async context =>
             {
@@ -176,7 +205,8 @@ public static class WebApiStartupHelper
                 context.Response.StatusCode = 201;
                 await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
             })
-            .WithName("CreateGameSession");
+            .WithName("CreateGameSession")
+            .RequireAuthorization();
 
         app.MapPost("/game/move-fleet", async context =>
         {
@@ -235,7 +265,7 @@ public static class WebApiStartupHelper
             // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/game/build-structure", async context =>
         {
@@ -267,7 +297,7 @@ public static class WebApiStartupHelper
             // TODO: Check player permissions/ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/game/attack", async context =>
         {
@@ -312,7 +342,7 @@ public static class WebApiStartupHelper
             // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/game/diplomacy", async context =>
         {
@@ -343,7 +373,7 @@ public static class WebApiStartupHelper
             }
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
-        });
+        }).RequireAuthorization();
 
         app.MapGet("/game/{worldId}/events", async context =>
         {
@@ -363,7 +393,7 @@ public static class WebApiStartupHelper
             }
             var events = eventStore.GetEventsForWorld(worldId);
             await context.Response.WriteAsJsonAsync(events);
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/game/{worldId}/snapshot", async context =>
         {
@@ -384,6 +414,6 @@ public static class WebApiStartupHelper
             var worldState = await context.Request.ReadFromJsonAsync<object>(context.RequestAborted);
             eventStore.SnapshotWorld(worldId, worldState!);
             context.Response.StatusCode = 201;
-        });
+        }).RequireAuthorization();
     }
 }
