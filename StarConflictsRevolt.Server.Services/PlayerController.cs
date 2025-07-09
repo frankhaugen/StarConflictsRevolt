@@ -3,7 +3,7 @@ using StarConflictsRevolt.Server.Eventing;
 
 namespace StarConflictsRevolt.Server.Core;
 
-public abstract record PlayerController
+public abstract class PlayerController
 {
     public Guid PlayerId { get; init; }
     

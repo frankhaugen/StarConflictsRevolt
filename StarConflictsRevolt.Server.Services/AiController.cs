@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.Core;
 
-public record AiController : PlayerController
+public class AiController : PlayerController
 {
     private readonly Random _random = new();
     private readonly ILogger<AiController> _logger;
 
-    public AiController(Guid playerId, ILogger<AiController> logger) : base(playerId)
+    public AiController(ILogger<AiController> logger)
     {
         _logger = logger;
     }

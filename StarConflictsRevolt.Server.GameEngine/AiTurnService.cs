@@ -54,7 +54,10 @@ public class AiTurnService : BackgroundService
     {
         // For now, create a simple AI player for demonstration
         // In a real implementation, this would look up actual AI players from the world state
-        var aiPlayer = new AiController(Guid.NewGuid(), _logger);
+        var aiPlayer = new AiController(new LoggerFactory().CreateLogger<AiController>())
+        {
+            PlayerId = Guid.NewGuid() // Assign a new GUID for the AI player
+        };
         return new List<PlayerController> { aiPlayer };
     }
 } 
