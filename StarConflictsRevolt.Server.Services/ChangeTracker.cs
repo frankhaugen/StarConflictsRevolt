@@ -1,5 +1,6 @@
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.Services;
 
@@ -75,12 +76,28 @@ public static class ChangeTracker
                         updates.Add(new GameObjectUpdate(oldFleet.Id, UpdateType.Removed, null));
                     }
                 }
-            }
-            foreach (var (pid, oldPlanet) in oldPlanets)
-            {
-                if (!newPlanets.ContainsKey(pid))
+                
+                // Compare Structures
+                var oldStructures = oldPlanet.Structures.ToDictionary(s => s.Id);
+                var newStructures = newPlanet.Structures.ToDictionary(s => s.Id);
+                foreach (var (sid, newStructure) in newStructures)
                 {
-                    updates.Add(new GameObjectUpdate(oldPlanet.Id, UpdateType.Removed, null));
+                    if (!oldStructures.TryGetValue(sid, out var oldStructure))
+                    {
+                        updates.Add(new GameObjectUpdate(newStructure.Id, UpdateType.Added, newStructure));
+                        continue;
+                    }
+                    if (!Equals(oldStructure, newStructure))
+                    {
+                        updates.Add(new GameObjectUpdate(newStructure.Id, UpdateType.Changed, newStructure));
+                    }
+                }
+                foreach (var (sid, oldStructure) in oldStructures)
+                {
+                    if (!newStructures.ContainsKey(sid))
+                    {
+                        updates.Add(new GameObjectUpdate(oldStructure.Id, UpdateType.Removed, null));
+                    }
                 }
             }
         }
@@ -91,6 +108,7 @@ public static class ChangeTracker
                 updates.Add(new GameObjectUpdate(oldSystem.Id, UpdateType.Removed, null));
             }
         }
+
         return updates;
     }
 } 

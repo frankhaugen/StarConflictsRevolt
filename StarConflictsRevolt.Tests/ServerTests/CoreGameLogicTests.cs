@@ -6,11 +6,33 @@ using StarConflictsRevolt.Server.Datastore.SeedData;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.GameEngine;
 using StarConflictsRevolt.Server.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class CoreGameLogicTests
 {
+    private readonly IServiceProvider _serviceProvider;
+
+    public CoreGameLogicTests()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
+        services.AddSingleton<IEventStore, InMemoryEventStore>();
+        services.AddSingleton<SessionAggregateManager>();
+        services.AddSingleton<ILoggerFactory, LoggerFactory>();
+        _serviceProvider = services.BuildServiceProvider();
+    }
+
+    private SessionAggregate CreateAggregate(Guid sessionId, World world)
+    {
+        var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+        return new SessionAggregate(sessionId, world, loggerFactory.CreateLogger<SessionAggregate>());
+    }
+
     [Test]
     public async Task MoveFleetEvent_MovesFleetToNewPlanet()
     {
@@ -21,7 +43,7 @@ public class CoreGameLogicTests
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planetA, planetB ], new Vector2(0, 0));
         var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
-        var aggregate = new SessionAggregate(Guid.NewGuid(), world);
+        var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
 
         // Act
@@ -42,7 +64,7 @@ public class CoreGameLogicTests
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
         var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
-        var aggregate = new SessionAggregate(Guid.NewGuid(), world);
+        var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
 
         // Act
@@ -63,7 +85,7 @@ public class CoreGameLogicTests
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
         var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
-        var aggregate = new SessionAggregate(Guid.NewGuid(), world);
+        var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
 
         // Act
@@ -84,7 +106,7 @@ public class CoreGameLogicTests
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
         var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
-        var aggregate = new SessionAggregate(Guid.NewGuid(), world);
+        var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
 
         // Act
@@ -96,4 +118,4 @@ public class CoreGameLogicTests
         await Assert.That(aggregate.Version).IsEqualTo(initialVersion + 1);
         // TODO: Assert player relations when logic is implemented
     }
-} 
+}

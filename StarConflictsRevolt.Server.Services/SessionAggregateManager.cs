@@ -14,11 +14,13 @@ public class SessionAggregateManager
     private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates = new();
     private readonly IEventStore _eventStore;
     private readonly ILogger<SessionAggregateManager> _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public SessionAggregateManager(IEventStore eventStore, ILogger<SessionAggregateManager> logger)
+    public SessionAggregateManager(IEventStore eventStore, ILogger<SessionAggregateManager> logger, ILoggerFactory loggerFactory)
     {
         _eventStore = eventStore;
         _logger = logger;
+        _loggerFactory = loggerFactory;
     }
 
     /// <summary>
@@ -33,7 +35,7 @@ public class SessionAggregateManager
             // Create initial world if not provided
             var world = initialWorld ?? new World(id, new Galaxy(Guid.NewGuid(), new List<StarSystem>()));
             
-            var aggregate = new SessionAggregate(id, world);
+            var aggregate = new SessionAggregate(id, world, _loggerFactory.CreateLogger<SessionAggregate>());
             
             // Replay events from event store if available
             if (_eventStore is RavenEventStore ravenStore)

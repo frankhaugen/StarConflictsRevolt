@@ -1,25 +1,31 @@
 using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Core.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.Services;
 
 public class SessionAggregate
 {
+    private readonly ILogger<SessionAggregate> _logger;
+
     public Guid SessionId { get; set; }
     public World World { get; set; }
     public int Version { get; set; }
     public List<IGameEvent> UncommittedEvents { get; } = new();
 
-    public SessionAggregate(Guid sessionId, World initialWorld)
+    public SessionAggregate(Guid sessionId, World initialWorld, ILogger<SessionAggregate> logger)
     {
         SessionId = sessionId;
         World = initialWorld;
         Version = 0;
+        _logger = logger;
     }
 
     public void Apply(IGameEvent e)
     {
+        _logger.LogInformation("Applying event {EventType} to session {SessionId}, version {Version}", e.GetType().Name, SessionId, Version);
+        
         switch (e)
         {
             case MoveFleetEvent move:
@@ -36,6 +42,8 @@ public class SessionAggregate
                             fromPlanet.Fleets.Remove(fleet);
                             fleet = fleet with { LocationPlanetId = toPlanet.Id };
                             toPlanet.Fleets.Add(fleet);
+                            _logger.LogInformation("Moved fleet {FleetId} from planet {FromPlanet} to planet {ToPlanet}", 
+                                move.FleetId, move.FromPlanetId, move.ToPlanetId);
                         }
                     }
                 }
@@ -53,6 +61,13 @@ public class SessionAggregate
                             planet
                         );
                         planet.Structures.Add(structure);
+                        _logger.LogInformation("Added structure {StructureType} to planet {PlanetId} in session {SessionId}", 
+                            build.StructureType, build.PlanetId, SessionId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Planet {PlanetId} not found for BuildStructureEvent in session {SessionId}", 
+                            build.PlanetId, SessionId);
                     }
                 }
                 break;
@@ -67,6 +82,8 @@ public class SessionAggregate
                         if (defender != null)
                         {
                             planet.Fleets.Remove(defender);
+                            _logger.LogInformation("Removed defender fleet {DefenderFleetId} from planet {PlanetId} in session {SessionId}", 
+                                attack.DefenderFleetId, attack.LocationPlanetId, SessionId);
                         }
                     }
                 }
@@ -74,10 +91,13 @@ public class SessionAggregate
             case DiplomacyEvent diplo:
                 // For demonstration, just log or store the proposal type/message (no-op)
                 // In a real implementation, update player relations, etc.
+                _logger.LogInformation("Diplomacy event processed for session {SessionId}", SessionId);
                 break;
         }
         UncommittedEvents.Add(e);
         Version++;
+        _logger.LogInformation("Event {EventType} applied successfully to session {SessionId}, new version: {Version}", 
+            e.GetType().Name, SessionId, Version);
     }
 
     public void ReplayEvents(IEnumerable<IGameEvent> events)
