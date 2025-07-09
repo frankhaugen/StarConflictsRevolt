@@ -11,6 +11,7 @@ using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
+using System.Net.Http.Json;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -30,6 +31,12 @@ public class GameEngineServerTest
         var serviceProvider = scope.ServiceProvider;
         var dbContext = serviceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
+        
+        // Start the application
+        await app.StartAsync();
+        
+        // Create an HttpClient that can communicate with the test server
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{signalRTestServer.GetPort()}") };
         
         // Listen to SignalR events and persist them in memory for assertions:
         var worldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
@@ -59,24 +66,63 @@ public class GameEngineServerTest
         ravenDbStore.Database.Should().NotBeEmpty("because the RavenDB store should have a database created");
         ravenDbStore.Database.Should().Be("StarConflictsRevolt", "because this is the expected database name for the game engine server");
         
-        
-        // Act: Start the application
-        await app.StartAsync();
         await hubConnection.StartAsync(); // Start the SignalR connection
         
-        // Create a test session to trigger updates
-        var sessionId = Guid.NewGuid();
-        var testWorld = CreateTestWorld(sessionId);
-        var gameUpdateService = serviceProvider.GetServices<IHostedService>()
-            .OfType<GameUpdateService>()
-            .FirstOrDefault() ?? throw new InvalidOperationException("GameUpdateService not found in the service provider");
-        gameUpdateService.CreateSession(sessionId, testWorld);
+        // Create a test session via HTTP API
+        var sessionName = $"test-session-{Guid.NewGuid()}";
+        
+        var response = await httpClient.PostAsJsonAsync("/game/session", sessionName);
+        response.EnsureSuccessStatusCode();
+        var sessionObj = await response.Content.ReadFromJsonAsync<SessionResponse>();
+        var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
+        
+        await Context.Current.OutputWriter.WriteLineAsync($"Created session: {sessionId}");
         
         // Join the session group
         await hubConnection.SendAsync("JoinWorld", sessionId.ToString());
         
+        // Get the world state to find a valid planet ID for sending a command
+        var worldResponse = await httpClient.GetAsync("/game/state");
+        if (!worldResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await worldResponse.Content.ReadAsStringAsync();
+            await Context.Current.OutputWriter.WriteLineAsync($"World state request failed: {worldResponse.StatusCode} - {errorContent}");
+            throw new Exception($"Failed to get world state: {worldResponse.StatusCode}");
+        }
+        
+        var world = await worldResponse.Content.ReadFromJsonAsync<World>();
+        await Context.Current.OutputWriter.WriteLineAsync($"World state retrieved: {world?.Id}");
+        
+        if (world?.Galaxy?.StarSystems?.FirstOrDefault()?.Planets?.FirstOrDefault() is not Planet planet)
+        {
+            await Context.Current.OutputWriter.WriteLineAsync("No planet found in the world");
+            throw new Exception("No planet found in the world");
+        }
+        
+        await Context.Current.OutputWriter.WriteLineAsync($"Found planet: {planet.Id} - {planet.Name}");
+
+        // Send a command to trigger updates
+        var buildCommand = new
+        {
+            PlayerId = Guid.NewGuid(),
+            PlanetId = planet.Id,
+            StructureType = "Mine"
+        };
+        
+        await Context.Current.OutputWriter.WriteLineAsync($"Sending build command for planet: {planet.Id}");
+        var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand);
+        
+        if (!buildResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await buildResponse.Content.ReadAsStringAsync();
+            await Context.Current.OutputWriter.WriteLineAsync($"Build command failed: {buildResponse.StatusCode} - {errorContent}");
+            throw new Exception($"Build command failed: {buildResponse.StatusCode} - {errorContent}");
+        }
+        
+        await Context.Current.OutputWriter.WriteLineAsync("Build command sent successfully");
+        
         // Wait for updates to be sent
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(1000).ConfigureAwait(false);
         
         // Assert: Check if the application is running and can respond to requests
         var clientWorldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
@@ -99,14 +145,5 @@ public class GameEngineServerTest
         await app.StopAsync();
     }
     
-    private static World CreateTestWorld(Guid sessionId)
-    {
-        var starSystem = new StarSystem(Guid.NewGuid(), "Test System", new List<Planet>
-        {
-            new(Guid.NewGuid(), "Test Planet", 1000.0, 5.97e24, 1.0, 1.0, 149.6e6, new List<Fleet>(), new List<Structure>())
-        }, new System.Numerics.Vector2(0, 0));
-        
-        var galaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { starSystem });
-        return new World(sessionId, galaxy);
-    }
+    private record SessionResponse(Guid SessionId);
 }

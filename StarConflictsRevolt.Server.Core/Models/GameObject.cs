@@ -2,5 +2,5 @@
 
 public abstract record GameObject
 {
-    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 }

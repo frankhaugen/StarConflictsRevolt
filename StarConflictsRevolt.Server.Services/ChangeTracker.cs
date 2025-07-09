@@ -13,7 +13,7 @@ public static class ChangeTracker
         // Compare World
         if (oldWorld.Id != newWorld.Id || !Equals(oldWorld.Galaxy, newWorld.Galaxy))
         {
-            updates.Add(new GameObjectUpdate(newWorld.Id, UpdateType.Changed, newWorld));
+            updates.Add(GameObjectUpdate.Update(newWorld.Id, newWorld));
         }
 
         // Compare Galaxies
@@ -21,7 +21,7 @@ public static class ChangeTracker
         var newGalaxy = newWorld.Galaxy;
         if (oldGalaxy.Id != newGalaxy.Id)
         {
-            updates.Add(new GameObjectUpdate(newGalaxy.Id, UpdateType.Changed, newGalaxy));
+            updates.Add(GameObjectUpdate.Update(newGalaxy.Id, newGalaxy));
         }
 
         // Compare StarSystems
@@ -31,12 +31,12 @@ public static class ChangeTracker
         {
             if (!oldSystems.TryGetValue(id, out var oldSystem))
             {
-                updates.Add(new GameObjectUpdate(newSystem.Id, UpdateType.Added, newSystem));
+                updates.Add(GameObjectUpdate.Create(newSystem.Id, newSystem));
                 continue;
             }
             if (!Equals(oldSystem, newSystem))
             {
-                updates.Add(new GameObjectUpdate(newSystem.Id, UpdateType.Changed, newSystem));
+                updates.Add(GameObjectUpdate.Update(newSystem.Id, newSystem));
             }
 
             // Compare Planets
@@ -46,7 +46,7 @@ public static class ChangeTracker
             {
                 if (!oldPlanets.TryGetValue(pid, out var oldPlanet))
                 {
-                    updates.Add(new GameObjectUpdate(newPlanet.Id, UpdateType.Added, newPlanet));
+                    updates.Add(GameObjectUpdate.Create(newPlanet.Id, newPlanet));
                     continue;
                 }
                 
@@ -54,7 +54,7 @@ public static class ChangeTracker
                 var planetChanged = !Equals(oldPlanet, newPlanet);
                 if (planetChanged)
                 {
-                    updates.Add(new GameObjectUpdate(newPlanet.Id, UpdateType.Changed, newPlanet));
+                    updates.Add(GameObjectUpdate.Update(newPlanet.Id, newPlanet));
                 }
 
                 // Compare Fleets
@@ -64,19 +64,19 @@ public static class ChangeTracker
                 {
                     if (!oldFleets.TryGetValue(fid, out var oldFleet))
                     {
-                        updates.Add(new GameObjectUpdate(newFleet.Id, UpdateType.Added, newFleet));
+                        updates.Add(GameObjectUpdate.Create(newFleet.Id, newFleet));
                         continue;
                     }
                     if (!Equals(oldFleet, newFleet))
                     {
-                        updates.Add(new GameObjectUpdate(newFleet.Id, UpdateType.Changed, newFleet));
+                        updates.Add(GameObjectUpdate.Update(newFleet.Id, newFleet));
                     }
                 }
                 foreach (var (fid, oldFleet) in oldFleets)
                 {
                     if (!newFleets.ContainsKey(fid))
                     {
-                        updates.Add(new GameObjectUpdate(oldFleet.Id, UpdateType.Removed, null));
+                        updates.Add(GameObjectUpdate.Delete(oldFleet.Id));
                     }
                 }
                 
@@ -87,19 +87,19 @@ public static class ChangeTracker
                 {
                     if (!oldStructures.TryGetValue(sid, out var oldStructure))
                     {
-                        updates.Add(new GameObjectUpdate(newStructure.Id, UpdateType.Added, newStructure));
+                        updates.Add(GameObjectUpdate.Create(newStructure.Id, newStructure));
                         continue;
                     }
                     if (!Equals(oldStructure, newStructure))
                     {
-                        updates.Add(new GameObjectUpdate(newStructure.Id, UpdateType.Changed, newStructure));
+                        updates.Add(GameObjectUpdate.Update(newStructure.Id, newStructure));
                     }
                 }
                 foreach (var (sid, oldStructure) in oldStructures)
                 {
                     if (!newStructures.ContainsKey(sid))
                     {
-                        updates.Add(new GameObjectUpdate(oldStructure.Id, UpdateType.Removed, null));
+                        updates.Add(GameObjectUpdate.Delete(oldStructure.Id));
                     }
                 }
             }
@@ -108,7 +108,7 @@ public static class ChangeTracker
         {
             if (!newSystems.ContainsKey(id))
             {
-                updates.Add(new GameObjectUpdate(oldSystem.Id, UpdateType.Removed, null));
+                updates.Add(GameObjectUpdate.Delete(oldSystem.Id));
             }
         }
 

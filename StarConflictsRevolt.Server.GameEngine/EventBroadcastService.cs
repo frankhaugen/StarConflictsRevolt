@@ -29,16 +29,16 @@ public class EventBroadcastService : BackgroundService
             {
                 case MoveFleetEvent move:
                     // TODO: Implement actual update logic
-                    updates.Add(new GameObjectUpdate(move.FleetId, UpdateType.Changed, new { FleetId = move.FleetId, ToPlanetId = move.ToPlanetId }));
+                    updates.Add(GameObjectUpdate.Update(move.FleetId, new { FleetId = move.FleetId, ToPlanetId = move.ToPlanetId }));
                     break;
                 case BuildStructureEvent build:
-                    updates.Add(new GameObjectUpdate(build.PlanetId, UpdateType.Changed, new { StructureType = build.StructureType }));
+                    updates.Add(GameObjectUpdate.Update(build.PlanetId, new { StructureType = build.StructureType }));
                     break;
                 case AttackEvent attack:
-                    updates.Add(new GameObjectUpdate(attack.AttackerFleetId, UpdateType.Changed, new { AttackerFleetId = attack.AttackerFleetId, DefenderFleetId = attack.DefenderFleetId }));
+                    updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { AttackerFleetId = attack.AttackerFleetId, DefenderFleetId = attack.DefenderFleetId }));
                     break;
                 case DiplomacyEvent diplo:
-                    updates.Add(new GameObjectUpdate(diplo.PlayerId, UpdateType.Changed, new { TargetPlayerId = diplo.TargetPlayerId, ProposalType = diplo.ProposalType }));
+                    updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { TargetPlayerId = diplo.TargetPlayerId, ProposalType = diplo.ProposalType }));
                     break;
                 default:
                     _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);

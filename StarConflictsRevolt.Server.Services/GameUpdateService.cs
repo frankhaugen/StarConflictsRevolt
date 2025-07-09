@@ -46,7 +46,7 @@ public class GameUpdateService : BackgroundService
         {
             try
             {
-                var deltas = ChangeTracker.ComputeDeltas(new World(Guid.Empty, new Galaxy(Guid.Empty, new List<StarSystem>())), initialWorld);
+                var deltas = ChangeTracker.ComputeDeltas(new World(Guid.Empty, new Galaxy(new List<StarSystem>())), initialWorld);
                 _logger.LogInformation("Sending initial world state for session {SessionId} with {DeltaCount} updates", sessionId, deltas.Count);
                 await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas);
                 _logger.LogInformation("Successfully sent initial world state for session {SessionId}", sessionId);
@@ -166,7 +166,14 @@ public class GameUpdateService : BackgroundService
 
     private static World DeepCloneWorld(World world)
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(world);
-        return System.Text.Json.JsonSerializer.Deserialize<World>(json)!;
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+            WriteIndented = true,
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(world, options);
+        return System.Text.Json.JsonSerializer.Deserialize<World>(json, options)!;
     }
 }

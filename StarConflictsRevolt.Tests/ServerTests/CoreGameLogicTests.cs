@@ -37,11 +37,11 @@ public class CoreGameLogicTests
     public async Task MoveFleetEvent_MovesFleetToNewPlanet()
     {
         // Arrange
-        var planetA = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
-        var planetB = new Planet(Guid.NewGuid(), "B", 1, 1, 1, 1, 2, new(), new());
+        var planetA = new Planet("A", 1, 1, 1, 1, 1, new(), new());
+        var planetB = new Planet("B", 1, 1, 1, 1, 2, new(), new());
         var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { ShipCollection.XWing.ToModel() }, planetA.Id);
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planetA, planetB ], new Vector2(0, 0));
-        var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
+        var galaxy = new Galaxy([ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -60,9 +60,9 @@ public class CoreGameLogicTests
     public async Task BuildStructureEvent_AddsStructureToPlanet()
     {
         // Arrange
-        var planet = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new());
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
+        var galaxy = new Galaxy([ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -81,9 +81,9 @@ public class CoreGameLogicTests
     public async Task AttackEvent_ResolvesCombat()
     {
         // Arrange
-        var planet = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new());
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
+        var galaxy = new Galaxy([ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -102,9 +102,9 @@ public class CoreGameLogicTests
     public async Task DiplomacyEvent_UpdatesPlayerRelations()
     {
         // Arrange
-        var planet = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new());
         var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy(Guid.NewGuid(), [ system ]);
+        var galaxy = new Galaxy([ system ]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;

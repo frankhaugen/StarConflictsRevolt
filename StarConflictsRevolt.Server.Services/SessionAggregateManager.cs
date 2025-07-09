@@ -33,7 +33,7 @@ public class SessionAggregateManager
             _logger.LogInformation("Creating new SessionAggregate for session {SessionId}", id);
             
             // Create initial world if not provided
-            var world = initialWorld ?? new World(id, new Galaxy(Guid.NewGuid(), new List<StarSystem>()));
+            var world = initialWorld ?? new World(id, new Galaxy(new List<StarSystem>()));
             
             var aggregate = new SessionAggregate(id, world, _loggerFactory.CreateLogger<SessionAggregate>());
             

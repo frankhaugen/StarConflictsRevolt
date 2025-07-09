@@ -28,12 +28,15 @@ public class ChangeTrackerTests
     public async Task Detects_Structure_Added()
     {
         var planetId = Guid.NewGuid();
-        var oldPlanet = new Planet(planetId, "A", 1, 1, 1, 1, 1, new(), new());
+        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new())
+        {
+            Id = planetId,
+        };
         var newStructure = new Structure(StructureVariant.Mine, oldPlanet);
         var newPlanet = oldPlanet with { Structures = new List<Structure> { newStructure } };
         var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
         var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
-        var oldGalaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { oldSystem });
+        var oldGalaxy = new Galaxy(new List<StarSystem> { oldSystem });
         var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
         var oldWorld = new World(Guid.NewGuid(), oldGalaxy);
         var newWorld = new World(oldWorld.Id, newGalaxy);
@@ -47,11 +50,15 @@ public class ChangeTrackerTests
     {
         var planetId = Guid.NewGuid();
         var structure = new Structure(StructureVariant.Mine, null!);
-        var oldPlanet = new Planet(planetId, "A", 1, 1, 1, 1, 1, new(), new List<Structure> { structure });
+        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new List<Structure> { structure })
+        {
+            Id = planetId,
+            Structures = new List<Structure> { structure }
+        };
         var newPlanet = oldPlanet with { Structures = new List<Structure>() };
         var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
         var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
-        var oldGalaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { oldSystem });
+        var oldGalaxy = new Galaxy(new List<StarSystem> { oldSystem });
         var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
         var oldWorld = new World(Guid.NewGuid(), oldGalaxy);
         var newWorld = new World(oldWorld.Id, newGalaxy);
@@ -64,9 +71,13 @@ public class ChangeTrackerTests
     public async Task SessionAggregate_Apply_BuildStructureEvent_MutatesWorld()
     {
         var logger = _provider.GetRequiredService<ILogger<SessionAggregate>>();
-        var planet = new Planet(Guid.NewGuid(), "A", 1, 1, 1, 1, 1, new(), new());
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new())
+        {
+            Id = Guid.NewGuid(),
+            Structures = new List<Structure>()
+        };
         var system = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { planet }, new System.Numerics.Vector2(0, 0));
-        var galaxy = new Galaxy(Guid.NewGuid(), new List<StarSystem> { system });
+        var galaxy = new Galaxy(new List<StarSystem> { system });
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = new SessionAggregate(Guid.NewGuid(), world, logger);
         var buildEvent = new BuildStructureEvent(Guid.NewGuid(), planet.Id, StructureVariant.Mine.ToString());

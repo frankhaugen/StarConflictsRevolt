@@ -1,7 +1,6 @@
 ﻿namespace StarConflictsRevolt.Server.Core.Models;
 
 public record Planet(
-    Guid Id,
     string Name,
     double Radius,
     double Mass,
@@ -10,7 +9,4 @@ public record Planet(
     double DistanceFromSun,
     List<Fleet> Fleets,
     List<Structure> Structures
-) : GameObject
-{
-    public Planet() : this(Guid.Empty, string.Empty, 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>()) { }
-}
+) : GameObject;

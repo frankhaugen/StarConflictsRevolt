@@ -114,7 +114,7 @@ public class FullStackIntegrationTest
         await Context.Current.OutputWriter.WriteLineAsync($"World after build command: {System.Text.Json.JsonSerializer.Serialize(worldAfter)}");
 
         // 5. Wait for a delta update via SignalR
-        await Task.Delay(5000); // Give more time for the command to be processed
+        await Task.Delay(1000); // Give more time for the command to be processed
         await Context.Current.OutputWriter.WriteLineAsync($"Total received deltas: {_receivedDeltas.Count}");
         
         if (_receivedDeltas.Count == 0)
@@ -149,8 +149,8 @@ public class FullStackIntegrationTest
         var structureDelta = _receivedDeltas.FirstOrDefault(d =>
             (d.Type == UpdateType.Added || d.Type == UpdateType.Changed) &&
             (
-                (d.Data.HasValue && d.Data.Value.TryGetProperty("Variant", out var variant) && variant.GetString() == "Mine") ||
-                (d.Data.HasValue && d.Data.Value.TryGetProperty("StructureType", out var structureType) && structureType.GetString() == "Mine")
+                (d.Data.HasValue && d.Data.Value.TryGetProperty("variant", out var variant) && variant.GetString() == "mine") ||
+                (d.Data.HasValue && d.Data.Value.TryGetProperty("structureType", out var structureType) && structureType.GetString() == "Mine")
             )
         );
         await Assert.That(structureDelta).IsNotNull();
@@ -158,12 +158,12 @@ public class FullStackIntegrationTest
         if (structureDelta?.Data.HasValue == true)
         {
             var structureData = structureDelta.Data.Value;
-            if (structureData.TryGetProperty("Variant", out var variant))
-                await Assert.That(variant.GetString()).IsEqualTo("Mine");
-            else if (structureData.TryGetProperty("StructureType", out var structureType))
+            if (structureData.TryGetProperty("variant", out var variant))
+                await Assert.That(variant.GetString()).IsEqualTo("mine");
+            else if (structureData.TryGetProperty("structureType", out var structureType))
                 await Assert.That(structureType.GetString()).IsEqualTo("Mine");
             else
-                Assert.Fail("Delta did not contain expected Variant or StructureType property");
+                Assert.Fail("Delta did not contain expected variant or structureType property");
         }
 
         // 8. Assert no critical errors/warnings in logs
