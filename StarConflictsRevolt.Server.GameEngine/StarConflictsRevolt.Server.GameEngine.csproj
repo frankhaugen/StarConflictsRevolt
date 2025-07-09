@@ -8,8 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="9.0.6" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6"/>
         <PackageReference Include="Frank.CronJobs" Version="3.0.0"/>
     </ItemGroup>
     

@@ -62,8 +62,19 @@ public class RavenEventStore : IEventStore
     public void SnapshotWorld(Guid worldId, object worldState)
     {
         using var session = _store.OpenSession();
-        var snapshotDocId = $"WorldSnapshots/{worldId}/{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var snapshotTime = DateTime.UtcNow;
+        var snapshotDocId = $"WorldSnapshots/{worldId}/{snapshotTime:yyyyMMddHHmmss}";
         session.Store(worldState, snapshotDocId);
+        session.SaveChanges();
+
+        // Event scrubbing/aging: delete all events for this world up to the snapshot time
+        var oldEvents = session.Query<EventEnvelope>()
+            .Where(e => e.WorldId == worldId && e.Timestamp <= snapshotTime)
+            .ToList();
+        foreach (var ev in oldEvents)
+        {
+            session.Delete(ev);
+        }
         session.SaveChanges();
     }
 

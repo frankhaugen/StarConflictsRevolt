@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.Core;
-using StarConflictsRevolt.Server.Eventing;
-using System.Collections.Concurrent;
 using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.GameEngine;
 
-namespace StarConflictsRevolt.Server.GameEngine;
+namespace StarConflictsRevolt.Server.Services;
 
 public class GameUpdateService : BackgroundService
 {
@@ -23,21 +26,24 @@ public class GameUpdateService : BackgroundService
         _eventStore = eventStore;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    // Add this method to create a new session/world
+    public void CreateSession(Guid sessionId, World initialWorld)
     {
-        // For demo: create a single session/world
-        var worldId = Guid.NewGuid();
-        var initialWorld = new World(worldId, new Galaxy(Guid.NewGuid(), new List<StarSystem>()));
-        var aggregate = new SessionAggregate(worldId, initialWorld);
-
-        // Replay events from event store
+        var aggregate = new SessionAggregate(sessionId, initialWorld);
+        // Replay events from event store if available
         if (_eventStore is StarConflictsRevolt.Server.Eventing.RavenEventStore ravenStore)
         {
-            var events = ravenStore.GetEventsForWorld(worldId).Select(e => e.Event);
+            var events = ravenStore.GetEventsForWorld(sessionId).Select(e => e.Event);
             aggregate.ReplayEvents(events);
         }
-        _aggregates[worldId] = aggregate;
-        _eventCounts[worldId] = 0;
+        _aggregates[sessionId] = aggregate;
+        _eventCounts[sessionId] = 0;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // On startup, do not create a demo session. Sessions are created via API.
+        // Optionally, load all active sessions from persistent storage here.
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -60,12 +66,18 @@ public class GameUpdateService : BackgroundService
                 {
                     if (_eventStore is StarConflictsRevolt.Server.Eventing.RavenEventStore raven)
                     {
-                        // Stub: serialize world as snapshot
+                        // Serialize world as snapshot
                         raven.SnapshotWorld(sessionId, sessionAggregate.World);
                     }
                 }
             }
             await Task.Delay(1000, stoppingToken); // 1 tick per second
         }
+    }
+
+    public async Task<bool> SessionExistsAsync  (Guid worldId)
+    {
+        // Check if a session with the given worldId exists
+        return _aggregates.ContainsKey(worldId);
     }
 }

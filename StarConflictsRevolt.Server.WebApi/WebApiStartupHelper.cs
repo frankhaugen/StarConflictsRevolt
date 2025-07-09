@@ -2,6 +2,8 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.GameEngine;
+using StarConflictsRevolt.Server.Services;
 
 namespace StarConflictsRevolt.Server.WebApi;
 
@@ -65,6 +67,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/session", async context =>
             {
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
+                var gameUpdateService = context.RequestServices.GetRequiredService<GameUpdateService>();
                 var sessionName = await context.Request.ReadFromJsonAsync<string>(context.RequestAborted);
                 if (string.IsNullOrWhiteSpace(sessionName))
                 {
@@ -74,6 +77,9 @@ public static class WebApiStartupHelper
                 }
 
                 var sessionId = await sessionService.CreateSessionAsync(sessionName, context.RequestAborted);
+                // Create a default world for the new session
+                var world = new StarConflictsRevolt.Server.Core.Models.World(sessionId, new StarConflictsRevolt.Server.Core.Models.Galaxy(Guid.NewGuid(), new List<StarConflictsRevolt.Server.Core.Models.StarSystem>()));
+                gameUpdateService.CreateSession(sessionId, world);
                 context.Response.StatusCode = 201;
                 await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
             })
@@ -82,6 +88,8 @@ public static class WebApiStartupHelper
         app.MapPost("/game/move-fleet", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var gameUpdateService = context.RequestServices.GetRequiredService<GameUpdateService>();
+            var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
             if (dto == null)
             {
@@ -89,8 +97,49 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid MoveFleetEvent");
                 return;
             }
-            // TODO: Get session/world ID from query/body/auth
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            if (!await gameUpdateService.SessionExistsAsync(worldId))
+            {
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync($"Session/world {worldId} does not exist");
+                return;
+            }
+            var world = await worldService.GetWorldAsync(context.RequestAborted);
+            // Strict validation
+            var fleet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).SelectMany(p => p.Fleets).FirstOrDefault(f => f.Id == dto.FleetId);
+            var fromPlanet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.FromPlanetId);
+            var toPlanet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.ToPlanetId);
+            if (fleet == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"Fleet {dto.FleetId} does not exist");
+                return;
+            }
+            if (fromPlanet == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"FromPlanet {dto.FromPlanetId} does not exist");
+                return;
+            }
+            if (toPlanet == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"ToPlanet {dto.ToPlanetId} does not exist");
+                return;
+            }
+            if (!fromPlanet.Fleets.Any(f => f.Id == dto.FleetId))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"Fleet {dto.FleetId} is not at FromPlanet {dto.FromPlanetId}");
+                return;
+            }
+            if (fleet.LocationPlanetId == dto.ToPlanetId)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"Fleet {dto.FleetId} is already at ToPlanet {dto.ToPlanetId}");
+                return;
+            }
+            // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         });
@@ -98,6 +147,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/build-structure", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<BuildStructureEvent>(context.RequestAborted);
             if (dto == null)
             {
@@ -106,6 +156,22 @@ public static class WebApiStartupHelper
                 return;
             }
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var world = await worldService.GetWorldAsync(context.RequestAborted);
+            var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.PlanetId);
+            if (planet == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"Planet {dto.PlanetId} does not exist");
+                return;
+            }
+            // Validate structure type
+            if (!Enum.TryParse<StarConflictsRevolt.Server.Core.Enums.StructureVariant>(dto.StructureType, out var _))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"StructureType {dto.StructureType} is not valid");
+                return;
+            }
+            // TODO: Check player permissions/ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         });
@@ -113,6 +179,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/attack", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<AttackEvent>(context.RequestAborted);
             if (dto == null)
             {
@@ -121,6 +188,35 @@ public static class WebApiStartupHelper
                 return;
             }
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var world = await worldService.GetWorldAsync(context.RequestAborted);
+            var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.LocationPlanetId);
+            if (planet == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"LocationPlanet {dto.LocationPlanetId} does not exist");
+                return;
+            }
+            var attacker = planet.Fleets.FirstOrDefault(f => f.Id == dto.AttackerFleetId);
+            var defender = planet.Fleets.FirstOrDefault(f => f.Id == dto.DefenderFleetId);
+            if (attacker == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"AttackerFleet {dto.AttackerFleetId} does not exist at planet {dto.LocationPlanetId}");
+                return;
+            }
+            if (defender == null)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"DefenderFleet {dto.DefenderFleetId} does not exist at planet {dto.LocationPlanetId}");
+                return;
+            }
+            if (dto.AttackerFleetId == dto.DefenderFleetId)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Attacker and defender fleets cannot be the same");
+                return;
+            }
+            // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         });
@@ -128,6 +224,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/diplomacy", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<DiplomacyEvent>(context.RequestAborted);
             if (dto == null)
             {
@@ -136,6 +233,21 @@ public static class WebApiStartupHelper
                 return;
             }
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var world = await worldService.GetWorldAsync(context.RequestAborted);
+            // For demo, assume players are fleets' owners (stub)
+            var allPlayerIds = world.Galaxy.StarSystems.SelectMany(s => s.Planets).SelectMany(p => p.Fleets).Select(f => f.Id).ToHashSet();
+            if (!allPlayerIds.Contains(dto.PlayerId))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"PlayerId {dto.PlayerId} does not exist");
+                return;
+            }
+            if (!allPlayerIds.Contains(dto.TargetPlayerId))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync($"TargetPlayerId {dto.TargetPlayerId} does not exist");
+                return;
+            }
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         });
