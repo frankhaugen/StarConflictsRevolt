@@ -29,7 +29,7 @@ var engine = builder.AddProject<StarConflictsRevolt_Server_GameEngine>("engine")
     .WaitFor(redis)
     ;
 
-var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi")
+var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "http")
     .WithReference(redis)
     .WithReference(gameDb)
     .WithReference(ravenDb)
@@ -42,28 +42,9 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi")
 // Add Raylib client that runs after WebApi is ready
 var raylib = builder.AddProject<StarConflictsRevolt_Clients_Raylib>("raylib")
     .WithReference(webapi)
+    .WithReference(engine)
     .WaitFor(webapi)
+    .WaitFor(engine)
     ;
-
-// var webappserver = builder.AddProject<StarConflictsRevolt_Server_WebApp>("webappserver")
-//     .WithReference(redis)
-//     .WithReference(gameDb)
-//     .WithReference(ravenDb)
-//     .WithReference(webapi)
-//     .WithReference(engine)
-//     .WaitFor(engine)
-//     .WaitFor(webapi)
-//     ;
-
-// var webapp = builder.AddProject<StarConflictsRevolt_Clients_WebApp>("webapp")
-//     .WithReference(redis)
-//     .WithReference(gameDb)
-//     .WithReference(ravenDb)
-//     .WithReference(webapi)
-//     .WithReference(webappserver)
-//     .WaitFor(engine)
-//     .WaitFor(webapi)
-//     .WaitFor(webappserver)
-//     ;
 
 builder.Build().Run();

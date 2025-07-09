@@ -41,8 +41,8 @@ else
 // Configure TokenProvider options BEFORE registering the service
 builder.Services.Configure<TokenProviderOptions>(options =>
 {
-    // Use service discovery for the WebApi service
-    options.TokenEndpoint = "/token"; // Use relative path since we'll use a named client
+    // Use absolute URI for the WebApi service
+    options.TokenEndpoint = "http://webapi/token";
     options.ClientId = clientId;
     options.Secret = "changeme";
 });
@@ -50,7 +50,7 @@ builder.Services.Configure<TokenProviderOptions>(options =>
 // Add named HttpClient for TokenProvider with service discovery
 builder.Services.AddHttpClient("TokenProvider", client =>
 {
-    client.BaseAddress = new Uri("http://webapi");
+    client.BaseAddress = new Uri("http://webapi/");
     logger.LogInformation("Configured TokenProvider HttpClient with service discovery for WebApi");
 });
 
