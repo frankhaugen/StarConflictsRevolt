@@ -13,9 +13,13 @@ public class CachingTokenProvider : ITokenProvider
     private DateTime _expiresAt;
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    public CachingTokenProvider(HttpClient client, ILogger<CachingTokenProvider> logger, IOptions<TokenProviderOptions> options)
+    public CachingTokenProvider(ILogger<CachingTokenProvider> logger, IOptions<TokenProviderOptions> options)
     {
-        _client = client;
+        _client = new HttpClient();
+        _client.BaseAddress = new Uri(options.Value.TokenEndpoint);
+        _client.DefaultRequestHeaders.Add("Accept", "application/json");
+        _client.DefaultRequestHeaders.Add("User-Agent", "StarConflictsRevolt.Clients.Shared");
+        _client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
         _logger = logger;
         _options = options.Value;
         _logger.LogInformation("CachingTokenProvider initialized with endpoint: {Endpoint}, ClientId: {ClientId}", 

@@ -37,33 +37,8 @@ else
     logger.LogInformation("Using existing client ID: {ClientId}", clientId);
 }
 
-// Configure TokenProvider options BEFORE registering the service
-builder.Services.Configure<TokenProviderOptions>(options =>
-{
-    // Use absolute URI for the WebApi service
-    options.TokenEndpoint = "http://webapi/token";
-    options.ClientId = clientId;
-    options.Secret = "changeme";
-});
-
-// Add named HttpClient for TokenProvider with service discovery
-builder.Services.AddHttpClient("TokenProvider", client =>
-{
-    client.BaseAddress = new Uri("http://webapi/");
-    logger.LogInformation("Configured TokenProvider HttpClient with service discovery for WebApi");
-});
-
-// Register TokenProvider AFTER configuration - use the named HttpClient
-builder.Services.AddSingleton<ITokenProvider>(sp =>
-{
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("TokenProvider");
-    var logger = sp.GetRequiredService<ILogger<CachingTokenProvider>>();
-    var options = sp.GetRequiredService<IOptions<TokenProviderOptions>>();
-    return new CachingTokenProvider(httpClient, logger, options);
-});
-
 // Configure HTTP client with service discovery using HttpApiClient
-HttpApiClient.AddHttpApiClientWithAuth(builder.Services, "GameApi", builder.Configuration, client =>
+builder.Services.AddHttpApiClientWithAuth("GameApi", builder.Configuration, client =>
 {
     // Use service discovery to find the WebApi service
     client.BaseAddress = new Uri("http://webapi");

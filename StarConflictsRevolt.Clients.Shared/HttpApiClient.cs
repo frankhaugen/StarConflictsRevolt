@@ -1,16 +1,8 @@
 using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Polly.Extensions.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace StarConflictsRevolt.Clients.Shared;
 
-// Required NuGet packages:
-// - Microsoft.Extensions.Http
-// - Microsoft.Extensions.Http.Polly
-// - Polly
-// Ensure these are referenced in your project file.
 public class HttpApiClient
 {
     private readonly IHttpClientFactory _factory;
@@ -35,34 +27,4 @@ public class HttpApiClient
 
     public async Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default)
         => await Client.PutAsJsonAsync(uri, body, ct);
-
-    public static void AddHttpApiClient(IServiceCollection services, string clientName, Action<HttpClient>? configure = null)
-    {
-        var builder = services.AddHttpClient(clientName);
-        if (configure != null)
-            builder.ConfigureHttpClient(configure);
-        services.AddTransient(sp => new HttpApiClient(sp.GetRequiredService<IHttpClientFactory>(), clientName));
-    }
-
-    public static void AddHttpApiClientWithAuth(IServiceCollection services, string clientName, IConfiguration configuration, Action<HttpClient>? configure = null)
-    {
-        // Register configuration for the client
-        services.Configure<TokenProviderOptions>(configuration.GetSection(nameof(TokenProviderOptions)));
-        // Register Token provider
-        services.AddSingleton<ITokenProvider, CachingTokenProvider>();
-        // Ensure JwtTokenHandler is registered
-        services.AddTransient<JwtTokenHandler>();
-        var builder = services.AddHttpClient(clientName)
-            .AddHttpMessageHandler<JwtTokenHandler>()
-            .AddPolicyHandler(GetRetryPolicy());
-        if (configure != null)
-            builder.ConfigureHttpClient(configure);
-        services.AddTransient(sp => new HttpApiClient(sp.GetRequiredService<IHttpClientFactory>(), clientName));
-    }
-
-    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() =>
-        HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            .WaitAndRetryAsync(0, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 } 
