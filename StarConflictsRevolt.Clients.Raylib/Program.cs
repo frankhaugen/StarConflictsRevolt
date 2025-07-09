@@ -8,9 +8,15 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
 builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
 builder.Services.AddSingleton<RenderContext>();
+builder.Services.AddSingleton<GameCommandService>();
+
+// Register all view renderers
 builder.Services.AddSingleton<IView, MenuView>();
 builder.Services.AddSingleton<IView, GalaxyView>();
 builder.Services.AddSingleton<IView, TacticalBattleView>();
+builder.Services.AddSingleton<IView, FleetFinderView>();
+builder.Services.AddSingleton<IView, GameOptionsView>();
+builder.Services.AddSingleton<IView, PlanetaryFinderView>();
 
 // Bind GameClientConfiguration from configuration
 builder.Services.Configure<GameClientConfiguration>(

@@ -3,139 +3,221 @@ using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 using System.Text.Json;
+using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public class MenuView : IView
 {
     private readonly RenderContext _renderContext;
+    private readonly GameCommandService _commandService;
     private string _sessionName = "";
     private string _sessionId = "";
     private string _playerName = "";
-    private string _feedback = "";
     private int _menuState = 0; // 0: main, 1: create, 2: join, 3: player select
     private int _selectedView = 0;
     private static readonly (string Title, GameView View)[] _views = new[]
     {
         ("Galaxy View", GameView.Galaxy),
-        ("Fleet Finder", (GameView)1001), // stub
-        ("Game Options", (GameView)1002), // stub
-        ("Planetary Finder", (GameView)1003), // stub
-        ("Troop Finder", (GameView)1004), // stub
-        ("Personnel Finder", (GameView)1005), // stub
-        ("Message Window", (GameView)1006), // stub
+        ("Fleet Finder", GameView.FleetFinder),
+        ("Game Options", GameView.GameOptions),
+        ("Planetary Finder", GameView.PlanetaryFinder),
+        ("Troop Finder", GameView.TroopFinder),
+        ("Personnel Finder", GameView.PersonnelFinder),
+        ("Message Window", GameView.MessageWindow),
     };
 
-    public MenuView(RenderContext renderContext)
+    public MenuView(RenderContext renderContext, GameCommandService commandService)
     {
         _renderContext = renderContext;
+        _commandService = commandService;
     }
 
     public GameView ViewType => GameView.Menu;
 
     public void Draw()
     {
-        Graphics.ClearBackground(Color.Black);
-        Graphics.DrawText("Star Conflicts Revolt", 10, 10, 28, Color.RayWhite);
-        Graphics.DrawText($"Current View: {_views[_selectedView].Title}", 10, 40, 20, Color.SkyBlue);
+        Graphics.ClearBackground(UIHelper.Colors.Background);
+        
+        // Draw title
+        UIHelper.DrawText("Star Conflicts Revolt", 400, 50, UIHelper.FontSizes.Title, Color.White, true);
+        
+        // Handle feedback messages
+        if (_renderContext.GameState.HasExpiredFeedback)
+        {
+            _renderContext.GameState.ClearFeedback();
+        }
+        
+        if (!string.IsNullOrEmpty(_renderContext.GameState.FeedbackMessage))
+        {
+            UIHelper.DrawText(_renderContext.GameState.FeedbackMessage, 400, 100, UIHelper.FontSizes.Medium, UIHelper.Colors.Success, true);
+        }
+        
         if (_menuState == 0)
         {
-            Graphics.DrawText("1. Create New Session", 10, 60, 20, Color.RayWhite);
-            Graphics.DrawText("2. Join Existing Session", 10, 90, 20, Color.RayWhite);
-            Graphics.DrawText("3. Exit", 10, 120, 20, Color.RayWhite);
-            Graphics.DrawText("F1-F7: Switch Views", 10, 150, 18, Color.LightGray);
-            for (int i = 0; i < _views.Length; i++)
-            {
-                Graphics.DrawText($"F{i + 1}: {_views[i].Title}", 300, 60 + i * 30, 18, Color.LightGray);
-                if (Input.IsKeyPressed((KeyboardKey)((int)KeyboardKey.F1 + i)))
-                {
-                    _selectedView = i;
-                    _renderContext.CurrentView = _views[i].View;
-                    _feedback = $"Switched to {_views[i].Title}";
-                }
-            }
-            if (Input.IsKeyPressed(KeyboardKey.One)) _menuState = 1;
-            if (Input.IsKeyPressed(KeyboardKey.Two)) _menuState = 2;
-            if (Input.IsKeyPressed(KeyboardKey.Three) || Input.IsKeyPressed(KeyboardKey.Escape)) Window.Close();
+            DrawMainMenu();
         }
         else if (_menuState == 1)
         {
-            Graphics.DrawText("Enter Session Name:", 10, 60, 20, Color.RayWhite);
-            Graphics.DrawText(_sessionName + "_", 10, 90, 20, Color.LightGray);
-            if (Input.IsKeyPressed(KeyboardKey.Enter) && !string.IsNullOrWhiteSpace(_sessionName))
-            {
-                _ = CreateSessionAsync(_sessionName);
-            }
-            else
-            {
-                var c = Input.GetCharPressed();
-                if (c > 0 && char.IsLetterOrDigit((char)c)) _sessionName += (char)c;
-                if (Input.IsKeyPressed(KeyboardKey.Backspace) && _sessionName.Length > 0) _sessionName = _sessionName[..^1];
-            }
+            DrawCreateSession();
         }
         else if (_menuState == 2)
         {
-            Graphics.DrawText("Enter Session ID:", 10, 60, 20, Color.RayWhite);
-            Graphics.DrawText(_sessionId + "_", 10, 90, 20, Color.LightGray);
-            if (Input.IsKeyPressed(KeyboardKey.Enter) && !string.IsNullOrWhiteSpace(_sessionId))
-            {
-                _menuState = 3;
-            }
-            else
-            {
-                var c = Input.GetCharPressed();
-                if (c > 0 && char.IsLetterOrDigit((char)c) || c == '-') _sessionId += (char)c;
-                if (Input.IsKeyPressed(KeyboardKey.Backspace) && _sessionId.Length > 0) _sessionId = _sessionId[..^1];
-            }
+            DrawJoinSession();
         }
         else if (_menuState == 3)
         {
-            Graphics.DrawText("Enter Player Name:", 10, 60, 20, Color.RayWhite);
-            Graphics.DrawText(_playerName + "_", 10, 90, 20, Color.LightGray);
-            if (Input.IsKeyPressed(KeyboardKey.Enter) && !string.IsNullOrWhiteSpace(_playerName))
-            {
-                _renderContext.Session = new Clients.Models.SessionDto { Id = Guid.TryParse(_sessionId, out var id) ? id : Guid.NewGuid(), SessionName = _sessionName, IsActive = true };
-                _renderContext.ClientId = _playerName;
-                _renderContext.CurrentView = GameView.Galaxy;
-                _feedback = "Joined session as " + _playerName;
-            }
-            else
-            {
-                var c = Input.GetCharPressed();
-                if (c > 0 && char.IsLetterOrDigit((char)c)) _playerName += (char)c;
-                if (Input.IsKeyPressed(KeyboardKey.Backspace) && _playerName.Length > 0) _playerName = _playerName[..^1];
-            }
+            DrawPlayerSelect();
         }
-        if (!string.IsNullOrEmpty(_feedback))
-            Graphics.DrawText(_feedback, 10, Window.GetScreenHeight() - 40, 20, Color.Green);
+        
+        // Draw status bar
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {_renderContext.GameState.PlayerName ?? "Not set"} | Session: {_renderContext.GameState.Session?.SessionName ?? "None"}");
     }
-
-    private async Task CreateSessionAsync(string sessionName)
+    
+    private void DrawMainMenu()
     {
-        try
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 150;
+        var buttonHeight = 40;
+        var buttonSpacing = 50;
+        
+        // Main menu buttons
+        if (UIHelper.DrawButton("Create New Session", centerX - 100, startY, 200, buttonHeight))
         {
-            using var httpClient = new HttpClient();
-            if (!string.IsNullOrEmpty(_renderContext.AccessToken))
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _renderContext.AccessToken);
-            var payload = JsonSerializer.Serialize(new { name = sessionName, players = new[] { _renderContext.ClientId ?? "Player" } });
-            var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync("http://localhost:5267/api/sessions", content);
-            if (response.IsSuccessStatusCode)
+            _menuState = 1;
+        }
+        
+        if (UIHelper.DrawButton("Join Existing Session", centerX - 100, startY + buttonSpacing, 200, buttonHeight))
+        {
+            _menuState = 2;
+        }
+        
+        if (UIHelper.DrawButton("Exit Game", centerX - 100, startY + buttonSpacing * 2, 200, buttonHeight, UIHelper.Colors.Danger))
+        {
+            Window.Close();
+        }
+        
+        // View shortcuts
+        UIHelper.DrawText("View Shortcuts (F1-F7):", centerX - 100, startY + buttonSpacing * 3 + 20, UIHelper.FontSizes.Small, Color.Gray, true);
+        
+        for (int i = 0; i < _views.Length; i++)
+        {
+            var y = startY + buttonSpacing * 3 + 50 + i * 25;
+            UIHelper.DrawText($"F{i + 1}: {_views[i].Title}", centerX - 100, y, UIHelper.FontSizes.Small, Color.LightGray);
+            
+            if (Input.IsKeyPressed((KeyboardKey)((int)KeyboardKey.F1 + i)))
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var doc = JsonDocument.Parse(json);
-                _sessionId = doc.RootElement.GetProperty("sessionId").GetString() ?? "";
-                _menuState = 3;
-                _feedback = "Session created! Enter player name.";
-            }
-            else
-            {
-                _feedback = "Failed to create session.";
+                _selectedView = i;
+                _renderContext.GameState.NavigateTo(_views[i].View);
+                _renderContext.GameState.SetFeedback($"Switched to {_views[i].Title}");
             }
         }
-        catch (Exception ex)
+    }
+    
+    private void DrawCreateSession()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 200;
+        
+        UIHelper.DrawText("Create New Session", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        
+        UIHelper.DrawText("Session Name:", centerX - 100, startY + 50, UIHelper.FontSizes.Medium, Color.White);
+        _sessionName = UIHelper.DrawTextInput(_sessionName, centerX - 100, startY + 80, 200, 30, "Enter session name");
+        
+        if (UIHelper.DrawButton("Create Session", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
         {
-            _feedback = "Error: " + ex.Message;
+            _ = CreateSessionAsync();
+        }
+        
+        if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary))
+        {
+            _menuState = 0;
+        }
+    }
+    
+    private void DrawJoinSession()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 200;
+        
+        UIHelper.DrawText("Join Existing Session", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        
+        UIHelper.DrawText("Session ID:", centerX - 100, startY + 50, UIHelper.FontSizes.Medium, Color.White);
+        _sessionId = UIHelper.DrawTextInput(_sessionId, centerX - 100, startY + 80, 200, 30, "Enter session ID");
+        
+        if (UIHelper.DrawButton("Continue", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
+        {
+            if (!string.IsNullOrWhiteSpace(_sessionId))
+            {
+                _menuState = 3;
+            }
+        }
+        
+        if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary))
+        {
+            _menuState = 0;
+        }
+    }
+    
+    private void DrawPlayerSelect()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 200;
+        
+        UIHelper.DrawText("Enter Player Details", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        
+        UIHelper.DrawText("Player Name:", centerX - 100, startY + 50, UIHelper.FontSizes.Medium, Color.White);
+        _playerName = UIHelper.DrawTextInput(_playerName, centerX - 100, startY + 80, 200, 30, "Enter player name");
+        
+        if (UIHelper.DrawButton("Join Session", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
+        {
+            if (!string.IsNullOrWhiteSpace(_playerName))
+            {
+                JoinSession();
+            }
+        }
+        
+        if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary))
+        {
+            _menuState = 2;
+        }
+    }
+    
+    private async Task CreateSessionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_sessionName))
+        {
+            _renderContext.GameState.SetFeedback("Please enter a session name", TimeSpan.FromSeconds(3));
+            return;
+        }
+        
+        var sessionId = await _commandService.CreateSessionAsync(_sessionName);
+        if (sessionId.HasValue)
+        {
+            _sessionId = sessionId.Value.ToString();
+            _menuState = 3;
+            _renderContext.GameState.SetFeedback("Session created! Enter player name.", TimeSpan.FromSeconds(3));
+        }
+    }
+    
+    private void JoinSession()
+    {
+        if (Guid.TryParse(_sessionId, out var sessionGuid))
+        {
+            _renderContext.GameState.Session = new SessionDto 
+            { 
+                Id = sessionGuid, 
+                SessionName = _sessionName, 
+                IsActive = true 
+            };
+            _renderContext.GameState.PlayerName = _playerName;
+            _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
+            _renderContext.GameState.NavigateTo(GameView.Galaxy);
+            _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
+        }
+        else
+        {
+            _renderContext.GameState.SetFeedback("Invalid session ID", TimeSpan.FromSeconds(3));
         }
     }
 } 

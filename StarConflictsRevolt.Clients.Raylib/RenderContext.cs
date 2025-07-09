@@ -21,10 +21,37 @@ public class RenderContext
     
     public WorldDto? World => _worldStore.GetCurrent();
     
-    public SessionDto? Session { get; set; }
+    // Game state management
+    public GameState GameState { get; } = new();
     
-    public IGameObject? SelectedObject { get; set; }
-    public GameView CurrentView { get; set; } = GameView.Menu;
-    public string? AccessToken { get; set; }
-    public string? ClientId { get; set; }
+    // Legacy properties for backward compatibility
+    public SessionDto? Session 
+    { 
+        get => GameState.Session;
+        set => GameState.Session = value;
+    }
+    
+    public IGameObject? SelectedObject 
+    { 
+        get => GameState.SelectedObject;
+        set => GameState.SelectedObject = value;
+    }
+    
+    public GameView CurrentView 
+    { 
+        get => GameState.CurrentView;
+        set => GameState.CurrentView = value;
+    }
+    
+    public string? AccessToken 
+    { 
+        get => GameState.AccessToken;
+        set => GameState.AccessToken = value;
+    }
+    
+    public string? ClientId 
+    { 
+        get => GameState.PlayerId;
+        set => GameState.PlayerId = value;
+    }
 }
