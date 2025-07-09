@@ -2,11 +2,10 @@ namespace StarConflictsRevolt.Server.Datastore.Entities;
 
 public class Ship : GameObject
 {
-    public Ship(Guid parse, string xWing, HyperdriveRating hyperdriveRating, bool b)
+    public Ship(Guid parse, string xWing, bool b)
     {
         Id = parse;
         Model = xWing;
-        Hyperdrive = hyperdriveRating;
         IsUnderConstruction = b;
     }
 
@@ -16,6 +15,5 @@ public class Ship : GameObject
     }
 
     public string Model { get; set; }
-    public HyperdriveRating Hyperdrive { get; set; }
     public bool IsUnderConstruction { get; set; }
 } 

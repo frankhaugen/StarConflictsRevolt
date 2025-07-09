@@ -10,11 +10,6 @@ public static class EntityExtensions
         return new Galaxy(galaxy.Id, galaxy.StarSystems.Select(x => x.ToModel()));
     }
     
-    public static HyperdriveRating ToModel(this Entities.HyperdriveRating rating)
-    {
-        return new HyperdriveRating(rating.Current, rating.Optimal);
-    }
-    
     public static StarSystem ToModel(this Entities.StarSystem starSystem)
     {
         return new StarSystem(starSystem.Id, starSystem.Name, starSystem.Planets.Select(x => x.ToModel()), starSystem.Coordinates);
@@ -36,7 +31,7 @@ public static class EntityExtensions
     
     public static Ship ToModel(this Entities.Ship ship)
     {
-        return new Ship(ship.Id, ship.Model, ship.Hyperdrive.ToModel(), ship.IsUnderConstruction);
+        return new Ship(ship.Id, ship.Model, ship.IsUnderConstruction);
     }
     
 }

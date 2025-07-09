@@ -19,7 +19,6 @@
             {
                 Id = model.Id,
                 Model = model.Model,
-                Hyperdrive = model.Hyperdrive.ToEntity(),
                 IsUnderConstruction = model.IsUnderConstruction
             };
         }
@@ -53,15 +52,6 @@
                 Created = model.Created,
                 IsActive = model.IsActive,
                 Ended = model.Ended
-            };
-        }
-    
-        public static StarConflictsRevolt.Server.Datastore.Entities.HyperdriveRating ToEntity(this StarConflictsRevolt.Server.Core.Models.HyperdriveRating model)
-        {
-            return new StarConflictsRevolt.Server.Datastore.Entities.HyperdriveRating
-            {
-                Current = model.Current,
-                Optimal = model.Optimal
             };
         }
     }

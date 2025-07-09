@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Numerics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using StarConflictsRevolt.Server.Datastore.Entities;
 using StarConflictsRevolt.Server.Datastore.SeedData;
@@ -25,7 +26,13 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
             .HasKey(g => g.Id);
         
         modelBuilder.Entity<StarSystem>()
-            .HasKey(s => s.Id);
+            .HasKey(s => s.Id)
+            ;
+        modelBuilder.Entity<StarSystem>()
+            .Property(s => s.Coordinates)
+            .HasConversion(
+                v => v.ToString(),
+                v => ParseVector2(v));
         
         modelBuilder.Entity<Planet>()
             .HasKey(p => p.Id);
@@ -43,6 +50,15 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
         modelBuilder.Entity<StructureType>().HasData(
             new List<StructureType>(new StructureTypeCollection())
         );
+    }
+
+    private static Vector2 ParseVector2(string s)
+    {
+        var parts = s.Trim('(', ')').Split(',');
+        if (parts.Length != 2)
+            throw new FormatException($"Invalid Vector2 format: {s}");
+        
+        return new Vector2(float.Parse(parts[0]), float.Parse(parts[1]));
     }
 
     public DbSet<Session> Sessions { get; set; }
