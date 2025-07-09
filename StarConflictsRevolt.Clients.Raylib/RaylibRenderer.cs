@@ -45,7 +45,12 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     private void RenderLoop()
     {
         _logger.LogInformation("Starting Raylib render loop");
-        Window.Init(800, 600, "Star Conflicts Revolt");
+        
+        var aspectRatio = Window.GetScreenWidth() / Window.GetScreenHeight();
+        var height = 1280;
+        var width = (height * aspectRatio);
+        
+        Window.Init(width, height, "Star Conflicts Revolt");
         Input.SetExitKey(KeyboardKey.Backspace);
         Time.SetTargetFPS(60);
         
