@@ -1,36 +1,28 @@
 using System.Text.Json;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Shared;
 
 namespace StarConflictsRevolt.Clients.Raylib;
 
 public class GameCommandService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpApiClient _httpApiClient;
     private readonly GameState _gameState;
     private readonly ILogger<GameCommandService> _logger;
     
-    public GameCommandService(GameState gameState, ILogger<GameCommandService> logger)
+    public GameCommandService(GameState gameState, ILogger<GameCommandService> logger, HttpApiClient httpApiClient)
     {
         _gameState = gameState;
         _logger = logger;
-        _httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5267") };
+        _httpApiClient = httpApiClient;
     }
     
     public async Task<bool> SendCommandAsync(string endpoint, object payload, string? worldId = null)
     {
         try
         {
-            if (!string.IsNullOrEmpty(_gameState.AccessToken))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = 
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _gameState.AccessToken);
-            }
-            
-            var json = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            
             var url = worldId != null ? $"{endpoint}?worldId={worldId}" : endpoint;
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await _httpApiClient.PostAsync(url, payload);
             
             if (response.IsSuccessStatusCode)
             {
@@ -112,10 +104,7 @@ public class GameCommandService
     {
         try
         {
-            var payload = JsonSerializer.Serialize(sessionName);
-            var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/game/session", content);
+            var response = await _httpApiClient.PostAsync("/game/session", sessionName);
             
             if (response.IsSuccessStatusCode)
             {
@@ -146,17 +135,8 @@ public class GameCommandService
     {
         try
         {
-            var response = await _httpClient.GetAsync("/game/state");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var world = JsonSerializer.Deserialize<WorldDto>(json);
-                return world;
-            }
-            
-            _logger.LogWarning("Failed to get world state: {StatusCode}", response.StatusCode);
-            return null;
+            var world = await _httpApiClient.GetAsync<WorldDto>("/game/state");
+            return world;
         }
         catch (Exception ex)
         {

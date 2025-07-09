@@ -5,8 +5,11 @@ using StarConflictsRevolt.Server.Core;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
+using Microsoft.AspNetCore.SignalR;
 
 namespace StarConflictsRevolt.Server.WebApi;
+
+public record TokenRequest(string ClientId, string Secret);
 
 public static class WebApiStartupHelper
 {
@@ -26,6 +29,23 @@ public static class WebApiStartupHelper
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
+
+        // Add HTTP client factory for Clients.Shared integration
+        builder.Services.AddHttpClient();
+        
+        // Add SignalR
+        builder.Services.AddSignalR();
+        
+        // Add CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
 
         builder.AddServiceDefaults();
 
@@ -67,11 +87,39 @@ public static class WebApiStartupHelper
         }
 
         app.UseHttpsRedirection();
+        
+        // Use CORS
+        app.UseCors();
 
         app.MapGet("/", async context =>
         {
             await context.Response.WriteAsync("Welcome to Star Conflicts Revolt API!");
         });
+
+        // Token endpoint for client authentication
+        app.MapPost("/token", async context =>
+        {
+            var request = await context.Request.ReadFromJsonAsync<TokenRequest>(context.RequestAborted);
+            if (request == null || string.IsNullOrEmpty(request.ClientId) || string.IsNullOrEmpty(request.Secret))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Invalid request");
+                return;
+            }
+
+            // Simple token generation (replace with proper JWT implementation)
+            var token = new
+            {
+                access_token = $"token_{request.ClientId}_{Guid.NewGuid()}",
+                expires_in = 3600,
+                token_type = "Bearer"
+            };
+
+            await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
+        });
+
+        // SignalR hub
+        app.MapHub<WorldHub>("/gamehub");
 
         // Leaderboard endpoints
         app.MapGet("/leaderboard/{sessionId}", async (Guid sessionId, LeaderboardService leaderboardService, CancellationToken ct) =>
