@@ -1,4 +1,3 @@
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
