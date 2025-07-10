@@ -28,6 +28,9 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     private static bool _ravenServerStarted = false;
     private static readonly object _ravenLock = new();
     
+    private readonly string _uniqueDbName = $"StarConflictsRevoltTest_{Guid.NewGuid()}";
+    private readonly string _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
+    
     public IConfigurationManager ConfigurationManager => _appBuilder.Configuration;
     public ILoggingBuilder LoggingBuilder => _appBuilder.Logging;
     public IServiceCollection Services => _appBuilder.Services;
@@ -45,7 +48,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
                 {
                     EmbeddedServer.Instance.StartServer(new ServerOptions() 
                     {
-                        DataDirectory = "StarConflictsRevoltTest", // Specify a directory for the in-memory database
+                        DataDirectory = _uniqueDataDir, // Use unique directory per test
                     });
                     _ravenServerStarted = true;
                 }
@@ -61,7 +64,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
             }
         }
         
-        _documentStore = EmbeddedServer.Instance.GetDocumentStore("StarConflictsRevolt");
+        _documentStore = EmbeddedServer.Instance.GetDocumentStore(_uniqueDbName); // Use unique DB name
         
         // Open the SQLite connection for the in-memory database
         _sqliteConnection.Open();
@@ -133,6 +136,13 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
             ((IDisposable)_app)?.Dispose();
         _sqliteConnection.Dispose();
         _documentStore?.Dispose();
+        // Clean up the unique RavenDB data directory
+        try
+        {
+            if (Directory.Exists(_uniqueDataDir))
+                Directory.Delete(_uniqueDataDir, true);
+        }
+        catch { /* ignore cleanup errors */ }
     }
 
     public int GetPort()

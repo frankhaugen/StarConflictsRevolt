@@ -34,6 +34,16 @@ public class GameEngineServerTest
         
         // Create an HttpClient that can communicate with the test server
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{signalRTestServer.GetPort()}") };
+
+        // === AUTHENTICATION: Obtain JWT token ===
+        var testClientId = $"test-client-{Guid.NewGuid()}";
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        tokenResponse.EnsureSuccessStatusCode();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
+            throw new Exception("Failed to obtain JWT token for test user");
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj.access_token);
+        // === END AUTHENTICATION ===
         
         // Listen to SignalR events and persist them in memory for assertions:
         var worldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
@@ -61,7 +71,7 @@ public class GameEngineServerTest
         ravenDbStore.Initialize(); // Initialize the RavenDB store
         ravenDbStore.Database.Should().NotBeNull("because the RavenDB store should be initialized and ready for use");
         ravenDbStore.Database.Should().NotBeEmpty("because the RavenDB store should have a database created");
-        ravenDbStore.Database.Should().Be("StarConflictsRevolt", "because this is the expected database name for the game engine server");
+        ravenDbStore.Database.Should().StartWith("StarConflictsRevolt", "because this is the expected database name for the game engine server");
         
         await hubConnection.StartAsync(); // Start the SignalR connection
         
@@ -143,4 +153,5 @@ public class GameEngineServerTest
     }
     
     private record SessionResponse(Guid SessionId);
+    private record TokenResponse(string access_token, int expires_in, string token_type);
 }

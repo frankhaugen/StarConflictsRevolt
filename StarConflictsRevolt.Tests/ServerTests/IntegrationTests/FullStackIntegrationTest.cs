@@ -35,6 +35,16 @@ public class FullStackIntegrationTest
         
         // Create an HttpClient that can communicate with the test server
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{appBuilderHost.GetPort()}") };
+
+        // === AUTHENTICATION: Obtain JWT token ===
+        var testClientId = $"test-client-{Guid.NewGuid()}";
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        tokenResponse.EnsureSuccessStatusCode();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
+            throw new Exception("Failed to obtain JWT token for test user");
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj.access_token);
+        // === END AUTHENTICATION ===
         
         // 1. Create a new session via API
         var sessionName = $"test-session-{Guid.NewGuid()}";
@@ -179,6 +189,7 @@ public class FullStackIntegrationTest
     }
 
     private record SessionResponse(Guid SessionId);
+    private record TokenResponse(string access_token, int expires_in, string token_type);
 }
 
 // Logger provider for capturing logs
