@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Server.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public class Ship : GameObject
 {

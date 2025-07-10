@@ -1,7 +1,7 @@
 ﻿using System.Threading.Channels;
 using Raven.Client.Documents;
 
-namespace StarConflictsRevolt.Server.Eventing;
+namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public class RavenEventStore : IEventStore
 {

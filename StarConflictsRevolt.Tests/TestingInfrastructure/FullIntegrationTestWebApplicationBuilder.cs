@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Embedded;
-using StarConflictsRevolt.Clients.Shared;
-using StarConflictsRevolt.Server.Datastore;
-using StarConflictsRevolt.Server.GameEngine;
+using StarConflictsRevolt.Clients.Raylib.Http;
 using StarConflictsRevolt.Server.WebApi;
+using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Helpers;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 

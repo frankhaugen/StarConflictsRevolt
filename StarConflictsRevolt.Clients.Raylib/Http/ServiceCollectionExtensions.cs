@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace StarConflictsRevolt.Clients.Shared;
+﻿namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public static class ServiceCollectionExtensions
 {

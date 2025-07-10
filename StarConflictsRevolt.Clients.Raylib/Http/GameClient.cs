@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public class GameClient
 {

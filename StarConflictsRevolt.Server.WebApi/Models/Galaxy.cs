@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.Core.Models;
+﻿namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public record Galaxy(
     List<StarSystem> StarSystems

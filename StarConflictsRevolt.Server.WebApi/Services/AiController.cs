@@ -1,8 +1,8 @@
-﻿using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Core.Enums;
-using Microsoft.Extensions.Logging;
+﻿using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Core;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class AiController : PlayerController
 {
@@ -14,9 +14,9 @@ public class AiController : PlayerController
         _logger = logger;
     }
 
-    public override List<StarConflictsRevolt.Server.Eventing.IGameEvent> GenerateCommands(World world)
+    public override List<IGameEvent> GenerateCommands(World world)
     {
-        var commands = new List<StarConflictsRevolt.Server.Eventing.IGameEvent>();
+        var commands = new List<IGameEvent>();
         
         // Find AI's fleets
         var aiFleets = world.Galaxy.StarSystems
@@ -41,7 +41,7 @@ public class AiController : PlayerController
                 
                 if (fleet.LocationPlanetId != targetPlanet.Id)
                 {
-                    commands.Add(new StarConflictsRevolt.Server.Eventing.MoveFleetEvent(PlayerId, fleet.Id, fleet.LocationPlanetId ?? Guid.Empty, targetPlanet.Id));
+                    commands.Add(new MoveFleetEvent(PlayerId, fleet.Id, fleet.LocationPlanetId ?? Guid.Empty, targetPlanet.Id));
                 }
             }
         }
@@ -54,7 +54,7 @@ public class AiController : PlayerController
                 var structureTypes = Enum.GetValues<StructureVariant>();
                 var structureType = structureTypes[_random.Next(structureTypes.Length)];
                 
-                commands.Add(new StarConflictsRevolt.Server.Eventing.BuildStructureEvent(PlayerId, planet.Id, structureType.ToString()));
+                commands.Add(new BuildStructureEvent(PlayerId, planet.Id, structureType.ToString()));
             }
         }
 
@@ -75,7 +75,7 @@ public class AiController : PlayerController
 
             if (location != null)
             {
-                commands.Add(new StarConflictsRevolt.Server.Eventing.AttackEvent(PlayerId, attacker.Id, defender.Id, location.Id));
+                commands.Add(new AttackEvent(PlayerId, attacker.Id, defender.Id, location.Id));
             }
         }
 

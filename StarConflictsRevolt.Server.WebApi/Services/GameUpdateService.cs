@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.Core;
-using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.WebApi.Eventing;
 
-namespace StarConflictsRevolt.Server.Services;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class GameUpdateService : BackgroundService
 {
@@ -95,7 +92,7 @@ public class GameUpdateService : BackgroundService
                     }
                     if (_sessionManager.GetEventCount(sessionId) > 0 && _sessionManager.GetEventCount(sessionId) % 100 == 0)
                     {
-                        if (_eventStore is StarConflictsRevolt.Server.Eventing.RavenEventStore raven)
+                        if (_eventStore is RavenEventStore raven)
                         {
                             raven.SnapshotWorld(sessionId, sessionAggregate.World);
                             _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _sessionManager.GetEventCount(sessionId));

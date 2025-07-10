@@ -1,10 +1,10 @@
 ﻿using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using StarConflictsRevolt.Server.Datastore.Entities;
-using StarConflictsRevolt.Server.Datastore.SeedData;
+using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+using StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
 
-namespace StarConflictsRevolt.Server.Datastore;
+namespace StarConflictsRevolt.Server.WebApi.Datastore;
 
 public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<IInterceptor> interceptors) : DbContext(options)
 {

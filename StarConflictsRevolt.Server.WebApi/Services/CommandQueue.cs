@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 
-namespace StarConflictsRevolt.Server.Core;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class CommandQueue<TCommand>
 {

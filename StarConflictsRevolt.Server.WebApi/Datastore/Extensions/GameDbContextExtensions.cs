@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StarConflictsRevolt.Server.Core.Models;
-using Galaxy = StarConflictsRevolt.Server.Datastore.Entities.Galaxy;
-using Planet = StarConflictsRevolt.Server.Datastore.Entities.Planet;
-using Session = StarConflictsRevolt.Server.Datastore.Entities.Session;
-using StarSystem = StarConflictsRevolt.Server.Datastore.Entities.StarSystem;
-using World = StarConflictsRevolt.Server.Datastore.Entities.World;
+using StarConflictsRevolt.Server.WebApi.Models;
+using Galaxy = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Galaxy;
+using Planet = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Planet;
+using Session = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Session;
+using StarSystem = StarConflictsRevolt.Server.WebApi.Datastore.Entities.StarSystem;
+using World = StarConflictsRevolt.Server.WebApi.Datastore.Entities.World;
 
-namespace StarConflictsRevolt.Server.Datastore.Extensions;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 
 public static class GameDbContextExtensions
 {

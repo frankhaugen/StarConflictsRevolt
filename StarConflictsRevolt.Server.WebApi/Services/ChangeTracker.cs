@@ -1,7 +1,7 @@
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.Core.Models;
+using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Services;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public static class ChangeTracker
 {

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace StarConflictsRevolt.Server.Core.Models;
+namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public record StarSystem(
     Guid Id,

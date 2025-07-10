@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using StarConflictsRevolt.Server.Eventing;
+using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;

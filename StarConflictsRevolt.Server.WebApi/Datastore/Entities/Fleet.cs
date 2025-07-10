@@ -1,6 +1,6 @@
-using StarConflictsRevolt.Server.Core.Enums;
+using StarConflictsRevolt.Server.WebApi.Enums;
 
-namespace StarConflictsRevolt.Server.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public class Fleet : GameObject
 {

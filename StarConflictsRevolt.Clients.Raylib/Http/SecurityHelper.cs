@@ -1,6 +1,6 @@
 ﻿using Frank.Security.Cryptography;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public static class SecurityHelper
 {

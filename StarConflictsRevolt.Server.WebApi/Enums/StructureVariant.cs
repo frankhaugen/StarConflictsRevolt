@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.Core.Enums;
+﻿namespace StarConflictsRevolt.Server.WebApi.Enums;
 
 public enum StructureVariant
 {

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Datastore;
-using StarConflictsRevolt.Server.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 

@@ -1,7 +1,7 @@
-﻿using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Eventing;
+﻿using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Core;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 class HumanController: PlayerController
 {

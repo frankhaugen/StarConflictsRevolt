@@ -1,8 +1,8 @@
 using System.Collections;
-using StarConflictsRevolt.Server.Core.Enums;
-using StarConflictsRevolt.Server.Datastore.Entities;
+using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+using StarConflictsRevolt.Server.WebApi.Enums;
 
-namespace StarConflictsRevolt.Server.Datastore.SeedData;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
 
 public class StructureCollection : IEnumerable<Structure>
 {

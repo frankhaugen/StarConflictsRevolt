@@ -1,8 +1,7 @@
 ﻿using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public class CachingTokenProvider : ITokenProvider
 {

@@ -1,9 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
 {

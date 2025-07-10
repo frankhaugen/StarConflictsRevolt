@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Shared;
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Net.Http.Json;
+using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 

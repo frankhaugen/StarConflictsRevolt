@@ -1,21 +1,23 @@
-﻿namespace StarConflictsRevolt.Server.Datastore.Extensions
+﻿using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions
 {
     // Mostly mapping extensions for Models into Entities
     public static class ModelExtensions
     {
-        public static StarConflictsRevolt.Server.Datastore.Entities.Fleet ToEntity(this StarConflictsRevolt.Server.Core.Models.Fleet model)
+        public static Fleet ToEntity(this Models.Fleet model)
         {
-            return new StarConflictsRevolt.Server.Datastore.Entities.Fleet
+            return new Fleet
             {
                 Id = model.Id,
                 Name = model.Name,
-                Ships = model.Ships.Select(s => StarConflictsRevolt.Server.Datastore.Extensions.ModelExtensions.ToEntity(s)).ToList()
+                Ships = model.Ships.Select(s => ModelExtensions.ToEntity(s)).ToList()
             };
         }
     
-        public static StarConflictsRevolt.Server.Datastore.Entities.Ship ToEntity(this StarConflictsRevolt.Server.Core.Models.Ship model)
+        public static Ship ToEntity(this Models.Ship model)
         {
-            return new StarConflictsRevolt.Server.Datastore.Entities.Ship
+            return new Ship
             {
                 Id = model.Id,
                 Model = model.Model,
@@ -23,10 +25,10 @@
             };
         }
     
-        public static StarConflictsRevolt.Server.Datastore.Entities.Planet ToEntity(this StarConflictsRevolt.Server.Core.Models.Planet model)
+        public static Planet ToEntity(this Models.Planet model)
         {
             // Only map persistent properties; Fleets and Structures are not persisted directly
-            return new StarConflictsRevolt.Server.Datastore.Entities.Planet
+            return new Planet
             {
                 Id = model.Id,
                 Name = model.Name,
@@ -38,20 +40,20 @@
             };
         }
     
-        public static StarConflictsRevolt.Server.Datastore.Entities.StarSystem ToEntity(this StarConflictsRevolt.Server.Core.Models.StarSystem model)
+        public static StarSystem ToEntity(this Models.StarSystem model)
         {
-            return new StarConflictsRevolt.Server.Datastore.Entities.StarSystem
+            return new StarSystem
             {
                 Id = model.Id,
                 Name = model.Name,
                 Coordinates = model.Coordinates,
-                Planets = model.Planets.Select(p => StarConflictsRevolt.Server.Datastore.Extensions.ModelExtensions.ToEntity(p)).ToList()
+                Planets = model.Planets.Select(p => ModelExtensions.ToEntity(p)).ToList()
             };
         }
     
-        public static StarConflictsRevolt.Server.Datastore.Entities.Session ToEntity(this StarConflictsRevolt.Server.Core.Models.Session model)
+        public static Session ToEntity(this Models.Session model)
         {
-            return new StarConflictsRevolt.Server.Datastore.Entities.Session
+            return new Session
             {
                 Id = model.Id,
                 SessionName = model.SessionName,

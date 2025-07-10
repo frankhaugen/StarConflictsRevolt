@@ -1,9 +1,8 @@
 using System.Collections.Concurrent;
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Eventing;
-using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Services;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 /// <summary>
 /// Manages SessionAggregate instances and provides a DI-friendly interface.

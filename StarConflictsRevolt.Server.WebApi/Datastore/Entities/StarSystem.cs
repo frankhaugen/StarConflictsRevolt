@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace StarConflictsRevolt.Server.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public class StarSystem : GameObject
 {

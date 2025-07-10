@@ -6,8 +6,8 @@ using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 using StarConflictsRevolt.Clients.Models;
 using System.Numerics;
+using StarConflictsRevolt.Clients.Raylib.Http;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
-using StarConflictsRevolt.Clients.Shared;
 
 namespace StarConflictsRevolt.Clients.Raylib;
 

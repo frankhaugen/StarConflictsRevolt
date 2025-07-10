@@ -1,12 +1,12 @@
 using System.Numerics;
-using StarConflictsRevolt.Server.Core.Enums;
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Datastore.Extensions;
-using StarConflictsRevolt.Server.Datastore.SeedData;
-using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
+using StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
+using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests;

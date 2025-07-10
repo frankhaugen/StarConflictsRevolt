@@ -1,6 +1,6 @@
-﻿using StarConflictsRevolt.Server.Core.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Datastore.Extensions;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 
 // Mostly mapping to the sibling record objects in the Core project.
 public static class EntityExtensions

@@ -1,6 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using System.Security.Principal;
 
+namespace StarConflictsRevolt.Clients.Raylib;
+
 public record UserProfile
 {
     public string UserId { get; init; } = string.Empty;

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Server.Services;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class WorldHub : Hub
 {

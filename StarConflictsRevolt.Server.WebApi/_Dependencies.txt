@@ -1,3 +1,0 @@
-Microsoft.AspNetCore.Authentication.JwtBearer
-Microsoft.AspNetCore.Mvc.Versioning
-System.IdentityModel.Tokens.Jwt

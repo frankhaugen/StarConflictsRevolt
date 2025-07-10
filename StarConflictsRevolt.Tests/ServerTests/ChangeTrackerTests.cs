@@ -1,12 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.Core.Enums;
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Services;
-using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.Core;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 

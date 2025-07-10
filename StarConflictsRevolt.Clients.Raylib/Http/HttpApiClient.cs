@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Raylib.Http;
 
 public class HttpApiClient
 {

@@ -1,9 +1,8 @@
-using StarConflictsRevolt.Server.Core.Models;
-using StarConflictsRevolt.Server.Eventing;
-using StarConflictsRevolt.Server.Core.Enums;
-using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Services;
+namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class SessionAggregate
 {

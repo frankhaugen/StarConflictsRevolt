@@ -1,6 +1,6 @@
-﻿using StarConflictsRevolt.Server.Core.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Models;
 
-namespace StarConflictsRevolt.Server.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public abstract class GameObject : IGameObject
 {
