@@ -1,6 +1,6 @@
 ﻿using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Raylib.Http;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public interface IClientWorldStore
 {

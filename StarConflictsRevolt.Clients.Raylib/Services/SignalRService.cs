@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;
 

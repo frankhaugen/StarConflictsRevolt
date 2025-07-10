@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 
-namespace StarConflictsRevolt.Clients.Raylib.Http;
+namespace StarConflictsRevolt.Clients.Http.Http;
 
-public class HttpApiClient
+public class HttpApiClient : IHttpApiClient
 {
     private readonly IHttpClientFactory _factory;
     private readonly string _clientName;
@@ -21,9 +21,9 @@ public class HttpApiClient
     public async Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default)
         => await Client.PostAsJsonAsync(uri, body, ct);
 
-    public async Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default)
-        => await Client.DeleteAsync(uri, ct);
-
     public async Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default)
         => await Client.PutAsJsonAsync(uri, body, ct);
+
+    public async Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default)
+        => await Client.DeleteAsync(uri, ct);
 } 

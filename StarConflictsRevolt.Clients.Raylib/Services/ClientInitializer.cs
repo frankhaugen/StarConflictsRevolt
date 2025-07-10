@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Http.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;

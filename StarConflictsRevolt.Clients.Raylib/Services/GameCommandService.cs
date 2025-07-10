@@ -1,16 +1,16 @@
 using System.Text.Json;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Http.Http;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class GameCommandService
 {
-    private readonly HttpApiClient _httpApiClient;
+    private readonly IHttpApiClient _httpApiClient;
     private readonly GameState _gameState;
     private readonly ILogger<GameCommandService> _logger;
     
-    public GameCommandService(GameState gameState, ILogger<GameCommandService> logger, HttpApiClient httpApiClient)
+    public GameCommandService(GameState gameState, ILogger<GameCommandService> logger, IHttpApiClient httpApiClient)
     {
         _gameState = gameState;
         _logger = logger;

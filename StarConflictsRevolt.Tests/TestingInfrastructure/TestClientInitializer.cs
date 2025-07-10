@@ -29,7 +29,8 @@ public class TestClientInitializer : IClientInitializer
 
         _renderContext.GameState.PlayerName = userProfile.DisplayName;
         _renderContext.GameState.PlayerId = userProfile.UserId;
-        _renderContext.ClientId = clientId;
+        // Note: ClientId property in RenderContext incorrectly maps to PlayerId, so we don't set it here
+        // The client ID should be stored separately, but for now we'll just use the user ID
 
         _logger.LogInformation("Test client initialized");
     }

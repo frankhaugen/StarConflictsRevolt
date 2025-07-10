@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Http;
 using StarConflictsRevolt.Clients.Raylib.Services;
 
 namespace StarConflictsRevolt.Clients.Raylib.Renderers;

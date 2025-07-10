@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Raylib.Http;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
 {

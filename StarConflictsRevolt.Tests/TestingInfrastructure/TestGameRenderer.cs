@@ -1,5 +1,5 @@
 ﻿using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 

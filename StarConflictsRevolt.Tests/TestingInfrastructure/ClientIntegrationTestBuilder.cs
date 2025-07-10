@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Http.Authentication;
+using StarConflictsRevolt.Clients.Http.Configuration;
+using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Raylib.Services;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -35,16 +35,34 @@ public class ClientIntegrationTestBuilder : IDisposable
         // Build the client with test implementations
         var clientBuilder = Host.CreateApplicationBuilder();
         
+        // Add HTTP client factory and related services
+        clientBuilder.Services.AddHttpClient();
+        
+        // Add token provider services (simplified for testing)
+        clientBuilder.Services.AddSingleton<ITokenProvider, TestTokenProvider>();
+        clientBuilder.Services.AddTransient<JwtTokenHandler>();
+        clientBuilder.Services.Configure<TokenProviderOptions>(options =>
+        {
+            options.TokenEndpoint = $"http://localhost:{_serverBuilder.GetPort()}/token";
+            options.ClientId = "test-client";
+            options.Secret = "test-secret";
+        });
+        
         // Add minimal client services
         clientBuilder.Services.AddLogging(logging => logging.AddConsole());
         clientBuilder.Services.AddSingleton<IClientWorldStore, TestClientWorldStore>();
         clientBuilder.Services.AddSingleton<IGameRenderer, TestGameRenderer>();
         clientBuilder.Services.AddSingleton<IViewFactory, TestViewFactory>();
         clientBuilder.Services.AddSingleton<RenderContext>();
-        clientBuilder.Services.AddSingleton<GameCommandService>();
         clientBuilder.Services.AddSingleton<GameState>();
         clientBuilder.Services.AddSingleton<IClientIdentityService, TestClientIdentityService>();
         clientBuilder.Services.AddSingleton<IClientInitializer, TestClientInitializer>();
+
+        // Register HttpApiClient with test configuration
+        clientBuilder.Services.AddTransient(sp => new HttpApiClient(sp.GetRequiredService<IHttpClientFactory>(), "GameApi"));
+        
+        // Register GameCommandService after its dependencies
+        clientBuilder.Services.AddSingleton<GameCommandService>();
 
         // Register test views
         clientBuilder.Services.AddSingleton<IView, TestMenuView>();
@@ -96,5 +114,3 @@ public class ClientIntegrationTestBuilder : IDisposable
         _serverBuilder?.Dispose();
     }
 }
-
-// Test implementations

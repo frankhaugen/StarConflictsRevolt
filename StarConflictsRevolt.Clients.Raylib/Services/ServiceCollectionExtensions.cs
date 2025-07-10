@@ -2,7 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Http;
+using StarConflictsRevolt.Clients.Raylib.Services;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;
@@ -18,8 +19,8 @@ public static class ServiceCollectionExtensions
             logging.SetMinimumLevel(LogLevel.Debug);
         });
 
-        // Configure HTTP client with service discovery
-        services.AddHttpApiClientWithAuth("GameApi", configuration, client =>
+        // Configure HTTP client with the new standardized library
+        services.AddStarConflictsHttpClients(configuration, clientName: "GameApi", client =>
         {
             client.BaseAddress = new Uri("http://webapi");
         });
