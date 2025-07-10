@@ -1,8 +1,4 @@
-using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib;
-using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
-using StarConflictsRevolt.Clients.Raylib.Http;
 using StarConflictsRevolt.Clients.Raylib.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -10,122 +6,14 @@ var builder = Host.CreateApplicationBuilder(args);
 // Add ServiceDefaults for service discovery and observability
 builder.AddServiceDefaults();
 
-// Add custom file logging provider
-builder.Logging.AddProvider(new FileLoggerProvider());
-builder.Logging.SetMinimumLevel(LogLevel.Debug);
+// Configure services
+builder.Services.AddClientServices(builder.Configuration);
 
-var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Starting StarConflictsRevolt Raylib Client");
-
-// Get or create client ID from app data first (needed for token provider configuration)
-var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StarConflictsRevolt");
-Directory.CreateDirectory(appDataPath);
-logger.LogInformation("App data directory: {AppDataPath}", appDataPath);
-
-var clientIdFile = Path.Combine(appDataPath, "client_id.txt");
-string clientId;
-
-if (!File.Exists(clientIdFile))
-{
-    clientId = $"client-{Guid.NewGuid().ToString().Substring(0, 8)}";
-    File.WriteAllText(clientIdFile, clientId);
-    logger.LogInformation("Created new client ID: {ClientId}", clientId);
-}
-else
-{
-    clientId = File.ReadAllText(clientIdFile);
-    logger.LogInformation("Using existing client ID: {ClientId}", clientId);
-}
-
-// Debug configuration
-logger.LogInformation("Configuration sections: {Sections}", 
-    string.Join(", ", builder.Configuration.GetChildren().Select(c => c.Key)));
-logger.LogInformation("TokenProviderOptions section exists: {Exists}", 
-    builder.Configuration.GetSection("TokenProviderOptions").Exists());
-logger.LogInformation("TokenProviderOptions ClientId: {ClientId}", 
-    builder.Configuration["TokenProviderOptions:ClientId"]);
-
-// Configure HTTP client with service discovery using HttpApiClient
-builder.Services.AddHttpApiClientWithAuth("GameApi", builder.Configuration, client =>
-{
-    // Use service discovery to find the WebApi service
-    client.BaseAddress = new Uri("http://webapi");
-    logger.LogInformation("Configured HttpApiClient with service discovery for WebApi");
-});
-
-builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
-builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
-// Register all view renderers using a factory pattern
-builder.Services.AddSingleton<IViewFactory, ViewFactory>();
-builder.Services.AddSingleton<RenderContext>();
-builder.Services.AddSingleton<GameCommandService>();
-builder.Services.AddSingleton<GameState>();
-
-// Register all views as IView implementations
-builder.Services.AddSingleton<IView, MenuView>();
-builder.Services.AddSingleton<IView, GalaxyView>();
-builder.Services.AddSingleton<IView, TacticalBattleView>();
-builder.Services.AddSingleton<IView, FleetFinderView>();
-builder.Services.AddSingleton<IView, GameOptionsView>();
-builder.Services.AddSingleton<IView, PlanetaryFinderView>();
-
-// Bind GameClientConfiguration from configuration
-builder.Services.Configure<GameClientConfiguration>(
-    builder.Configuration.GetSection("GameClientConfiguration"));
-
-// Warn if any critical config values are not set by Aspire or environment
-var apiBaseUrl = builder.Configuration["GameClientConfiguration:ApiBaseUrl"];
-var hubUrl = builder.Configuration["GameClientConfiguration:GameServerHubUrl"];
-var tokenEndpoint = builder.Configuration["TokenProviderOptions:TokenEndpoint"];
-if (apiBaseUrl == "SET_BY_ASPIRE_OR_ENVIRONMENT" || hubUrl == "SET_BY_ASPIRE_OR_ENVIRONMENT" || tokenEndpoint == "SET_BY_ASPIRE_OR_ENVIRONMENT")
-{
-    logger.LogWarning("One or more critical configuration values (ApiBaseUrl, GameServerHubUrl, TokenEndpoint) are not set by Aspire or environment. The client will not work correctly.");
-}
-
-builder.Services.AddSingleton<SignalRService>();
-builder.Services.AddHostedService<ClientServiceHost>();
-
-logger.LogInformation("Service registration completed");
-
+// Build and run
 var host = builder.Build();
 
-System.Diagnostics.Debug.Assert(apiBaseUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override ApiBaseUrl");
-System.Diagnostics.Debug.Assert(hubUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override GameServerHubUrl");
-System.Diagnostics.Debug.Assert(tokenEndpoint != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override TokenEndpoint");
+// Initialize client
+var clientInitializer = host.Services.GetRequiredService<IClientInitializer>();
+await clientInitializer.InitializeAsync();
 
-// --- Client identity and authentication setup ---
-logger.LogInformation("Starting client identity and authentication setup");
-
-var renderContext = host.Services.GetRequiredService<RenderContext>();
-
-// Get user profile information
-logger.LogInformation("Retrieving Windows user profile");
-var userProfile = UserProfile.GetUserProfile();
-logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={DisplayName}, UserName={UserName}", 
-    userProfile.UserId, userProfile.DisplayName, userProfile.UserName);
-
-renderContext.GameState.PlayerName = userProfile.DisplayName;
-renderContext.GameState.PlayerId = userProfile.UserId;
-renderContext.ClientId = clientId;
-
-logger.LogInformation("Client ID set: {ClientId}", renderContext.ClientId);
-
-// Test token acquisition (optional during startup)
-logger.LogInformation("Testing token acquisition");
-try
-{
-    var tokenProvider = host.Services.GetRequiredService<ITokenProvider>();
-    var token = await tokenProvider.GetTokenAsync();
-    renderContext.AccessToken = token;
-    logger.LogInformation("Successfully obtained access token: {TokenPrefix}...", 
-        token.Substring(0, Math.Min(10, token.Length)));
-}
-catch (Exception ex)
-{
-    logger.LogWarning(ex, "Failed to obtain access token during startup - will retry when needed");
-    renderContext.AccessToken = null;
-}
-
-logger.LogInformation("Client setup completed. Starting host...");
-
-host.Run();
+await host.RunAsync();
