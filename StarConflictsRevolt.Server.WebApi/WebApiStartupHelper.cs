@@ -1,8 +1,13 @@
-﻿
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.Core;
+using StarConflictsRevolt.Server.Core.Enums;
 using StarConflictsRevolt.Server.Datastore;
 using StarConflictsRevolt.Server.Eventing;
 using StarConflictsRevolt.Server.Services;
@@ -14,7 +19,6 @@ public static class WebApiStartupHelper
 {
     public static void RegisterServices(WebApplicationBuilder builder)
     {
-
         // Register RavenEventStore as IEventStore
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
 
@@ -32,26 +36,53 @@ public static class WebApiStartupHelper
 
         // Add HTTP client factory for Clients.Shared integration
         builder.Services.AddHttpClient();
-        
+
         // Add SignalR
         builder.Services.AddSignalR();
-        
+
         // Add CORS
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
             {
                 policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
             });
         });
 
         // Add services to the container.
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+
+
+        // Add ServiceDefaults first for proper service discovery and observability
+        builder.AddServiceDefaults();
+
+        // Add JWT authentication
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = JwtConfig.Issuer,
+                    ValidAudience = JwtConfig.Audience,
+                    IssuerSigningKey = JwtConfig.GetSymmetricSecurityKey()
+                };
+            });
+
+        // Add API versioning
+        builder.Services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+        });
     }
-    
+
     public static void RegisterRavenDb(WebApplicationBuilder builder)
     {
         // Register RavenDB DocumentStore using Aspire service discovery
@@ -59,18 +90,14 @@ public static class WebApiStartupHelper
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
             var ravenDbConnectionString = configuration.GetConnectionString("ravenDb");
-            
+
             // Parse the connection string to extract the URL
             string ravenDbUrl;
             if (ravenDbConnectionString?.StartsWith("URL=") == true)
-            {
                 ravenDbUrl = ravenDbConnectionString.Substring(4); // Remove "URL=" prefix
-            }
             else
-            {
                 ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
-            }
-            
+
             return new DocumentStore
             {
                 Urls = [ravenDbUrl],
@@ -78,7 +105,7 @@ public static class WebApiStartupHelper
             }.Initialize();
         });
     }
-    
+
     public static void RegisterGameEngineDbContext(WebApplicationBuilder builder)
     {
         // Register GameDbContext with SQL Server using Aspire service discovery
@@ -90,29 +117,73 @@ public static class WebApiStartupHelper
             options.EnableDetailedErrors();
         });
     }
-    
+
     public static void Configure(WebApplication app)
     {
+// Ensure database is created with retry logic
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+            // Log the connection string being used (without sensitive info)
+            var connectionString = configuration.GetConnectionString("gameDb");
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                var safeConnectionString = connectionString.Replace("Password=", "Password=***");
+                logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
+            }
+            else
+            {
+                logger.LogWarning("No connection string found for 'gameDb'");
+            }
+
+            var maxRetries = 5;
+            var retryDelay = TimeSpan.FromSeconds(1);
+
+            for (var attempt = 1; attempt <= maxRetries; attempt++)
+                try
+                {
+                    logger.LogInformation("Attempting to ensure database is created (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
+                    db.Database.EnsureCreated();
+                    logger.LogInformation("Database created successfully");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to create database on attempt {Attempt}/{MaxRetries}", attempt, maxRetries);
+
+                    if (attempt == maxRetries)
+                    {
+                        logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
+                        break;
+                    }
+
+                    Thread.Sleep(retryDelay);
+                }
+        }
+
+// Enable authentication/authorization middleware
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+// Add a simple health check endpoint
+        app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }));
         // Let Aspire handle port assignment dynamically
         // Do NOT set app.Urls or use Kestrel endpoints here; Aspire will assign ports.
         app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
+        if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
         // Note: HTTPS redirection is handled by Aspire in production
         // app.UseHttpsRedirection();
-        
+
         // Use CORS
         app.UseCors();
 
-        app.MapGet("/", async context =>
-        {
-            await context.Response.WriteAsync("Welcome to Star Conflicts Revolt API!");
-        });
+        app.MapGet("/", async context => { await context.Response.WriteAsync("Welcome to Star Conflicts Revolt API!"); });
 
         // Token endpoint for client authentication
         app.MapPost("/token", async context =>
@@ -133,20 +204,20 @@ public static class WebApiStartupHelper
 
             var claims = new[]
             {
-                new System.Security.Claims.Claim("client_id", request.ClientId)
+                new Claim("client_id", request.ClientId)
             };
             var now = DateTime.UtcNow;
-            var jwt = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
-                issuer: JwtConfig.Issuer,
-                audience: JwtConfig.Audience,
-                claims: claims,
-                notBefore: now,
-                expires: now.AddHours(1),
-                signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(
+            var jwt = new JwtSecurityToken(
+                JwtConfig.Issuer,
+                JwtConfig.Audience,
+                claims,
+                now,
+                now.AddHours(1),
+                new SigningCredentials(
                     JwtConfig.GetSymmetricSecurityKey(),
-                    Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256)
+                    SecurityAlgorithms.HmacSha256)
             );
-            var tokenString = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(jwt);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
             var token = new
             {
                 access_token = tokenString,
@@ -229,6 +300,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid MoveFleetEvent");
                 return;
             }
+
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
             if (!await sessionManagerService.SessionExistsAsync(worldId))
             {
@@ -236,6 +308,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"Session/world {worldId} does not exist");
                 return;
             }
+
             var world = await worldService.GetWorldAsync(context.RequestAborted);
             // Strict validation
             var fleet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).SelectMany(p => p.Fleets).FirstOrDefault(f => f.Id == dto.FleetId);
@@ -247,30 +320,35 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"Fleet {dto.FleetId} does not exist");
                 return;
             }
+
             if (fromPlanet == null)
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"FromPlanet {dto.FromPlanetId} does not exist");
                 return;
             }
+
             if (toPlanet == null)
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"ToPlanet {dto.ToPlanetId} does not exist");
                 return;
             }
+
             if (!fromPlanet.Fleets.Any(f => f.Id == dto.FleetId))
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"Fleet {dto.FleetId} is not at FromPlanet {dto.FromPlanetId}");
                 return;
             }
+
             if (fleet.LocationPlanetId == dto.ToPlanetId)
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"Fleet {dto.FleetId} is already at ToPlanet {dto.ToPlanetId}");
                 return;
             }
+
             // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
@@ -287,6 +365,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid BuildStructureEvent");
                 return;
             }
+
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
             var world = await worldService.GetWorldAsync(worldId, context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.PlanetId);
@@ -296,13 +375,15 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"Planet {dto.PlanetId} does not exist");
                 return;
             }
+
             // Validate structure type
-            if (!Enum.TryParse<StarConflictsRevolt.Server.Core.Enums.StructureVariant>(dto.StructureType, out var _))
+            if (!Enum.TryParse<StructureVariant>(dto.StructureType, out _))
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"StructureType {dto.StructureType} is not valid");
                 return;
             }
+
             // TODO: Check player permissions/ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
@@ -319,6 +400,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid AttackEvent");
                 return;
             }
+
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
             var world = await worldService.GetWorldAsync(context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.LocationPlanetId);
@@ -328,6 +410,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"LocationPlanet {dto.LocationPlanetId} does not exist");
                 return;
             }
+
             var attacker = planet.Fleets.FirstOrDefault(f => f.Id == dto.AttackerFleetId);
             var defender = planet.Fleets.FirstOrDefault(f => f.Id == dto.DefenderFleetId);
             if (attacker == null)
@@ -336,18 +419,21 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"AttackerFleet {dto.AttackerFleetId} does not exist at planet {dto.LocationPlanetId}");
                 return;
             }
+
             if (defender == null)
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"DefenderFleet {dto.DefenderFleetId} does not exist at planet {dto.LocationPlanetId}");
                 return;
             }
+
             if (dto.AttackerFleetId == dto.DefenderFleetId)
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync("Attacker and defender fleets cannot be the same");
                 return;
             }
+
             // TODO: Check player ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
@@ -364,6 +450,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid DiplomacyEvent");
                 return;
             }
+
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
             var world = await worldService.GetWorldAsync(context.RequestAborted);
             // For demo, assume players are fleets' owners (stub)
@@ -374,12 +461,14 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync($"PlayerId {dto.PlayerId} does not exist");
                 return;
             }
+
             if (!allPlayerIds.Contains(dto.TargetPlayerId))
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync($"TargetPlayerId {dto.TargetPlayerId} does not exist");
                 return;
             }
+
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         }).RequireAuthorization();
@@ -393,6 +482,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Event store not available");
                 return;
             }
+
             var worldIdStr = context.Request.RouteValues["worldId"]?.ToString();
             if (!Guid.TryParse(worldIdStr, out var worldId))
             {
@@ -400,6 +490,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid worldId");
                 return;
             }
+
             var events = eventStore.GetEventsForWorld(worldId);
             await context.Response.WriteAsJsonAsync(events);
         }).RequireAuthorization();
@@ -413,6 +504,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Event store not available");
                 return;
             }
+
             var worldIdStr = context.Request.RouteValues["worldId"]?.ToString();
             if (!Guid.TryParse(worldIdStr, out var worldId))
             {
@@ -420,6 +512,7 @@ public static class WebApiStartupHelper
                 await context.Response.WriteAsync("Invalid worldId");
                 return;
             }
+
             var worldState = await context.Request.ReadFromJsonAsync<object>(context.RequestAborted);
             eventStore.SnapshotWorld(worldId, worldState!);
             context.Response.StatusCode = 201;
