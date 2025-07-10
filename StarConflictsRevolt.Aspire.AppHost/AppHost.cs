@@ -20,15 +20,6 @@ var ravenDb = builder.AddRavenDB("ravenDb", RavenDBServerSettings.Unsecured())
     .WithLifetime(ContainerLifetime.Persistent)
     ;
 
-var engine = builder.AddProject<StarConflictsRevolt_Server_GameEngine>("engine")
-    .WithReference(redis)
-    .WithReference(gameDb)
-    .WithReference(ravenDb)
-    .WaitFor(gameDb)
-    .WaitFor(ravenDb)
-    .WaitFor(redis)
-    ;
-
 var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "http")
     .WithReference(redis)
     .WithReference(gameDb)
@@ -41,9 +32,7 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "ht
 // Add Raylib client that runs after both services are ready
 var raylib = builder.AddProject<StarConflictsRevolt_Clients_Raylib>("raylib")
     .WithReference(webapi)
-    .WithReference(engine)
     .WaitFor(webapi)
-    .WaitFor(engine)
     ;
 
 builder.Build().Run();
