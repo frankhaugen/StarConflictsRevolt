@@ -8,10 +8,6 @@
   <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Server.Core\StarConflictsRevolt.Server.Core.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Server.Datastore\StarConflictsRevolt.Server.Datastore.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Server.Eventing\StarConflictsRevolt.Server.Eventing.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" Type="Classic C#" />
 </Solution>
