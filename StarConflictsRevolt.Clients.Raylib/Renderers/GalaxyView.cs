@@ -11,11 +11,13 @@ public class GalaxyView : IView
 {
     private readonly RenderContext _renderContext;
     private readonly GameCommandService _commandService;
+    private readonly ILogger<GalaxyView> _logger;
 
-    public GalaxyView(RenderContext renderContext, GameCommandService commandService)
+    public GalaxyView(RenderContext renderContext, GameCommandService commandService, ILogger<GalaxyView> logger)
     {
         _renderContext = renderContext;
         _commandService = commandService;
+        _logger = logger;
     }
     
     /// <inheritdoc />
@@ -29,6 +31,7 @@ public class GalaxyView : IView
         var currentWorld = _renderContext.World;
         if (currentWorld == null)
         {
+            
             UIHelper.DrawText("No world data available", 400, 300, UIHelper.FontSizes.Large, Color.White, true);
             return;
         }

@@ -16,15 +16,15 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     private readonly List<Vector2> _backgroundStars = new();
     private Camera2D _camera;
     private bool _running = false;
-    private readonly IEnumerable<IView> _views;
+    private readonly IViewFactory _viewFactory;
     private readonly RenderContext _renderContext;
 
-    public RaylibRenderer(ILogger<RaylibRenderer> logger, IEnumerable<IView> views, RenderContext renderContext)
+    public RaylibRenderer(ILogger<RaylibRenderer> logger, IViewFactory viewFactory, RenderContext renderContext)
     {
         _logger = logger;
-        _views = views;
+        _viewFactory = viewFactory;
         _renderContext = renderContext;
-        _logger.LogInformation("RaylibRenderer initialized with {ViewCount} views", _views.Count());
+        _logger.LogInformation("RaylibRenderer initialized with ViewFactory");
     }
 
     public Task<bool> RenderAsync(WorldDto? world, CancellationToken cancellationToken)
@@ -65,7 +65,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
             Graphics.BeginMode2D(_camera);
             
             // Draw current view
-            var currentView = _views.FirstOrDefault(v => v.ViewType == _renderContext.CurrentView);
+            var currentView = _viewFactory.CreateView(_renderContext.CurrentView);
             if (currentView != null)
             {
                 currentView.Draw();

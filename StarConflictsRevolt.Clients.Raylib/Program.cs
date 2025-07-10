@@ -55,23 +55,19 @@ builder.Services.AddHttpApiClientWithAuth("GameApi", builder.Configuration, clie
 
 builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
 builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
+// Register all view renderers using a factory pattern
+builder.Services.AddSingleton<IViewFactory, ViewFactory>();
 builder.Services.AddSingleton<RenderContext>();
 builder.Services.AddSingleton<GameCommandService>();
 builder.Services.AddSingleton<GameState>();
 
-// Register all view renderers
-builder.Services.AddSingleton<IView, MenuView>(sp => 
-    new MenuView(sp.GetRequiredService<RenderContext>(), sp.GetRequiredService<GameCommandService>()));
-builder.Services.AddSingleton<IView, GalaxyView>(sp => 
-    new GalaxyView(sp.GetRequiredService<RenderContext>(), sp.GetRequiredService<GameCommandService>()));
-builder.Services.AddSingleton<IView, TacticalBattleView>(sp => 
-    new TacticalBattleView(sp.GetRequiredService<RenderContext>(), sp.GetRequiredService<GameCommandService>()));
-builder.Services.AddSingleton<IView, FleetFinderView>(sp => 
-    new FleetFinderView(sp.GetRequiredService<RenderContext>(), sp.GetRequiredService<GameCommandService>()));
-builder.Services.AddSingleton<IView, GameOptionsView>(sp => 
-    new GameOptionsView(sp.GetRequiredService<RenderContext>()));
-builder.Services.AddSingleton<IView, PlanetaryFinderView>(sp => 
-    new PlanetaryFinderView(sp.GetRequiredService<RenderContext>(), sp.GetRequiredService<GameCommandService>()));
+// Register all views as IView implementations
+builder.Services.AddSingleton<IView, MenuView>();
+builder.Services.AddSingleton<IView, GalaxyView>();
+builder.Services.AddSingleton<IView, TacticalBattleView>();
+builder.Services.AddSingleton<IView, FleetFinderView>();
+builder.Services.AddSingleton<IView, GameOptionsView>();
+builder.Services.AddSingleton<IView, PlanetaryFinderView>();
 
 // Bind GameClientConfiguration from configuration
 builder.Services.Configure<GameClientConfiguration>(

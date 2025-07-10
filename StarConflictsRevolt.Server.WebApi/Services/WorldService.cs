@@ -51,8 +51,6 @@ public static class WorldMappingExtensions
     }
     public static PlanetDto ToDto(this Planet planet)
     {
-        // Generate a deterministic Guid for planets if not present (for demo, use hash of name)
-        var id = (planet.GetType().GetProperty("Id")?.GetValue(planet) as Guid?) ?? Guid.NewGuid();
-        return new PlanetDto(id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun);
+        return new PlanetDto(planet.Id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun);
     }
 }
