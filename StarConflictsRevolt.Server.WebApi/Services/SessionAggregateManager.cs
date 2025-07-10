@@ -135,4 +135,30 @@ public class SessionAggregateManager
         var json = System.Text.Json.JsonSerializer.Serialize(world, options);
         return System.Text.Json.JsonSerializer.Deserialize<World>(json, options)!;
     }
+
+    public async Task<bool> SessionExistsAsync(Guid worldId)
+    {
+        // Check if the world exists in the event store
+        if (_eventStore is RavenEventStore ravenStore)
+        {
+            var events = ravenStore.GetEventsForWorld(worldId);
+            return events.Any();
+        }
+
+        // Fallback: check if we have an aggregate in memory
+        return _aggregates.ContainsKey(worldId);
+    }
+
+    public void CreateSession(Guid sessionId, World world)
+    {
+        if (_aggregates.ContainsKey(sessionId))
+        {
+            _logger.LogWarning("Session {SessionId} already exists, not creating a new one", sessionId);
+            return;
+        }
+
+        var aggregate = new SessionAggregate(sessionId, world, _loggerFactory.CreateLogger<SessionAggregate>());
+        _aggregates[sessionId] = aggregate;
+        _logger.LogInformation("Created new session {SessionId} with initial world", sessionId);
+    }
 } 
