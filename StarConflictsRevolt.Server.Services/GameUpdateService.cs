@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.Core;
-using StarConflictsRevolt.Server.Core.Models;
 using StarConflictsRevolt.Server.Eventing;
 
 namespace StarConflictsRevolt.Server.Services;

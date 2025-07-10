@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using Microsoft.Extensions.Options;
 
 namespace StarConflictsRevolt.Clients.Shared;
 
