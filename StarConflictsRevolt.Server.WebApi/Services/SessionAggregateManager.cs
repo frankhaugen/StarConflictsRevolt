@@ -11,6 +11,8 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 public class SessionAggregateManager
 {
     private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates = new();
+    private readonly ConcurrentDictionary<Guid, int> _eventCounts = new();
+    private readonly ConcurrentDictionary<Guid, World> _previousWorldStates = new();
     private readonly IEventStore _eventStore;
     private readonly ILogger<SessionAggregateManager> _logger;
     private readonly ILoggerFactory _loggerFactory;
@@ -99,5 +101,38 @@ public class SessionAggregateManager
     public IEnumerable<SessionAggregate> GetAllAggregates()
     {
         return _aggregates.Values;
+    }
+
+    public int GetEventCount(Guid sessionId)
+    {
+        return _eventCounts.GetValueOrDefault(sessionId, 0);
+    }
+
+    public void IncrementEventCount(Guid sessionId)
+    {
+        _eventCounts[sessionId] = GetEventCount(sessionId) + 1;
+    }
+
+    public World? GetPreviousWorldState(Guid sessionId)
+    {
+        return _previousWorldStates.GetValueOrDefault(sessionId);
+    }
+
+    public void SetPreviousWorldState(Guid sessionId, World world)
+    {
+        _previousWorldStates[sessionId] = DeepCloneWorld(world);
+    }
+
+    private static World DeepCloneWorld(World world)
+    {
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+            WriteIndented = true,
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(world, options);
+        return System.Text.Json.JsonSerializer.Deserialize<World>(json, options)!;
     }
 } 

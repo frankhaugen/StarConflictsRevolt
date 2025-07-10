@@ -31,9 +31,8 @@ public static class WebApiStartupHelper
 
         // Register services
         builder.Services.AddScoped<SessionService>();
-        builder.Services.AddScoped<WorldService>();
+        builder.Services.AddScoped<WorldService>(); // DI will resolve WorldFactory automatically
         builder.Services.AddScoped<LeaderboardService>();
-        builder.Services.AddSingleton<SessionManagerService>();
 
         // Add HTTP client factory for Clients.Shared integration
         builder.Services.AddHttpClient();
@@ -269,7 +268,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/session", async context =>
             {
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
-                var sessionManagerService = context.RequestServices.GetRequiredService<SessionManagerService>();
+                var aggregateManager = context.RequestServices.GetRequiredService<SessionAggregateManager>();
                 var sessionName = await context.Request.ReadFromJsonAsync<string>(context.RequestAborted);
                 if (string.IsNullOrWhiteSpace(sessionName))
                 {
@@ -282,7 +281,7 @@ public static class WebApiStartupHelper
                 // Create a default world for the new session with planets
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
                 var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
-                sessionManagerService.CreateSession(sessionId, world);
+                aggregateManager.GetOrCreateAggregate(sessionId, world);
                 context.Response.StatusCode = 201;
                 await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
             })
@@ -292,7 +291,7 @@ public static class WebApiStartupHelper
         app.MapPost("/game/move-fleet", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
-            var sessionManagerService = context.RequestServices.GetRequiredService<SessionManagerService>();
+            var aggregateManager = context.RequestServices.GetRequiredService<SessionAggregateManager>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
             if (dto == null)
@@ -303,7 +302,7 @@ public static class WebApiStartupHelper
             }
 
             var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
-            if (!await sessionManagerService.SessionExistsAsync(worldId))
+            if (!aggregateManager.HasAggregate(worldId))
             {
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync($"Session/world {worldId} does not exist");

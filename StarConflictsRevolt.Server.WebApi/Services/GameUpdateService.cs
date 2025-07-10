@@ -10,22 +10,19 @@ public class GameUpdateService : BackgroundService
     private readonly SessionAggregateManager _aggregateManager;
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly IEventStore _eventStore;
-    private readonly SessionManagerService _sessionManager;
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext, 
         ILogger<GameUpdateService> logger, 
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
-        CommandQueue<IGameEvent> commandQueue,
-        SessionManagerService sessionManager)
+        CommandQueue<IGameEvent> commandQueue)
     {
         _hubContext = hubContext;
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
-        _sessionManager = sessionManager;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -48,14 +45,13 @@ public class GameUpdateService : BackgroundService
                         var oldWorld = sessionAggregate.World;
                         sessionAggregate.Apply(command);
                         await _eventStore.PublishAsync(sessionId, command);
-                        _sessionManager.IncrementEventCount(sessionId);
-                        commandsProcessed++;
+                        _aggregateManager.IncrementEventCount(sessionId);
                         _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}", 
-                            command.GetType().Name, sessionId, _sessionManager.GetEventCount(sessionId));
+                            command.GetType().Name, sessionId, _aggregateManager.GetEventCount(sessionId));
                     }
                     if (commandsProcessed > 0)
                     {
-                        var previousWorld = _sessionManager.GetPreviousWorldState(sessionId);
+                        var previousWorld = _aggregateManager.GetPreviousWorldState(sessionId);
                         if (previousWorld != null)
                         {
                             var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
@@ -67,7 +63,7 @@ public class GameUpdateService : BackgroundService
                                     _logger.LogInformation("Sending {DeltaCount} deltas to session {SessionId} group", deltas.Count, sessionId);
                                     await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
                                     _logger.LogInformation("Successfully sent {DeltaCount} deltas to session {SessionId}", deltas.Count, sessionId);
-                                    _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
+                                    _aggregateManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                                 }
                                 catch (Exception ex)
                                 {
@@ -77,25 +73,25 @@ public class GameUpdateService : BackgroundService
                             else
                             {
                                 _logger.LogDebug("No deltas to send for session {SessionId} (no changes detected)", sessionId);
-                                _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
+                                _aggregateManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                             }
                         }
                         else
                         {
                             _logger.LogWarning("No previous world state found for session {SessionId}", sessionId);
-                            _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
+                            _aggregateManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                         }
                     }
                     else
                     {
                         _logger.LogDebug("No commands processed for session {SessionId}, skipping delta computation", sessionId);
                     }
-                    if (_sessionManager.GetEventCount(sessionId) > 0 && _sessionManager.GetEventCount(sessionId) % 100 == 0)
+                    if (_aggregateManager.GetEventCount(sessionId) > 0 && _aggregateManager.GetEventCount(sessionId) % 100 == 0)
                     {
                         if (_eventStore is RavenEventStore raven)
                         {
                             raven.SnapshotWorld(sessionId, sessionAggregate.World);
-                            _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _sessionManager.GetEventCount(sessionId));
+                            _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _aggregateManager.GetEventCount(sessionId));
                         }
                     }
                 }

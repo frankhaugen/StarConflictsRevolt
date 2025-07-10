@@ -24,8 +24,6 @@ public static class GameEngineStartupHelper
         builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
         
-        builder.Services.AddSingleton<SessionManagerService>();
-        
         // Register SignalR services
         builder.Services.AddSignalR(config =>
         {

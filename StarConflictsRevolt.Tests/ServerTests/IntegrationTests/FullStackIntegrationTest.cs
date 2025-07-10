@@ -128,8 +128,8 @@ public class FullStackIntegrationTest
         if (_receivedDeltas.Count == 0)
         {
             await Context.Current.OutputWriter.WriteLineAsync("No deltas received. Checking if session exists...");
-            var sessionManagerService = scope.ServiceProvider.GetRequiredService<SessionManagerService>();
-            var sessionExists = await sessionManagerService.SessionExistsAsync(sessionId);
+            var aggregateManager = scope.ServiceProvider.GetRequiredService<SessionAggregateManager>();
+            var sessionExists = aggregateManager.HasAggregate(sessionId);
             await Context.Current.OutputWriter.WriteLineAsync($"Session exists: {sessionExists}");
         }
         
