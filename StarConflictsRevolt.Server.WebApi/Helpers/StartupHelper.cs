@@ -122,6 +122,10 @@ public static class StartupHelper
             {
                 var safeConnectionString = connectionString.Replace("Password=", "Password=***");
                 logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
+                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT")
+                {
+                    logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
+                }
             }
             else
             {

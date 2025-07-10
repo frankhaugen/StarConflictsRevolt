@@ -77,6 +77,15 @@ builder.Services.AddSingleton<IView, PlanetaryFinderView>(sp =>
 builder.Services.Configure<GameClientConfiguration>(
     builder.Configuration.GetSection("GameClientConfiguration"));
 
+// Warn if any critical config values are not set by Aspire or environment
+var apiBaseUrl = builder.Configuration["GameClientConfiguration:ApiBaseUrl"];
+var hubUrl = builder.Configuration["GameClientConfiguration:GameServerHubUrl"];
+var tokenEndpoint = builder.Configuration["TokenProviderOptions:TokenEndpoint"];
+if (apiBaseUrl == "SET_BY_ASPIRE_OR_ENVIRONMENT" || hubUrl == "SET_BY_ASPIRE_OR_ENVIRONMENT" || tokenEndpoint == "SET_BY_ASPIRE_OR_ENVIRONMENT")
+{
+    logger.LogWarning("One or more critical configuration values (ApiBaseUrl, GameServerHubUrl, TokenEndpoint) are not set by Aspire or environment. The client will not work correctly.");
+}
+
 builder.Services.AddSingleton<SignalRService>();
 builder.Services.AddHostedService<ClientServiceHost>();
 
@@ -84,6 +93,11 @@ logger.LogInformation("Service registration completed");
 
 var host = builder.Build();
 
+#if DEBUG
+System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(apiBaseUrl), "ApiBaseUrl should not be empty");
+System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(hubUrl), "GameServerHubUrl should not be empty");
+System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(tokenEndpoint), "TokenEndpoint should not be empty");
+#endif
 // --- Client identity and authentication setup ---
 logger.LogInformation("Starting client identity and authentication setup");
 
