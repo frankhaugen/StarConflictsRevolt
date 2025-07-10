@@ -72,3 +72,14 @@ This architecture ensures:
 - Efficient load and recovery (snapshots)
 - Real-time updates to clients (SignalR)
 - Clean separation of concerns (aggregate = single source of truth) 
+
+---
+
+## DTO Mapping Requirement
+
+All world, session, and game data sent to clients (via API endpoints or SignalR) **must be mapped to the corresponding DTOs** (`WorldDto`, `GalaxyDto`, `StarSystemDto`, `PlanetDto`, etc.).
+
+- The backend must not send internal model objects directly to clients.
+- All DTOs must have valid IDs and all required fields populated as defined in the client models.
+- This ensures compatibility, forward-compatibility, and prevents client errors due to missing or mismatched data.
+- Mapping functions should be implemented and maintained as part of backend development. 

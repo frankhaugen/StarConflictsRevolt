@@ -244,8 +244,7 @@ public static class StartupHelper
                     await context.Response.WriteAsync("World not found");
                     return;
                 }
-
-                await context.Response.WriteAsJsonAsync(world, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(world.ToDto(), context.RequestAborted);
             })
             .WithName("GetGameState")
             .RequireAuthorization();
@@ -268,7 +267,7 @@ public static class StartupHelper
                 var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
                 sessionManagerService.CreateSession(sessionId, world);
                 context.Response.StatusCode = 201;
-                await context.Response.WriteAsJsonAsync(new { SessionId = sessionId }, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
             })
             .WithName("CreateGameSession")
             .RequireAuthorization();
