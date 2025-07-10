@@ -28,9 +28,11 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            // Turn on resilience by default
-            http.AddStandardResilienceHandler();
-
+            // Turn on resilience by default with only two retries
+            http.AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 2;
+            });
             // Turn on service discovery by default
             http.AddServiceDiscovery();
         });

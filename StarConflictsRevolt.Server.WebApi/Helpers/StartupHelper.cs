@@ -131,7 +131,7 @@ public static class StartupHelper
             {
                 logger.LogWarning("No connection string found for 'gameDb'");
             }
-            var maxRetries = 5;
+            var maxRetries = 2;
             var retryDelay = TimeSpan.FromSeconds(1);
             for (var attempt = 1; attempt <= maxRetries; attempt++)
                 try
