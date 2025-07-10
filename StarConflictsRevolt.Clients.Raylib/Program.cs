@@ -93,11 +93,10 @@ logger.LogInformation("Service registration completed");
 
 var host = builder.Build();
 
-#if DEBUG
 System.Diagnostics.Debug.Assert(apiBaseUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override ApiBaseUrl");
 System.Diagnostics.Debug.Assert(hubUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override GameServerHubUrl");
 System.Diagnostics.Debug.Assert(tokenEndpoint != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override TokenEndpoint");
-#endif
+
 // --- Client identity and authentication setup ---
 logger.LogInformation("Starting client identity and authentication setup");
 
