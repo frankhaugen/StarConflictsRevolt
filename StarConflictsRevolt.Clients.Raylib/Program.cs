@@ -3,6 +3,7 @@ using StarConflictsRevolt.Clients.Raylib;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Clients.Raylib.Http;
+using StarConflictsRevolt.Clients.Raylib.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Http;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class SignalRService : IAsyncDisposable
 {

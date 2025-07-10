@@ -2,7 +2,7 @@
 using Raylib_CSharp;
 using Raylib_CSharp.Camera.Cam2D;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public static class RayLibHelper
 {

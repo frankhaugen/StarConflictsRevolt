@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Clients.Raylib;
+﻿namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public enum GameView
 {

@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Clients.Raylib;
+﻿namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public enum GameSpeed
 {

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Security.Principal;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public record UserProfile
 {

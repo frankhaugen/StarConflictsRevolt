@@ -1,6 +1,7 @@
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Raylib.Renderers;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class GameState
 {

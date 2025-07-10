@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class FileLoggerProvider : ILoggerProvider
 {

@@ -4,7 +4,7 @@ using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Raylib;
+namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public static class UIHelper
 {
