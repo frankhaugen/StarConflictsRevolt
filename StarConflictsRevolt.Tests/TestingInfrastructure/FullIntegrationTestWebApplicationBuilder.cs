@@ -75,8 +75,8 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
         // Set log level of "Microsoft.EntityFrameworkCore.Database.Command" to "Warning" to reduce noise in the console output
         builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
         
-        // Register SignalR services
-        GameEngineStartupHelper.RegisterGameEngineServices(builder);
+        // Register all core services using the new StartupHelper (databases are registered below for testing)
+        StartupHelper.RegisterAllServices(builder);
         
         builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>(); // Register the client world store
         
@@ -91,7 +91,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
         // Register the document store as a singleton service
         builder.Services.AddSingleton(_documentStore!);
         
-        WebApiStartupHelper.RegisterServices(builder);
+        // Already registered above
         
         // Configure the web application with the necessary services and middleware
         builder.WebHost.UseUrls($"http://localhost:{_port}"); // Set the URL for the server
@@ -104,9 +104,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
         app.Urls.Add($"http://localhost:{_port}");
         
         // Configure the HTTP request pipeline
-        WebApiStartupHelper.Configure(app);
-        // Configure the HTTP request pipeline for SignalR
-        GameEngineStartupHelper.ConfigureGameEngine(app);
+        StartupHelper.Configure(app);
         
         return app;
     }

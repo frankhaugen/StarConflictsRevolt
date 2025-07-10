@@ -2,17 +2,11 @@ using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
-
-GameEngineStartupHelper.RegisterGameEngineServices(builder);
-GameEngineStartupHelper.RegisterGameEngineDbContext(builder);
-GameEngineStartupHelper.RegisterGameEngineDocumentStore(builder);
-WebApiStartupHelper.RegisterServices(builder);
-WebApiStartupHelper.RegisterGameEngineDbContext(builder);
-WebApiStartupHelper.RegisterRavenDb(builder);
+StartupHelper.RegisterAllServices(builder);
+StartupHelper.RegisterRavenDb(builder);
+StartupHelper.RegisterGameDbContext(builder);
 
 var app = builder.Build();
-
-GameEngineStartupHelper.ConfigureGameEngine(app);
-WebApiStartupHelper.Configure(app);
+StartupHelper.Configure(app);
 
 app.Run();
