@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Embedded;
 using StarConflictsRevolt.Clients.Raylib.Http;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -39,6 +38,65 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
 
     public WebApplication Build()
     {
+        // Create a new web application builder for the SignalR test server
+        var builder = _appBuilder;
+        
+        InitializeRavenDbServer(builder);
+        AddInMemoryConfigurationOverrides(builder);
+        OpenSqliteConnectionAndConfigureDbContext(builder);
+
+        // Set the log level of "Microsoft.EntityFrameworkCore.Database.Command" to "Warning" to reduce noise in the console output
+        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+        
+        // Register all core services using the new StartupHelper (databases are registered below for testing)
+        StartupHelper.RegisterAllServices(builder);
+        
+        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>(); // Register the client world store
+        
+        // Configure the web application with the necessary services and middleware
+        builder.WebHost.UseUrls($"http://localhost:{_port}"); // Set the URL for the server
+        
+        var app = builder.Build();
+        
+        // Set port for the application:
+        app.Urls.Add($"http://localhost:{_port}");
+        
+        // Configure the HTTP request pipeline
+        StartupHelper.Configure(app);
+        return app;
+    }
+
+    private void OpenSqliteConnectionAndConfigureDbContext(WebApplicationBuilder builder)
+    {
+        // Open the SQLite connection for the in-memory database
+        _sqliteConnection.Open();
+
+        // Register the test database context (SQLite in-memory)
+        builder.Services.AddDbContext<GameDbContext>(options =>
+        {
+            // Configure the database context with an in-memory database for testing
+            options.UseSqlite(_sqliteConnection) // Use an in-memory SQLite database
+                .EnableSensitiveDataLogging() // Enable detailed logging for debugging
+                .EnableDetailedErrors(); // Enable detailed error messages
+        });
+    }
+
+    private void AddInMemoryConfigurationOverrides(WebApplicationBuilder builder)
+    {
+        // --- In-memory configuration overrides for test DBs, secrets, URLs ---
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+        {
+            ["ConnectionStrings:gameDb"] = "DataSource=:memory:",
+            ["ConnectionStrings:ravenDb"] = "http://localhost:8080",
+            ["TokenProviderOptions:TokenEndpoint"] = "http://localhost:" + _port + "/token",
+            ["TokenProviderOptions:ClientId"] = "test-client",
+            ["TokenProviderOptions:Secret"] = "test-secret",
+            // Add any other test config overrides here
+        }!);
+    }
+
+    private void InitializeRavenDbServer(WebApplicationBuilder builder)
+    {
         // Initialize the in-memory RavenDB document store
         lock (_ravenLock)
         {
@@ -63,52 +121,12 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
                 }
             }
         }
-        
         _documentStore = EmbeddedServer.Instance.GetDocumentStore(_uniqueDbName); // Use unique DB name
-        
-        // Open the SQLite connection for the in-memory database
-        _sqliteConnection.Open();
-        
-        // Create a new web application builder for the SignalR test server
-        var builder = WebApplication.CreateBuilder();
-        
-        // Set log level of "Microsoft.EntityFrameworkCore.Database.Command" to "Warning" to reduce noise in the console output
-        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
-        
-        // Register all core services using the new StartupHelper (databases are registered below for testing)
-        StartupHelper.RegisterAllServices(builder);
-        
-        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>(); // Register the client world store
-        
-        builder.Services.AddDbContext<GameDbContext>(options =>
-        {
-            // Configure the database context with an in-memory database for testing
-            options.UseSqlite(_sqliteConnection) // Use an in-memory SQLite database
-                   .EnableSensitiveDataLogging() // Enable detailed logging for debugging
-                   .EnableDetailedErrors(); // Enable detailed error messages
-        });
         
         // Register the document store as a singleton service
         builder.Services.AddSingleton(_documentStore!);
-        
-        // Already registered above
-        
-        // Configure the web application with the necessary services and middleware
-        builder.WebHost.UseUrls($"http://localhost:{_port}"); // Set the URL for the server
-        builder.Services.AddControllers(); // Add controllers or other services as needed
-        
-        // Configure the web application with the necessary services and middleware
-        var app = builder.Build();
-        
-        // Set port for the application:
-        app.Urls.Add($"http://localhost:{_port}");
-        
-        // Configure the HTTP request pipeline
-        StartupHelper.Configure(app);
-        
-        return app;
     }
-    
+
     public string GetGameServerHubUrl()
     {
         // Return the URL for the game server hub
@@ -131,7 +149,7 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
         if (_app is IAsyncDisposable asyncApp)
             asyncApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
         else
-            ((IDisposable)_app)?.Dispose();
+            (_app as IDisposable)?.Dispose();
         _sqliteConnection.Dispose();
         _documentStore?.Dispose();
         // Clean up the unique RavenDB data directory
