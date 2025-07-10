@@ -14,4 +14,6 @@ public class Session : IGameObject
     public bool IsActive { get; set; }
     
     public DateTime? Ended { get; set; }
+    
+    public SessionType SessionType { get; set; }
 }

@@ -46,7 +46,8 @@ public class ClientIntegrationTests
         
         // Create session
         var sessionName = $"test-session-{Guid.NewGuid()}";
-        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", sessionName);
+        var createSessionRequest = new { SessionName = sessionName, SessionType = "Multiplayer" };
+        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest);
         createSessionResponse.EnsureSuccessStatusCode();
         var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>();
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");

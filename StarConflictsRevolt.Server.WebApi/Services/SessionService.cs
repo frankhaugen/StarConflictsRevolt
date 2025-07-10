@@ -1,5 +1,6 @@
 ﻿using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
+using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Services;
 
@@ -12,8 +13,8 @@ public class SessionService
         _dbContext = dbContext;
     }
 
-    public async Task<Guid> CreateSessionAsync(string sessionName, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateSessionAsync(string sessionName, SessionType sessionType, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.CreateSessionAsync(sessionName, cancellationToken);
+        return await _dbContext.CreateSessionAsync(sessionName, sessionType, cancellationToken);
     }
 }

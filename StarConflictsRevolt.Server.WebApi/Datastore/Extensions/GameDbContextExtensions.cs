@@ -36,14 +36,15 @@ public static class GameDbContextExtensions
             .FirstOrDefaultAsync(p => p.Id == planetId, cancellationToken)
         ?? throw new KeyNotFoundException($"Planet with ID {planetId} not found.");
     
-    public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, CancellationToken cancellationToken = default)
+    public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, SessionType sessionType, CancellationToken cancellationToken = default)
     {
         var session = new Session()
         {
             Id = IGameObject.CreateId(),
             SessionName = sessionName,
             Created = DateTime.UtcNow,
-            IsActive = true
+            IsActive = true,
+            SessionType = sessionType
         };
         
         var entityEntry = context.Sessions.Add(session);

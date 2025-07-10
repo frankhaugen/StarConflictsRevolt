@@ -6,6 +6,7 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 public class PlayerController
 {
     public Guid PlayerId { get; init; }
+    public string Name { get; init; } = "Unknown Player";
     public IAiStrategy? AiStrategy { get; set; }
 
     public virtual List<IGameEvent> GenerateCommands(World world)

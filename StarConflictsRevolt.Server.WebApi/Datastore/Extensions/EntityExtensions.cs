@@ -20,7 +20,7 @@ public static class EntityExtensions
     
     public static Session ToModel(this Entities.Session session)
     {
-        return new Session(session.Id, session.SessionName, session.Created, session.IsActive, session.Ended);
+        return new Session(session.Id, session.SessionName, session.Created, session.IsActive, session.Ended, session.SessionType);
     }
     public static World ToModel(this Entities.World world)
     {

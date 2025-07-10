@@ -53,10 +53,11 @@ public class DeltaAccumulationTest
         await Context.Current.OutputWriter.WriteLineAsync($"Player Frank ID: {playerFrankId}");
         
         // 1. Mariell creates a new session via API
-        var sessionName = $"test-delta-accumulation-{Guid.NewGuid()}";
+        var sessionName = $"test-session-{Guid.NewGuid()}";
+        var createSessionRequest = new { SessionName = sessionName, SessionType = "Multiplayer" };
         await Context.Current.OutputWriter.WriteLineAsync($"Mariell creating session: {sessionName}");
         
-        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", sessionName);
+        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest);
         createSessionResponse.EnsureSuccessStatusCode();
         var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>();
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");

@@ -27,17 +27,39 @@ public class EventBroadcastService : BackgroundService
             switch (envelope.Event)
             {
                 case MoveFleetEvent move:
-                    // TODO: Implement actual update logic
-                    updates.Add(GameObjectUpdate.Update(move.FleetId, new { FleetId = move.FleetId, ToPlanetId = move.ToPlanetId }));
+                    updates.Add(GameObjectUpdate.Update(move.FleetId, new { 
+                        FleetId = move.FleetId, 
+                        FromPlanetId = move.FromPlanetId,
+                        ToPlanetId = move.ToPlanetId,
+                        PlayerId = move.PlayerId,
+                        EventType = "FleetMoved"
+                    }));
                     break;
                 case BuildStructureEvent build:
-                    updates.Add(GameObjectUpdate.Update(build.PlanetId, new { StructureType = build.StructureType }));
+                    updates.Add(GameObjectUpdate.Update(build.PlanetId, new { 
+                        PlanetId = build.PlanetId,
+                        StructureType = build.StructureType,
+                        PlayerId = build.PlayerId,
+                        EventType = "StructureBuilt"
+                    }));
                     break;
                 case AttackEvent attack:
-                    updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { AttackerFleetId = attack.AttackerFleetId, DefenderFleetId = attack.DefenderFleetId }));
+                    updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { 
+                        AttackerFleetId = attack.AttackerFleetId, 
+                        DefenderFleetId = attack.DefenderFleetId,
+                        LocationPlanetId = attack.LocationPlanetId,
+                        PlayerId = attack.PlayerId,
+                        EventType = "CombatResolved"
+                    }));
                     break;
                 case DiplomacyEvent diplo:
-                    updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { TargetPlayerId = diplo.TargetPlayerId, ProposalType = diplo.ProposalType }));
+                    updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { 
+                        PlayerId = diplo.PlayerId,
+                        TargetPlayerId = diplo.TargetPlayerId, 
+                        ProposalType = diplo.ProposalType,
+                        Message = diplo.Message,
+                        EventType = "DiplomacyEvent"
+                    }));
                     break;
                 default:
                     _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);

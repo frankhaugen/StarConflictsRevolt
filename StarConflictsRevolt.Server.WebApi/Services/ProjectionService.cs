@@ -86,12 +86,19 @@ public class ProjectionService : BackgroundService
 
         if (stats == null)
         {
+            // Try to get player name from the session aggregate
+            var playerName = $"Player_{playerId}"; // Default fallback
+            
+            // In a full implementation, we would query the session aggregate to get the player name
+            // For now, we'll use a more descriptive default name
+            playerName = $"Player_{playerId:N}"[..12]; // Use first 12 chars of GUID for readability
+
             stats = new PlayerStats
             {
                 Id = Guid.NewGuid(),
                 PlayerId = playerId,
                 SessionId = sessionId,
-                PlayerName = $"Player_{playerId}", // TODO: Get from actual player data
+                PlayerName = playerName,
                 Created = DateTime.UtcNow,
                 LastUpdated = DateTime.UtcNow
             };

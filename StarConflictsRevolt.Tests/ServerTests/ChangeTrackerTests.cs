@@ -25,11 +25,12 @@ public class ChangeTrackerTests
     public async Task Detects_Structure_Added()
     {
         var planetId = Guid.NewGuid();
+        var playerId = Guid.NewGuid();
         var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new())
         {
             Id = planetId,
         };
-        var newStructure = new Structure(StructureVariant.Mine, oldPlanet);
+        var newStructure = new Structure(StructureVariant.Mine, oldPlanet, playerId);
         var newPlanet = oldPlanet with { Structures = new List<Structure> { newStructure } };
         var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
         var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
@@ -46,7 +47,8 @@ public class ChangeTrackerTests
     public async Task Detects_Structure_Removed()
     {
         var planetId = Guid.NewGuid();
-        var structure = new Structure(StructureVariant.Mine, null!);
+        var playerId = Guid.NewGuid();
+        var structure = new Structure(StructureVariant.Mine, null!, playerId);
         var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new List<Structure> { structure })
         {
             Id = planetId,
@@ -68,7 +70,8 @@ public class ChangeTrackerTests
     public async Task SessionAggregate_Apply_BuildStructureEvent_MutatesWorld()
     {
         var logger = _provider.GetRequiredService<ILogger<SessionAggregate>>();
-        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new())
+        var ownerId = Guid.NewGuid();
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new(), ownerId)
         {
             Id = Guid.NewGuid(),
             Structures = new List<Structure>()
@@ -77,8 +80,9 @@ public class ChangeTrackerTests
         var galaxy = new Galaxy(new List<StarSystem> { system });
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = new SessionAggregate(Guid.NewGuid(), world, logger);
-        var buildEvent = new BuildStructureEvent(Guid.NewGuid(), planet.Id, StructureVariant.Mine.ToString());
+        var buildEvent = new BuildStructureEvent(ownerId, planet.Id, StructureVariant.Mine.ToString());
         aggregate.Apply(buildEvent);
+        // Fetch the mutated planet from the world
         var mutatedPlanet = aggregate.World.Galaxy.StarSystems.SelectMany(s => s.Planets).First(p => p.Id == planet.Id);
         await Assert.That(mutatedPlanet.Structures.Any(s => s.Variant == StructureVariant.Mine)).IsTrue();
     }

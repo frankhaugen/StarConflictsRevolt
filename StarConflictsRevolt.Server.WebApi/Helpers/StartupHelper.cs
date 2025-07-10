@@ -12,6 +12,7 @@ using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -254,15 +255,22 @@ public static class StartupHelper
             {
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
-                var sessionName = await context.Request.ReadFromJsonAsync<string>(context.RequestAborted);
-                if (string.IsNullOrWhiteSpace(sessionName))
+                var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
+                if (request == null || string.IsNullOrWhiteSpace(request.SessionName))
                 {
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync("Session name is required");
                     return;
                 }
 
-                var sessionId = await sessionService.CreateSessionAsync(sessionName, context.RequestAborted);
+                var sessionType = request.SessionType?.ToLower() switch
+                {
+                    "singleplayer" => SessionType.SinglePlayer,
+                    "multiplayer" => SessionType.Multiplayer,
+                    _ => SessionType.Multiplayer // Default to multiplayer
+                };
+
+                var sessionId = await sessionService.CreateSessionAsync(request.SessionName, sessionType, context.RequestAborted);
                 // Create a default world for the new session with planets
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
                 var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);

@@ -8,5 +8,13 @@ public record Planet(
     double OrbitSpeed,
     double DistanceFromSun,
     List<Fleet> Fleets,
-    List<Structure> Structures
+    List<Structure> Structures,
+    Guid? OwnerId = null,
+    int Population = 1000,
+    int MaxPopulation = 10000,
+    int Minerals = 100,
+    int MaxMinerals = 1000,
+    int Energy = 50,
+    int MaxEnergy = 500,
+    double ProductionRate = 1.0
 ) : GameObject;

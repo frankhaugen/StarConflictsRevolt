@@ -14,8 +14,9 @@ public class MenuView : IView
     private string _sessionName = "";
     private string _sessionId = "";
     private string _playerName = "";
-    private int _menuState = 0; // 0: main, 1: create, 2: join, 3: player select
+    private int _menuState = 0; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select
     private int _selectedView = 0;
+    private string _selectedSessionType = "Multiplayer";
     private static readonly (string Title, GameView View)[] _views = new[]
     {
         ("Galaxy View", GameView.Galaxy),
@@ -60,13 +61,17 @@ public class MenuView : IView
         }
         else if (_menuState == 1)
         {
-            DrawCreateSession();
+            DrawCreateSinglePlayerSession();
         }
         else if (_menuState == 2)
         {
-            DrawJoinSession();
+            DrawCreateMultiplayerSession();
         }
         else if (_menuState == 3)
+        {
+            DrawJoinSession();
+        }
+        else if (_menuState == 4)
         {
             DrawPlayerSelect();
         }
@@ -74,7 +79,8 @@ public class MenuView : IView
         // Draw status bar
         var playerName = _renderContext.GameState.PlayerName ?? "Not set";
         var sessionName = _renderContext.GameState.Session?.SessionName ?? "None";
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName}");
+        var sessionType = _renderContext.GameState.Session?.SessionType ?? "None";
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName} ({sessionType})");
     }
     
     private void DrawMainMenu()
@@ -85,27 +91,32 @@ public class MenuView : IView
         var buttonSpacing = 50;
         
         // Main menu buttons
-        if (UIHelper.DrawButton("Create New Session", centerX - 100, startY, 200, buttonHeight))
+        if (UIHelper.DrawButton("Start Single Player Session", centerX - 150, startY, 300, buttonHeight, UIHelper.Colors.Primary))
         {
             _menuState = 1;
         }
         
-        if (UIHelper.DrawButton("Join Existing Session", centerX - 100, startY + buttonSpacing, 200, buttonHeight))
+        if (UIHelper.DrawButton("Start Multiplayer Session", centerX - 150, startY + buttonSpacing, 300, buttonHeight, UIHelper.Colors.Secondary))
         {
             _menuState = 2;
         }
         
-        if (UIHelper.DrawButton("Exit Game", centerX - 100, startY + buttonSpacing * 2, 200, buttonHeight, UIHelper.Colors.Danger))
+        if (UIHelper.DrawButton("Join Existing Session", centerX - 150, startY + buttonSpacing * 2, 300, buttonHeight))
+        {
+            _menuState = 3;
+        }
+        
+        if (UIHelper.DrawButton("Exit Game", centerX - 150, startY + buttonSpacing * 3, 300, buttonHeight, UIHelper.Colors.Danger))
         {
             Window.Close();
         }
         
         // View shortcuts
-        UIHelper.DrawText("View Shortcuts (F1-F7):", centerX - 100, startY + buttonSpacing * 3 + 20, UIHelper.FontSizes.Small, Color.Gray, true);
+        UIHelper.DrawText("View Shortcuts (F1-F7):", centerX - 100, startY + buttonSpacing * 4 + 20, UIHelper.FontSizes.Small, Color.Gray, true);
         
         for (int i = 0; i < _views.Length; i++)
         {
-            var y = startY + buttonSpacing * 3 + 50 + i * 25;
+            var y = startY + buttonSpacing * 4 + 50 + i * 25;
             UIHelper.DrawText($"F{i + 1}: {_views[i].Title}", centerX - 100, y, UIHelper.FontSizes.Small, Color.LightGray);
             
             if (Input.IsKeyPressed((KeyboardKey)((int)KeyboardKey.F1 + i)))
@@ -117,22 +128,45 @@ public class MenuView : IView
         }
     }
     
-    private void DrawCreateSession()
+    private void DrawCreateSinglePlayerSession()
     {
         var centerX = Window.GetScreenWidth() / 2;
         var startY = 200;
         
-        UIHelper.DrawText("Create New Session", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        UIHelper.DrawText("Create Single Player Session", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        UIHelper.DrawText("(AI opponents will be added automatically)", centerX, startY + 30, UIHelper.FontSizes.Small, Color.LightGray, true);
         
-        UIHelper.DrawText("Session Name:", centerX - 100, startY + 50, UIHelper.FontSizes.Medium, Color.White);
-        _sessionName = UIHelper.DrawTextInput(_sessionName, centerX - 100, startY + 80, 200, 30, "Enter session name");
+        UIHelper.DrawText("Session Name:", centerX - 100, startY + 70, UIHelper.FontSizes.Medium, Color.White);
+        _sessionName = UIHelper.DrawTextInput(_sessionName, centerX - 100, startY + 100, 200, 30, "Enter session name");
         
-        if (UIHelper.DrawButton("Create Session", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
+        if (UIHelper.DrawButton("Create Single Player Session", centerX - 100, startY + 150, 200, 40, UIHelper.Colors.Success))
         {
-            _ = CreateSessionAsync();
+            _ = CreateSessionAsync("SinglePlayer");
         }
         
-        if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary))
+        if (UIHelper.DrawButton("Back", centerX - 100, startY + 200, 200, 40, UIHelper.Colors.Secondary))
+        {
+            _menuState = 0;
+        }
+    }
+    
+    private void DrawCreateMultiplayerSession()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 200;
+        
+        UIHelper.DrawText("Create Multiplayer Session", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+        UIHelper.DrawText("(No AI opponents - human players only)", centerX, startY + 30, UIHelper.FontSizes.Small, Color.LightGray, true);
+        
+        UIHelper.DrawText("Session Name:", centerX - 100, startY + 70, UIHelper.FontSizes.Medium, Color.White);
+        _sessionName = UIHelper.DrawTextInput(_sessionName, centerX - 100, startY + 100, 200, 30, "Enter session name");
+        
+        if (UIHelper.DrawButton("Create Multiplayer Session", centerX - 100, startY + 150, 200, 40, UIHelper.Colors.Success))
+        {
+            _ = CreateSessionAsync("Multiplayer");
+        }
+        
+        if (UIHelper.DrawButton("Back", centerX - 100, startY + 200, 200, 40, UIHelper.Colors.Secondary))
         {
             _menuState = 0;
         }
@@ -152,7 +186,7 @@ public class MenuView : IView
         {
             if (!string.IsNullOrWhiteSpace(_sessionId))
             {
-                _menuState = 3;
+                _menuState = 4;
             }
         }
         
@@ -182,11 +216,11 @@ public class MenuView : IView
         
         if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary))
         {
-            _menuState = 2;
+            _menuState = 3;
         }
     }
     
-    private async Task CreateSessionAsync()
+    private async Task CreateSessionAsync(string sessionType)
     {
         if (string.IsNullOrWhiteSpace(_sessionName))
         {
@@ -194,12 +228,13 @@ public class MenuView : IView
             return;
         }
         
-        var sessionId = await _commandService.CreateSessionAsync(_sessionName);
+        var sessionId = await _commandService.CreateSessionAsync(_sessionName, sessionType);
         if (sessionId.HasValue)
         {
             _sessionId = sessionId.Value.ToString();
-            _menuState = 3;
-            _renderContext.GameState.SetFeedback("Session created! Enter player name.", TimeSpan.FromSeconds(3));
+            _selectedSessionType = sessionType;
+            _menuState = 4;
+            _renderContext.GameState.SetFeedback($"{sessionType} session created! Enter player name.", TimeSpan.FromSeconds(3));
         }
     }
     
@@ -211,7 +246,8 @@ public class MenuView : IView
             { 
                 Id = sessionGuid, 
                 SessionName = _sessionName, 
-                IsActive = true 
+                IsActive = true,
+                SessionType = _selectedSessionType
             };
             _renderContext.GameState.PlayerName = _playerName;
             _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID

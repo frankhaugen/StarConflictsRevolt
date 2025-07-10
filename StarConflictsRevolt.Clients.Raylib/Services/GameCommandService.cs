@@ -130,13 +130,19 @@ public class GameCommandService
         return await SendCommandAsync("/game/diplomacy", payload, _gameState.Session?.Id.ToString());
     }
     
-    public async Task<Guid?> CreateSessionAsync(string sessionName)
+    public async Task<Guid?> CreateSessionAsync(string sessionName, string sessionType = "Multiplayer")
     {
-        _logger.LogInformation("Creating new session with name: {SessionName}", sessionName);
+        _logger.LogInformation("Creating new session with name: {SessionName}, type: {SessionType}", sessionName, sessionType);
         
         try
         {
-            var response = await _httpApiClient.PostAsync("/game/session", sessionName);
+            var request = new
+            {
+                SessionName = sessionName,
+                SessionType = sessionType
+            };
+            
+            var response = await _httpApiClient.PostAsync("/game/session", request);
             
             _logger.LogInformation("Session creation response received. Status: {StatusCode}", response.StatusCode);
             

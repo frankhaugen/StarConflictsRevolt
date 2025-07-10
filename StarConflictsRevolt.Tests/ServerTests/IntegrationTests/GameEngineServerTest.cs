@@ -77,8 +77,8 @@ public class GameEngineServerTest
         
         // Create a test session via HTTP API
         var sessionName = $"test-session-{Guid.NewGuid()}";
-        
-        var response = await httpClient.PostAsJsonAsync("/game/session", sessionName);
+        var createSessionRequest = new { SessionName = sessionName, SessionType = "Multiplayer" };
+        var response = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest);
         response.EnsureSuccessStatusCode();
         var sessionObj = await response.Content.ReadFromJsonAsync<SessionResponse>();
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
