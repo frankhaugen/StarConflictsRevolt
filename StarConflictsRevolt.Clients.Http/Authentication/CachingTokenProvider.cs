@@ -33,6 +33,7 @@ public class CachingTokenProvider : ITokenProvider
         }
 
         _logger.LogInformation("Requesting new token from {TokenEndpoint}", _options.Value.TokenEndpoint);
+        _logger.LogInformation("Using ClientId: {ClientId}, Secret: {Secret}", _options.Value.ClientId, _options.Value.Secret);
 
         try
         {
@@ -40,8 +41,8 @@ public class CachingTokenProvider : ITokenProvider
             
             var request = new
             {
-                client_id = _options.Value.ClientId,
-                secret = _options.Value.Secret
+                ClientId = _options.Value.ClientId,
+                Secret = _options.Value.Secret
             };
 
             var response = await httpClient.PostAsJsonAsync(_options.Value.TokenEndpoint, request, ct);
