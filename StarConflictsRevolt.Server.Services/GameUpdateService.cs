@@ -14,98 +14,56 @@ public class GameUpdateService : BackgroundService
     private readonly SessionAggregateManager _aggregateManager;
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly IEventStore _eventStore;
-    private readonly Dictionary<Guid, int> _eventCounts = new();
-    private readonly Dictionary<Guid, World> _previousWorldStates = new();
+    private readonly SessionManagerService _sessionManager;
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext, 
         ILogger<GameUpdateService> logger, 
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
-        CommandQueue<IGameEvent> commandQueue)
+        CommandQueue<IGameEvent> commandQueue,
+        SessionManagerService sessionManager)
     {
         _hubContext = hubContext;
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
-    }
-
-    // Add this method to create a new session/world
-    public void CreateSession(Guid sessionId, World initialWorld)
-    {
-        _logger.LogInformation("Creating session {SessionId} with world {WorldId}", sessionId, initialWorld.Id);
-        _aggregateManager.GetOrCreateAggregate(sessionId, initialWorld);
-        _eventCounts[sessionId] = 0;
-        _previousWorldStates[sessionId] = DeepCloneWorld(initialWorld);
-        
-        // Send initial world state to clients
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var deltas = ChangeTracker.ComputeDeltas(new World(Guid.Empty, new Galaxy(new List<StarSystem>())), initialWorld);
-                _logger.LogInformation("Sending initial world state for session {SessionId} with {DeltaCount} updates", sessionId, deltas.Count);
-                await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas);
-                _logger.LogInformation("Successfully sent initial world state for session {SessionId}", sessionId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending initial world state for session {SessionId}", sessionId);
-            }
-        });
-    }
-
-    public async Task<bool> SessionExistsAsync(Guid worldId)
-    {
-        return _aggregateManager.HasAggregate(worldId);
+        _sessionManager = sessionManager;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("GameUpdateService starting...");
-        
-        // On startup, do not create a demo session. Sessions are created via API.
-        // Optionally, load all active sessions from persistent storage here.
-
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 var aggregates = _aggregateManager.GetAllAggregates();
                 _logger.LogDebug("Processing {AggregateCount} aggregates", aggregates.Count());
-                
                 foreach (var sessionAggregate in aggregates)
                 {
                     var sessionId = sessionAggregate.SessionId;
                     _logger.LogDebug("Processing session {SessionId}", sessionId);
-                    
-                    // Process all queued commands for this session
                     var commandsProcessed = 0;
                     while (_commandQueue.TryDequeue(sessionId, out var command))
                     {
                         _logger.LogInformation("Processing command {CommandType} for session {SessionId}", command.GetType().Name, sessionId);
-                        
                         var oldWorld = sessionAggregate.World;
                         sessionAggregate.Apply(command);
                         await _eventStore.PublishAsync(sessionId, command);
-                        _eventCounts[sessionId] = _eventCounts.GetValueOrDefault(sessionId, 0) + 1;
+                        _sessionManager.IncrementEventCount(sessionId);
                         commandsProcessed++;
-                        
                         _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}", 
-                            command.GetType().Name, sessionId, _eventCounts[sessionId]);
+                            command.GetType().Name, sessionId, _sessionManager.GetEventCount(sessionId));
                     }
-                    
                     if (commandsProcessed > 0)
                     {
-                        _logger.LogInformation("Processed {CommandCount} commands for session {SessionId}", commandsProcessed, sessionId);
-                        
-                        // Only compute deltas when commands were actually processed
-                        if (_previousWorldStates.TryGetValue(sessionId, out var previousWorld))
+                        var previousWorld = _sessionManager.GetPreviousWorldState(sessionId);
+                        if (previousWorld != null)
                         {
                             var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
                             _logger.LogInformation("Computed {DeltaCount} deltas for session {SessionId}", deltas.Count, sessionId);
-                            
                             if (deltas.Count > 0)
                             {
                                 try
@@ -113,9 +71,7 @@ public class GameUpdateService : BackgroundService
                                     _logger.LogInformation("Sending {DeltaCount} deltas to session {SessionId} group", deltas.Count, sessionId);
                                     await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, stoppingToken);
                                     _logger.LogInformation("Successfully sent {DeltaCount} deltas to session {SessionId}", deltas.Count, sessionId);
-                                    
-                                    // Only update the previous state after successfully sending deltas
-                                    _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
+                                    _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                                 }
                                 catch (Exception ex)
                                 {
@@ -125,36 +81,29 @@ public class GameUpdateService : BackgroundService
                             else
                             {
                                 _logger.LogDebug("No deltas to send for session {SessionId} (no changes detected)", sessionId);
-                                // Still update the previous state even if no deltas were computed
-                                _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
+                                _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                             }
                         }
                         else
                         {
                             _logger.LogWarning("No previous world state found for session {SessionId}", sessionId);
-                            // Initialize the previous state
-                            _previousWorldStates[sessionId] = DeepCloneWorld(sessionAggregate.World);
+                            _sessionManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
                         }
                     }
                     else
                     {
-                        // No commands processed, no need to compute deltas or update state
                         _logger.LogDebug("No commands processed for session {SessionId}, skipping delta computation", sessionId);
                     }
-
-                    // Snapshot every 100 events
-                    if (_eventCounts[sessionId] > 0 && _eventCounts[sessionId] % 100 == 0)
+                    if (_sessionManager.GetEventCount(sessionId) > 0 && _sessionManager.GetEventCount(sessionId) % 100 == 0)
                     {
                         if (_eventStore is StarConflictsRevolt.Server.Eventing.RavenEventStore raven)
                         {
-                            // Serialize world as snapshot
                             raven.SnapshotWorld(sessionId, sessionAggregate.World);
-                            _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _eventCounts[sessionId]);
+                            _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _sessionManager.GetEventCount(sessionId));
                         }
                     }
                 }
-                
-                await Task.Delay(100, stoppingToken); // 10 ticks per second for faster processing
+                await Task.Delay(100, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -164,23 +113,9 @@ public class GameUpdateService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in GameUpdateService main loop");
-                await Task.Delay(1000, stoppingToken); // Wait before retrying
+                await Task.Delay(1000, stoppingToken);
             }
         }
-        
         _logger.LogInformation("GameUpdateService stopped");
-    }
-
-    private static World DeepCloneWorld(World world)
-    {
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
-            WriteIndented = true,
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-        };
-        var json = System.Text.Json.JsonSerializer.Serialize(world, options);
-        return System.Text.Json.JsonSerializer.Deserialize<World>(json, options)!;
     }
 }

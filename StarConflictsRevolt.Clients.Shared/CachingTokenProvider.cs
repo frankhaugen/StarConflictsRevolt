@@ -59,10 +59,9 @@ public class CachingTokenProvider : ITokenProvider
             client.DefaultRequestHeaders.Add("User-Agent", "StarConflictsRevolt.Clients.Shared");
             client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
             
-            var tokenRequest = new { client_id = _options.ClientId, secret = _options.Secret };
-            _logger.LogDebug("Sending token request: {Request}", System.Text.Json.JsonSerializer.Serialize(tokenRequest));
+            _logger.LogDebug("Sending token request: {Request}", System.Text.Json.JsonSerializer.Serialize(_options));
             
-            var response = await client.PostAsJsonAsync(_options.TokenEndpoint, tokenRequest, ct);
+            var response = await client.PostAsJsonAsync(_options.TokenEndpoint, _options, ct);
             
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: ct);

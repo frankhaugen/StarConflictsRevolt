@@ -16,6 +16,11 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient("TokenProvider")
             .AddServiceDiscovery();
         
+        // Register TokenProvider options
+        services.AddOptions<TokenProviderOptions>()
+            .Bind(configuration.GetSection(nameof(TokenProviderOptions)))
+            .ValidateOnStart();
+        
         // Register Token provider
         services.AddSingleton<ITokenProvider, CachingTokenProvider>();
         // Ensure JwtTokenHandler is registered

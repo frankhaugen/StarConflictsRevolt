@@ -118,8 +118,8 @@ public class FullStackIntegrationTest
         if (_receivedDeltas.Count == 0)
         {
             await Context.Current.OutputWriter.WriteLineAsync("No deltas received. Checking if session exists...");
-            var gameUpdateService = scope.ServiceProvider.GetRequiredService<GameUpdateService>();
-            var sessionExists = await gameUpdateService.SessionExistsAsync(sessionId);
+            var sessionManagerService = scope.ServiceProvider.GetRequiredService<SessionManagerService>();
+            var sessionExists = await sessionManagerService.SessionExistsAsync(sessionId);
             await Context.Current.OutputWriter.WriteLineAsync($"Session exists: {sessionExists}");
         }
         

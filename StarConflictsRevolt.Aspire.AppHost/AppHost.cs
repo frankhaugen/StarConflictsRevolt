@@ -36,10 +36,9 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "ht
     .WaitFor(gameDb)
     .WaitFor(ravenDb)
     .WaitFor(redis)
-    .WaitFor(engine)
     ;
 
-// Add Raylib client that runs after WebApi is ready
+// Add Raylib client that runs after both services are ready
 var raylib = builder.AddProject<StarConflictsRevolt_Clients_Raylib>("raylib")
     .WithReference(webapi)
     .WithReference(engine)
