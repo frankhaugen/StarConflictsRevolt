@@ -21,7 +21,7 @@ public class MenuViewSessionTypeTests
         services.AddSingleton<GameCommandService>(sp => new GameCommandService(
             sp.GetRequiredService<RenderContext>().GameState,
             sp.GetRequiredService<ILogger<GameCommandService>>(),
-            null)); // IHttpApiClient is not needed for these tests
+            new TestHttpApiClient())); // Use a test implementation instead of null
         services.AddSingleton<MenuView>();
         return services.BuildServiceProvider();
     }
@@ -100,5 +100,14 @@ public class MenuViewSessionTypeTests
         public void ApplyDeltas(IEnumerable<GameObjectUpdate> deltas) { }
         public IReadOnlyList<WorldDto?> History => new List<WorldDto?>();
         public SessionDto? Session { get; set; }
+    }
+
+    // Minimal fake for IHttpApiClient
+    private class TestHttpApiClient : StarConflictsRevolt.Clients.Http.Http.IHttpApiClient
+    {
+        public Task<T?> GetAsync<T>(string uri, CancellationToken ct = default) => Task.FromResult<T?>(default);
+        public Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
+        public Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
+        public Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
     }
 } 

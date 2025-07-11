@@ -8,6 +8,15 @@ namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class SessionTypeStressTests
 {
+    private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
+    {
+        var testClientId = $"test-client-{Guid.NewGuid()}";
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        tokenResponse.EnsureSuccessStatusCode();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
+    }
+
     [Test]
     public async Task Create_50_Sessions_Quickly_Succeeds()
     {
@@ -16,6 +25,9 @@ public class SessionTypeStressTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         for (int i = 0; i < 50; i++)
         {
             var req = new { SessionName = $"stress-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
@@ -34,6 +46,9 @@ public class SessionTypeStressTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         for (int i = 0; i < 20; i++)
         {
             var req = new { SessionName = $"join-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
@@ -53,6 +68,9 @@ public class SessionTypeStressTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var rand = new Random();
         for (int i = 0; i < 15; i++)
         {
@@ -73,6 +91,9 @@ public class SessionTypeStressTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         for (int i = 0; i < 10; i++)
         {
             var req = new { SessionName = new string('X', 200) + i, SessionType = "SinglePlayer" };
@@ -91,6 +112,9 @@ public class SessionTypeStressTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         for (int i = 0; i < 10; i++)
         {
             var req = new { SessionName = $"!@#$%^&*()_+-={i}", SessionType = "Multiplayer" };
@@ -100,4 +124,6 @@ public class SessionTypeStressTests
         
         await app.StopAsync();
     }
+
+    private record TokenResponse(string access_token, int expires_in, string token_type);
 } 

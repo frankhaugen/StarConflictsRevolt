@@ -8,6 +8,15 @@ namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class SessionTypeEdgeCaseTests
 {
+    private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
+    {
+        var testClientId = $"test-client-{Guid.NewGuid()}";
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        tokenResponse.EnsureSuccessStatusCode();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
+    }
+
     [Test]
     public async Task Create_Session_With_Empty_Name_Fails()
     {
@@ -16,6 +25,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "", SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
@@ -31,6 +43,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = (string?)null, SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
@@ -46,6 +61,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "null-type-test-" + Guid.NewGuid(), SessionType = (string?)null };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -61,6 +79,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "ws-type-test-" + Guid.NewGuid(), SessionType = "   " };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -76,6 +97,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = new string('A', 100), SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -91,6 +115,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "!@#$%^&*()_+-=", SessionType = "Multiplayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -106,6 +133,9 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         for (int i = 0; i < 10; i++)
         {
             var req = new { SessionName = $"bulk-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
@@ -124,10 +154,15 @@ public class SessionTypeEdgeCaseTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "empty-type-test-" + Guid.NewGuid(), SessionType = "" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         
         await app.StopAsync();
     }
+
+    private record TokenResponse(string access_token, int expires_in, string token_type);
 } 

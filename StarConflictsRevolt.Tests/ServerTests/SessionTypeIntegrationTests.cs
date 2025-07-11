@@ -9,6 +9,15 @@ namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class SessionTypeIntegrationTests
 {
+    private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
+    {
+        var testClientId = $"test-client-{Guid.NewGuid()}";
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        tokenResponse.EnsureSuccessStatusCode();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
+    }
+
     [Test]
     public async Task Create_SinglePlayer_Session_Succeeds()
     {
@@ -17,6 +26,9 @@ public class SessionTypeIntegrationTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "sp-test-" + Guid.NewGuid(), SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -32,6 +44,9 @@ public class SessionTypeIntegrationTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "mp-test-" + Guid.NewGuid(), SessionType = "Multiplayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -78,6 +93,9 @@ public class SessionTypeIntegrationTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "bad-type-test-" + Guid.NewGuid(), SessionType = "InvalidType" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         // Should default to multiplayer, not fail
@@ -94,6 +112,9 @@ public class SessionTypeIntegrationTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionName = "no-type-test-" + Guid.NewGuid() };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
@@ -109,10 +130,15 @@ public class SessionTypeIntegrationTests
         await app.StartAsync();
         
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var token = await GetAuthTokenAsync(httpClient);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         var req = new { SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
         
         await app.StopAsync();
     }
+
+    private record TokenResponse(string access_token, int expires_in, string token_type);
 } 

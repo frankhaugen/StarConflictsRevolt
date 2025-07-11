@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Datastore;
@@ -5,36 +7,39 @@ using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 
 namespace StarConflictsRevolt.Server.WebApi.Services;
 
-public class AiTurnService : BackgroundService
+public class AiTurnService : IHostedService
 {
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly ILogger<AiTurnService> _logger;
     private readonly SessionAggregateManager _aggregateManager;
-    private readonly GameDbContext _dbContext;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public AiTurnService(
         CommandQueue<IGameEvent> commandQueue, 
         ILogger<AiTurnService> logger, 
         SessionAggregateManager aggregateManager,
-        GameDbContext dbContext)
+        IServiceScopeFactory scopeFactory)
     {
         _commandQueue = commandQueue;
         _logger = logger;
         _aggregateManager = aggregateManager;
-        _dbContext = dbContext;
+        _scopeFactory = scopeFactory;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+
             var aiStrategy = new DefaultAiStrategy();
             foreach (var sessionAggregate in _aggregateManager.GetAllAggregates())
             {
                 var sessionId = sessionAggregate.SessionId;
                 
                 // Check if this is a single player session
-                var session = await _dbContext.GetSessionAsync(sessionId, stoppingToken);
+                var session = await dbContext.GetSessionAsync(sessionId, cancellationToken);
                 if (session?.SessionType != SessionType.SinglePlayer)
                 {
                     continue; // Skip multiplayer sessions
@@ -59,8 +64,13 @@ public class AiTurnService : BackgroundService
                 }
             }
             
-            await Task.Delay(2000, stoppingToken); // AI turns every 2 seconds
+            await Task.Delay(2000, cancellationToken); // AI turns every 2 seconds
         }
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // No specific stopping logic needed for this service
     }
 
     // Helper to find AI players in the world
