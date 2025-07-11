@@ -28,7 +28,7 @@ public class SignalRInfrastructureTests
         // Arrange: Start a minimal in-memory SignalR server
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();
-        builder.WebHost.UseUrls($"http://localhost:0"); // Use dynamic port
+        builder.WebHost.UseUrls($"http://127.0.0.1:0"); // Use dynamic port, valid for Kestrel
         builder.Services.AddSignalR();
         var app = builder.Build();
         app.MapHub<TestHub>("/testhub");

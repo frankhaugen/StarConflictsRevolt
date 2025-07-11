@@ -20,24 +20,36 @@ public class ProjectionService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _eventStore.SubscribeAsync(async envelope =>
+        _logger.LogInformation("ProjectionService starting...");
+        try
         {
-            try
+            await _eventStore.SubscribeAsync(async envelope =>
             {
-                await UpdateProjectionsAsync(envelope, stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating projections for event {EventType} in world {WorldId}", 
-                    envelope.Event.GetType().Name, envelope.WorldId);
-            }
-        }, stoppingToken);
+                try
+                {
+                    await UpdateProjectionsAsync(envelope, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating projections for event {EventType} in world {WorldId}", 
+                        envelope.Event.GetType().Name, envelope.WorldId);
+                }
+            }, stoppingToken);
 
-        // Wait until cancellation is requested, then exit promptly
-        var tcs = new TaskCompletionSource();
-        using (stoppingToken.Register(() => tcs.SetResult()))
+            // Wait until cancellation is requested, then exit promptly
+            var tcs = new TaskCompletionSource();
+            using (stoppingToken.Register(() => tcs.SetResult()))
+            {
+                await tcs.Task;
+            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            await tcs.Task;
+            _logger.LogInformation("ProjectionService cancellation requested.");
+        }
+        finally
+        {
+            _logger.LogInformation("ProjectionService exiting.");
         }
     }
 

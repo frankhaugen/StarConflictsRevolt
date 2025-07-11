@@ -1,6 +1,10 @@
+using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
 StartupHelper.RegisterAllServices(builder);
 StartupHelper.RegisterRavenDb(builder);
 StartupHelper.RegisterGameDbContext(builder);

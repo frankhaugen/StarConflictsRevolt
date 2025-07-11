@@ -19,63 +19,75 @@ public class EventBroadcastService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _eventStore.SubscribeAsync(async envelope =>
+        _logger.LogInformation("EventBroadcastService starting...");
+        try
         {
-            _logger.LogInformation("Broadcasting event {EventType} for world {WorldId}", envelope.Event.GetType().Name, envelope.WorldId);
+            await _eventStore.SubscribeAsync(async envelope =>
+            {
+                _logger.LogInformation("Broadcasting event {EventType} for world {WorldId}", envelope.Event.GetType().Name, envelope.WorldId);
 
-            List<GameObjectUpdate> updates = new();
-            switch (envelope.Event)
+                List<GameObjectUpdate> updates = new();
+                switch (envelope.Event)
+                {
+                    case MoveFleetEvent move:
+                        updates.Add(GameObjectUpdate.Update(move.FleetId, new { 
+                            FleetId = move.FleetId, 
+                            FromPlanetId = move.FromPlanetId,
+                            ToPlanetId = move.ToPlanetId,
+                            PlayerId = move.PlayerId,
+                            EventType = "FleetMoved"
+                        }));
+                        break;
+                    case BuildStructureEvent build:
+                        updates.Add(GameObjectUpdate.Update(build.PlanetId, new { 
+                            PlanetId = build.PlanetId,
+                            StructureType = build.StructureType,
+                            PlayerId = build.PlayerId,
+                            EventType = "StructureBuilt"
+                        }));
+                        break;
+                    case AttackEvent attack:
+                        updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { 
+                            AttackerFleetId = attack.AttackerFleetId, 
+                            DefenderFleetId = attack.DefenderFleetId,
+                            LocationPlanetId = attack.LocationPlanetId,
+                            PlayerId = attack.PlayerId,
+                            EventType = "CombatResolved"
+                        }));
+                        break;
+                    case DiplomacyEvent diplo:
+                        updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { 
+                            PlayerId = diplo.PlayerId,
+                            TargetPlayerId = diplo.TargetPlayerId, 
+                            ProposalType = diplo.ProposalType,
+                            Message = diplo.Message,
+                            EventType = "DiplomacyEvent"
+                        }));
+                        break;
+                    default:
+                        _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
+                        break;
+                }
+                if (updates.Count > 0)
+                {
+                    // Broadcast to the world group
+                    await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken: stoppingToken);
+                }
+            }, stoppingToken);
+            // Wait until cancellation is requested, then exit promptly
+            var tcs = new TaskCompletionSource();
+            using (stoppingToken.Register(() => tcs.SetResult()))
             {
-                case MoveFleetEvent move:
-                    updates.Add(GameObjectUpdate.Update(move.FleetId, new { 
-                        FleetId = move.FleetId, 
-                        FromPlanetId = move.FromPlanetId,
-                        ToPlanetId = move.ToPlanetId,
-                        PlayerId = move.PlayerId,
-                        EventType = "FleetMoved"
-                    }));
-                    break;
-                case BuildStructureEvent build:
-                    updates.Add(GameObjectUpdate.Update(build.PlanetId, new { 
-                        PlanetId = build.PlanetId,
-                        StructureType = build.StructureType,
-                        PlayerId = build.PlayerId,
-                        EventType = "StructureBuilt"
-                    }));
-                    break;
-                case AttackEvent attack:
-                    updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { 
-                        AttackerFleetId = attack.AttackerFleetId, 
-                        DefenderFleetId = attack.DefenderFleetId,
-                        LocationPlanetId = attack.LocationPlanetId,
-                        PlayerId = attack.PlayerId,
-                        EventType = "CombatResolved"
-                    }));
-                    break;
-                case DiplomacyEvent diplo:
-                    updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { 
-                        PlayerId = diplo.PlayerId,
-                        TargetPlayerId = diplo.TargetPlayerId, 
-                        ProposalType = diplo.ProposalType,
-                        Message = diplo.Message,
-                        EventType = "DiplomacyEvent"
-                    }));
-                    break;
-                default:
-                    _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
-                    break;
+                await tcs.Task;
             }
-            if (updates.Count > 0)
-            {
-                // Broadcast to the world group
-                await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken: stoppingToken);
-            }
-        }, stoppingToken);
-        // Wait until cancellation is requested, then exit promptly
-        var tcs = new TaskCompletionSource();
-        using (stoppingToken.Register(() => tcs.SetResult()))
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            await tcs.Task;
+            _logger.LogInformation("EventBroadcastService cancellation requested.");
+        }
+        finally
+        {
+            _logger.LogInformation("EventBroadcastService exiting.");
         }
     }
 } 
