@@ -1,5 +1,6 @@
 ﻿using System.Threading.Channels;
 using Raven.Client.Documents;
+using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
@@ -8,10 +9,12 @@ public class RavenEventStore : IEventStore
     readonly Channel<EventEnvelope> _channel;
     readonly IDocumentStore _store;
     readonly CancellationTokenSource _cts = new();
+    readonly ILogger<RavenEventStore> _logger;
 
-    public RavenEventStore(IDocumentStore store, int capacity = 1000)
+    public RavenEventStore(IDocumentStore store, ILogger<RavenEventStore> logger, int capacity = 1000)
     {
         _store = store;
+        _logger = logger;
         _channel = Channel.CreateBounded<EventEnvelope>(new BoundedChannelOptions(capacity)
         {
             SingleReader = true, SingleWriter = false
@@ -23,33 +26,46 @@ public class RavenEventStore : IEventStore
     public async Task PublishAsync(Guid worldId, IGameEvent @event)
     {
         var env = new EventEnvelope(worldId, @event, DateTime.UtcNow);
+        _logger.LogDebug("Publishing event to channel: {EventType} for world {WorldId}", @event.GetType().Name, worldId);
         await _channel.Writer.WriteAsync(env);
+        _logger.LogDebug("Event published to channel: {EventType} for world {WorldId}", @event.GetType().Name, worldId);
     }
 
     readonly List<Func<EventEnvelope, Task>> _subscribers = new();
 
     public Task SubscribeAsync(Func<EventEnvelope, Task> handler, CancellationToken ct)
     {
+        _logger.LogDebug("Registering event store subscriber: {Subscriber}", handler.Method.Name);
         _subscribers.Add(handler);
+        _logger.LogDebug("Subscriber registered: {Subscriber}", handler.Method.Name);
         return Task.CompletedTask;
     }
 
     private async Task ProcessLoop()
     {
         var reader = _channel.Reader;
+        _logger.LogDebug("RavenEventStore ProcessLoop started");
         while (await reader.WaitToReadAsync(_cts.Token))
         {
+            _logger.LogDebug("Channel has data to read");
             var env = await reader.ReadAsync(_cts.Token);
+            _logger.LogDebug("Read event from channel: {EventType} for world {WorldId}", env.Event.GetType().Name, env.WorldId);
             // persist to Raven
             using var session = _store.OpenSession();
             session.Advanced.UseOptimisticConcurrency = true;
             session.Store(env);
             session.SaveChanges();
+            _logger.LogDebug("Event persisted to RavenDB: {EventType} for world {WorldId}", env.Event.GetType().Name, env.WorldId);
 
             // dispatch
             foreach (var sub in _subscribers.ToArray())
+            {
+                _logger.LogDebug("Dispatching event to subscriber: {Subscriber}", sub.Method.Name);
                 await sub(env);
+                _logger.LogDebug("Event dispatched to subscriber: {Subscriber}", sub.Method.Name);
+            }
         }
+        _logger.LogDebug("RavenEventStore ProcessLoop exiting");
     }
 
     // --- Snapshotting and Replay ---
@@ -80,8 +96,10 @@ public class RavenEventStore : IEventStore
 
     public async ValueTask DisposeAsync()
     {
+        _logger.LogDebug("Disposing RavenEventStore");
         _channel.Writer.Complete();
         await _cts.CancelAsync();
         await Task.CompletedTask;
+        _logger.LogDebug("RavenEventStore disposed");
     }
 }

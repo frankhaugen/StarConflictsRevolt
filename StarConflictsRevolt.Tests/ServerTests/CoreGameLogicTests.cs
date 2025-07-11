@@ -1,6 +1,7 @@
 using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
 using StarConflictsRevolt.Server.WebApi.Enums;
@@ -20,7 +21,9 @@ public class CoreGameLogicTests
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
         // Use embedded RavenDB event store
-        services.AddSingleton<IEventStore>(sp => new RavenEventStore(RavenTestServer.DocumentStore));
+        var documentStore = RavenTestServer.DocumentStore;
+        services.AddSingleton<IDocumentStore>(documentStore);
+        services.AddSingleton<IEventStore, RavenEventStore>();
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
         _serviceProvider = services.BuildServiceProvider();

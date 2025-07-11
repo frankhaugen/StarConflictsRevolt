@@ -24,6 +24,8 @@ public static class StartupHelper
     // Register all core services except databases. Call RegisterRavenDb/RegisterGameDbContext explicitly in app or test setup.
     public static void RegisterAllServices(WebApplicationBuilder builder)
     {
+        // Set minimum log level to Debug for all loggers
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
         // Add core services
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
