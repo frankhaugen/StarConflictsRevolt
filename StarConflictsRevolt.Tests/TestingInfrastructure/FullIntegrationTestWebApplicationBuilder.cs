@@ -23,10 +23,6 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
 
     private readonly int _port = FindRandomUnusedPort();
     
-    // Static flag to prevent multiple RavenDB server starts
-    private static bool _ravenServerStarted = false;
-    private static readonly object _ravenLock = new();
-    
     private readonly string _uniqueDbName = $"StarConflictsRevoltTest_{Guid.NewGuid()}";
     private readonly string _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
     
@@ -97,33 +93,18 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
 
     private void InitializeRavenDbServer(WebApplicationBuilder builder)
     {
-        // Initialize the in-memory RavenDB document store
-        lock (_ravenLock)
+        // Initialize the embedded RavenDB server if it hasn't been started yet
+        if (!EmbeddedRavenDbServerWrapper.Initialized || !EmbeddedRavenDbServerWrapper.Started)
         {
-            if (!_ravenServerStarted)
-            {
-                try
-                {
-                    EmbeddedServer.Instance.StartServer(new ServerOptions() 
-                    {
-                        DataDirectory = _uniqueDataDir, // Use unique directory per test
-                    });
-                    _ravenServerStarted = true;
-                }
-                catch (InvalidOperationException ex) when (ex.Message.Contains("already started"))
-                {
-                    // Server is already started, which is fine
-                    _ravenServerStarted = true;
-                }
-                catch (Exception e)
-                {
-                    // Ignore any other exceptions related to starting the server
-                }
-            }
+            EmbeddedRavenDbServerWrapper.Initialize(_uniqueDbName, _uniqueDataDir);
+            _documentStore = EmbeddedRavenDbServerWrapper.DocumentStore;
         }
-        _documentStore = EmbeddedServer.Instance.GetDocumentStore(_uniqueDbName); // Use unique DB name
         
-        // Register the document store as a singleton service
+        // Ensure the document store is initialized
+        if (_documentStore == null)
+            throw new InvalidOperationException("RavenDB DocumentStore is not initialized.");
+        
+        // Register the document store with the dependency injection container
         builder.Services.AddSingleton(_documentStore!);
     }
 
@@ -165,5 +146,41 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     {
         // Return the port number the server is running on
         return _port;
+    }
+    
+    private static class EmbeddedRavenDbServerWrapper
+    {
+        private static SemaphoreSlim _semaphore = new(1, 1);
+        
+        public static IDocumentStore? DocumentStore { get; private set; }
+        
+        public static bool Initialized { get; private set; }
+        
+        public static bool Started { get; private set; }
+
+        public static void Initialize(string uniqueDbName, string uniqueDataDir)
+        {
+            if (Initialized) return;
+
+            _semaphore.Wait();
+            try
+            {
+                if (Initialized) return; // Double-check after acquiring the lock
+
+                // Start the embedded RavenDB server
+                EmbeddedServer.Instance.StartServer(new ServerOptions
+                {
+                    DataDirectory = uniqueDataDir, // Use unique directory per test
+                });
+                
+                DocumentStore = EmbeddedServer.Instance.GetDocumentStore(uniqueDbName);
+                Initialized = true;
+                Started = true;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
     }
 }

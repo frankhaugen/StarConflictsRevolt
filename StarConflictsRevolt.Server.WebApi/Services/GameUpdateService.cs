@@ -95,7 +95,7 @@ public class GameUpdateService : BackgroundService
                         }
                     }
                 }
-                await Task.Delay(100, stoppingToken);
+                await Task.Delay(1000, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
