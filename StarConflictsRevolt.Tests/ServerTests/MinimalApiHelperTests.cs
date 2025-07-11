@@ -1,9 +1,9 @@
 using FluentAssertions;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using StarConflictsRevolt.Tests.TestingInfrastructure;
 
-namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
+namespace StarConflictsRevolt.Tests.ServerTests;
 
 public class MinimalApiHelperTests
 {
