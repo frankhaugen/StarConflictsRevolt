@@ -10,6 +10,8 @@ using Raven.Embedded;
 using StarConflictsRevolt.Clients.Raylib.Services;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Helpers;
+using System.Diagnostics;
+using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -93,18 +95,10 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
 
     private void InitializeRavenDbServer(WebApplicationBuilder builder)
     {
-        // Initialize the embedded RavenDB server if it hasn't been started yet
-        if (!EmbeddedRavenDbServerWrapper.Initialized || !EmbeddedRavenDbServerWrapper.Started)
-        {
-            EmbeddedRavenDbServerWrapper.Initialize(_uniqueDbName, _uniqueDataDir);
-            _documentStore = EmbeddedRavenDbServerWrapper.DocumentStore;
-        }
-        
-        // Ensure the document store is initialized
+        // Use the process-wide shared RavenDB instance
+        _documentStore = RavenTestServer.DocumentStore;
         if (_documentStore == null)
             throw new InvalidOperationException("RavenDB DocumentStore is not initialized.");
-        
-        // Register the document store with the dependency injection container
         builder.Services.AddSingleton(_documentStore!);
     }
 
@@ -146,41 +140,5 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     {
         // Return the port number the server is running on
         return _port;
-    }
-    
-    private static class EmbeddedRavenDbServerWrapper
-    {
-        private static SemaphoreSlim _semaphore = new(1, 1);
-        
-        public static IDocumentStore? DocumentStore { get; private set; }
-        
-        public static bool Initialized { get; private set; }
-        
-        public static bool Started { get; private set; }
-
-        public static void Initialize(string uniqueDbName, string uniqueDataDir)
-        {
-            if (Initialized) return;
-
-            _semaphore.Wait();
-            try
-            {
-                if (Initialized) return; // Double-check after acquiring the lock
-
-                // Start the embedded RavenDB server
-                EmbeddedServer.Instance.StartServer(new ServerOptions
-                {
-                    DataDirectory = uniqueDataDir, // Use unique directory per test
-                });
-                
-                DocumentStore = EmbeddedServer.Instance.GetDocumentStore(uniqueDbName);
-                Initialized = true;
-                Started = true;
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
     }
 }

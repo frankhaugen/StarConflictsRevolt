@@ -33,7 +33,12 @@ public class ProjectionService : BackgroundService
             }
         }, stoppingToken);
 
-        await Task.Delay(-1, stoppingToken); // Keep service alive
+        // Wait until cancellation is requested, then exit promptly
+        var tcs = new TaskCompletionSource();
+        using (stoppingToken.Register(() => tcs.SetResult()))
+        {
+            await tcs.Task;
+        }
     }
 
     private async Task UpdateProjectionsAsync(EventEnvelope envelope, CancellationToken ct)

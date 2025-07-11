@@ -19,7 +19,8 @@ public class CoreGameLogicTests
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
-        services.AddSingleton<IEventStore, InMemoryEventStore>();
+        // Use embedded RavenDB event store
+        services.AddSingleton<IEventStore>(sp => new RavenEventStore(RavenTestServer.DocumentStore));
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
         _serviceProvider = services.BuildServiceProvider();

@@ -71,6 +71,11 @@ public class EventBroadcastService : BackgroundService
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken: stoppingToken);
             }
         }, stoppingToken);
-        await Task.Delay(-1, stoppingToken); // Keep service alive
+        // Wait until cancellation is requested, then exit promptly
+        var tcs = new TaskCompletionSource();
+        using (stoppingToken.Register(() => tcs.SetResult()))
+        {
+            await tcs.Task;
+        }
     }
 } 
