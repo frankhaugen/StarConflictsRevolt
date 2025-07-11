@@ -76,7 +76,7 @@ public sealed class TestApiHost : IAsyncDisposable
     {
         private int? _port;
         
-        private readonly List<(HttpMethod Verb, string Path, Func<HttpContext, Task<IResult>> Handler)>
+        private readonly List<(HttpMethod Verb, string Path, Func<HttpContext, Task> Handler)>
             _routes = new();
         private readonly List<Func<WebApplication, WebApplication>> _middleware = new();
 
@@ -88,7 +88,7 @@ public sealed class TestApiHost : IAsyncDisposable
         public Builder With(
             HttpMethod                               verb,
             string                                   path,
-            Func<HttpContext, Task<IResult>>         handler)
+            Func<HttpContext, Task>                  handler)
         {
             _routes.Add((verb, path, handler));
             return this;
@@ -123,7 +123,7 @@ public sealed class TestApiHost : IAsyncDisposable
 
             // map routes
             foreach (var (verb, path, del) in _routes)
-                app.MapMethods(path, [ verb.Method ], ctx => del(ctx));
+                app.MapMethods(path, [ verb.Method ], del);
             
             var uriBuilder = new UriBuilder();
             
