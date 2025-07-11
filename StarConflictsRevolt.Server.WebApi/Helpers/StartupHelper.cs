@@ -86,20 +86,23 @@ public static class StartupHelper
     // --- Database registration methods ---
     public static void RegisterRavenDb(WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IDocumentStore>(sp =>
+        Console.WriteLine("Registering RavenDB document store...");
+        var ravenDbConnectionString = builder.Configuration.GetConnectionString("ravenDb");
+        string ravenDbUrl;
+        if (ravenDbConnectionString?.StartsWith("URL=") == true)
+            ravenDbUrl = ravenDbConnectionString.Substring(4);
+        else
+            ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
+        
+        var documentStore = new DocumentStore
         {
-            var ravenDbConnectionString = builder.Configuration.GetConnectionString("ravenDb");
-            string ravenDbUrl;
-            if (ravenDbConnectionString?.StartsWith("URL=") == true)
-                ravenDbUrl = ravenDbConnectionString.Substring(4);
-            else
-                ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
-            return new DocumentStore
-            {
-                Urls = new[] { ravenDbUrl },
-                Database = "StarConflictsRevolt"
-            }.Initialize();
-        });
+            Urls = new[] { ravenDbUrl },
+            Database = "StarConflictsRevolt"
+        }.Initialize();
+        
+        builder.Services.AddSingleton<IDocumentStore>(documentStore);
+        
+        Console.WriteLine("Registering RavenDB document store completed.");
     }
     
     public static void RegisterGameDbContext(WebApplicationBuilder builder)
@@ -155,18 +158,14 @@ public static class StartupHelper
                     }
                     Thread.Sleep(retryDelay);
                 }
+
+            logger.LogInformation("Database created successfully");
         }
+
         app.UseAuthentication();
         app.UseAuthorization();
-        // Remove direct endpoint mappings
-        // app.MapGet("/health", ...);
-        // app.MapDefaultEndpoints();
-        // app.UseCors();
-        // MapEndpoints(app);
-        // Map SignalR hub
-        // app.MapHub<WorldHub>("/gamehub");
-        // Instead, call MinimalApiHelper
         MinimalApiHelper.MapMinimalApis(app);
+        app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
     }

@@ -9,6 +9,7 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 using TUnit;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -28,8 +29,15 @@ public class TwoPlayerIntegrationTest
         
         // Note: AI service is registered in GameEngineStartupHelper.RegisterGameEngineServices
         // For this test, we'll verify no AI actions are taken by checking logs
+
+        WebApplication app;
         
-        var app = appBuilderHost.WebApplication;
+        // Build the application with a timeout for startup
+        await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Building application");
+        app = await WithTimeout(Task.FromResult(appBuilderHost.Build()), "BuildAsync");
+        await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Application built");
+        
+        await Assert.That(app).IsNotNull();
         
         // Ensure the database is created
         using var scope = app.Services.CreateScope();
