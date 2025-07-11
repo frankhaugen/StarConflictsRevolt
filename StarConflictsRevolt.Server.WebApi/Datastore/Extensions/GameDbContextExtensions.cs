@@ -36,6 +36,11 @@ public static class GameDbContextExtensions
             .FirstOrDefaultAsync(p => p.Id == planetId, cancellationToken)
         ?? throw new KeyNotFoundException($"Planet with ID {planetId} not found.");
     
+    public static async Task<Client> GetClientAsync(this GameDbContext context, string clientId, CancellationToken cancellationToken = default) =>
+        await context.Clients
+            .FirstOrDefaultAsync(c => c.Id == clientId, cancellationToken)
+        ?? throw new KeyNotFoundException($"Client with ID {clientId} not found.");
+    
     public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, SessionType sessionType, CancellationToken cancellationToken = default)
     {
         var session = new Session()
@@ -74,8 +79,9 @@ public static class GameDbContextExtensions
         await context.Sessions
             .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
     
-    public static async Task<List<Session>> GetActiveSessionsAsync(this GameDbContext context, CancellationToken cancellationToken = default) =>
+    public static async Task<List<Session>> GetActiveSessionsAsync(this GameDbContext context, string clientId, CancellationToken cancellationToken = default) =>
         await context.Sessions
             .Where(s => s.IsActive)
+            .Where(s => s.ClientId == clientId)
             .ToListAsync(cancellationToken);
 }

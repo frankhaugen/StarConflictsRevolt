@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Http.Configuration;
 using System.Net.Http.Json;
+using StarConflictsRevolt.Clients.Models.Authentication;
 
 namespace StarConflictsRevolt.Clients.Http.Authentication;
 
@@ -39,23 +40,23 @@ public class CachingTokenProvider : ITokenProvider
         {
             var httpClient = _httpClientFactory.CreateClient("TokenProvider");
             
-            var request = new
+            var request = new TokenRequest
             {
                 ClientId = _options.Value.ClientId,
-                Secret = _options.Value.Secret
+                ClientSecret = _options.Value.Secret
             };
 
             var response = await httpClient.PostAsJsonAsync(_options.Value.TokenEndpoint, request, ct);
             response.EnsureSuccessStatusCode();
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: ct);
-            if (tokenResponse?.access_token == null)
+            if (tokenResponse?.AccessToken == null)
             {
                 throw new InvalidOperationException("Token response did not contain access_token");
             }
 
-            _cachedToken = tokenResponse.access_token;
-            _tokenExpiry = DateTime.UtcNow.Add(_options.Value.TokenExpiry);
+            _cachedToken = tokenResponse.AccessToken;
+            _tokenExpiry = tokenResponse.ExpiresAt;
 
             _logger.LogInformation("Successfully obtained new token");
             return _cachedToken;
@@ -66,23 +67,4 @@ public class CachingTokenProvider : ITokenProvider
             throw;
         }
     }
-
-    public Task<string?> GetCachedTokenAsync(CancellationToken ct = default)
-    {
-        if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
-        {
-            return Task.FromResult<string?>(_cachedToken);
-        }
-        return Task.FromResult<string?>(null);
-    }
-
-    public Task InvalidateTokenAsync(CancellationToken ct = default)
-    {
-        _cachedToken = null;
-        _tokenExpiry = DateTime.MinValue;
-        _logger.LogDebug("Token cache invalidated");
-        return Task.CompletedTask;
-    }
-
-    private record TokenResponse(string access_token, int expires_in, string token_type);
 } 

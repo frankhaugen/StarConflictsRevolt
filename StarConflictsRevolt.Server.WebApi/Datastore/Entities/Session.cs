@@ -16,4 +16,7 @@ public class Session : IGameObject
     public DateTime? Ended { get; set; }
     
     public SessionType SessionType { get; set; }
+    
+    public string? ClientId { get; set; }
+    public Client? Client { get; set; }
 }

@@ -11,8 +11,11 @@ using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
+using StarConflictsRevolt.Clients.Models.Authentication;
+using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Models;
+using TokenRequest = StarConflictsRevolt.Server.WebApi.Security.TokenRequest;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -159,7 +162,6 @@ public static class StartupHelper
         app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }));
         
         app.MapDefaultEndpoints();
-        if (app.Environment.IsDevelopment()) app.MapOpenApi();
         app.UseCors();
         MapEndpoints(app);
         
@@ -185,9 +187,39 @@ public static class StartupHelper
                 logger.LogCritical("Invalid token request: {Request}", request);
                 return;
             }
-
-            // TODO: Validate clientId/secret against your store
-            // For demo, accept any non-empty
+            
+            // Validate client secret (for demo purposes, we assume a static secret)
+            if (request.Secret != Constants.Secret)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Invalid client secret");
+                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TokenEndpoint");
+                logger.LogWarning("Invalid client secret for client {ClientId}", request.ClientId);
+                return;
+            }
+            
+            var gameDbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+            
+            var existingClient = await gameDbContext.GetClientAsync(request.ClientId, context.RequestAborted);
+            if (existingClient == null)
+            {
+                // Client not found, create a new one
+                existingClient = new Client
+                {
+                    Id = request.ClientId,
+                    LastSeen = DateTime.UtcNow
+                };
+                gameDbContext.Clients.Add(existingClient);
+                await gameDbContext.SaveChangesAsync(context.RequestAborted);
+            }
+            else
+            {
+                // Update last seen timestamp
+                existingClient.LastSeen = DateTime.UtcNow;
+                gameDbContext.Clients.Update(existingClient);
+                await gameDbContext.SaveChangesAsync(context.RequestAborted);
+            }
 
             var claims = new[]
             {
@@ -198,18 +230,18 @@ public static class StartupHelper
                 JwtConfig.Issuer,
                 JwtConfig.Audience,
                 claims,
-                now,
+                now.AddMinutes(-5), // Allow some leeway for clock skew
                 now.AddHours(1),
                 new SigningCredentials(
                     JwtConfig.GetSymmetricSecurityKey(),
                     SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
-            var token = new
+            var token = new TokenResponse()
             {
-                access_token = tokenString,
-                expires_in = 3600,
-                token_type = "Bearer"
+                AccessToken = tokenString,
+                TokenType = TokenType.Bearer,
+                ExpiresAt = now.AddHours(1),
             };
             await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
         });
