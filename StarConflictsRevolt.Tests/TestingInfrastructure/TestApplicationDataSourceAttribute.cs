@@ -1,15 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using Raven.Client.Documents;
-using Raven.Client.Documents.Session;
 using TUnit.Core;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
-public sealed class RavenDbDataSourceAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
+public sealed class TestApplicationDataSourceAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
 {
     private static readonly Lazy<IServiceProvider> Root = new(() =>
         new ServiceCollection()
-            .AddMinimalTestServices()
+            .AddSingleton<TestApplicationHost>()
             .BuildServiceProvider());
 
     public override IServiceScope CreateScope(DataGeneratorMetadata _) =>
