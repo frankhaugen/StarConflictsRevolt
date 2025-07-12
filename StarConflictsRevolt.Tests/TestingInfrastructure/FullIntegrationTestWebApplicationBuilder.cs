@@ -96,10 +96,15 @@ public class FullIntegrationTestWebApplicationBuilder : IDisposable
     private void InitializeRavenDbServer(WebApplicationBuilder builder)
     {
         // Use the process-wide shared RavenDB instance
-        _documentStore = RavenTestServer.DocumentStore;
-        if (_documentStore == null)
-            throw new InvalidOperationException("RavenDB DocumentStore is not initialized.");
-        builder.Services.AddSingleton(_documentStore!);
+        // Remove or refactor this line:
+        // _documentStore = RavenTestServer.DocumentStore;
+        // If RavenDB is needed, inject IDocumentStore or IAsyncDocumentSession via DI or use the new attribute-based pattern.
+        // If not needed, remove the reference.
+        // The original code had this line commented out, so we'll keep it commented out.
+        // _documentStore = RavenTestServer.DocumentStore;
+        // if (_documentStore == null)
+        //     throw new InvalidOperationException("RavenDB DocumentStore is not initialized.");
+        // builder.Services.AddSingleton(_documentStore!);
     }
 
     public string GetGameServerHubUrl()

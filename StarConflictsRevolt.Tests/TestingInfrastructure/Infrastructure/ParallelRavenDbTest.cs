@@ -10,19 +10,20 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure.Infrastructure;
 public class ParallelRavenDbTest
 {
     [Test]
-    public async Task MultipleThreads_CanResolveDocumentStore_FromServiceCollection_InParallel()
+    public async Task MultipleThreads_CanResolveDocumentStoreProvider_Singleton_InParallel()
     {
         const int parallelCount = 4;
         var results = new ConcurrentBag<IDocumentStore>();
+        var services = new ServiceCollection();
+        services.AddSingleton<IDocumentStoreProvider, RavenTestServerProvider>();
+        var provider = services.BuildServiceProvider();
         var tasks = new List<Task>();
         for (int i = 0; i < parallelCount; i++)
         {
             tasks.Add(Task.Run(() =>
             {
-                var services = new ServiceCollection();
-                services.AddSingleton<IDocumentStore>(_ => RavenTestServer.DocumentStore);
-                var provider = services.BuildServiceProvider();
-                var store = provider.GetRequiredService<IDocumentStore>();
+                var storeProvider = provider.GetRequiredService<IDocumentStoreProvider>();
+                var store = storeProvider.GetStore();
                 // Open a session and perform a trivial operation
                 using var session = store.OpenSession();
                 session.Store(new { Test = "Parallel" + i }, "tests/" + i);

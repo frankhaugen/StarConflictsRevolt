@@ -5,58 +5,56 @@ using Raven.Embedded;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
-public static class RavenTestServer
+public class RavenTestServerProvider : IDocumentStoreProvider
 {
-    private static readonly object _lock = new();
-    private static IDocumentStore? _documentStore;
-    private static bool _started = false;
-    private static string? _dataDir;
+    private readonly object _lock = new();
+    private IDocumentStore? _documentStore;
+    private bool _started = false;
+    private string? _dataDir;
     private static readonly string MutexName = "StarConflictsRevolt_RavenDb_Mutex";
-    private static Mutex? _mutex; 
-    public static IDocumentStore DocumentStore
+    private Mutex? _mutex;
+
+    public IDocumentStore GetStore(string? dbName = null)
     {
-        get
+        var pid = Process.GetCurrentProcess().Id;
+        var tid = Thread.CurrentThread.ManagedThreadId;
+        var stack = Environment.StackTrace;
+        Console.WriteLine($"[RavenTestServerProvider] GetStore called. PID={pid}, TID={tid}\nStack:\n{stack}");
+        if (_documentStore != null) return _documentStore;
+        lock (_lock)
         {
-            var pid = Process.GetCurrentProcess().Id;
-            var tid = Thread.CurrentThread.ManagedThreadId;
-            var stack = Environment.StackTrace;
-            Debug.WriteLine($"[RavenTestServer] DocumentStore getter called. PID={pid}, TID={tid}\nStack:\n{stack}");
+            Console.WriteLine($"[RavenTestServerProvider] Entered lock. PID={pid}, TID={tid}");
             if (_documentStore != null) return _documentStore;
-            lock (_lock)
+            if (!_started)
             {
-                Debug.WriteLine($"[RavenTestServer] Entered lock. PID={pid}, TID={tid}");
-                if (_documentStore != null) return _documentStore;
-                if (!_started)
+                _mutex = new Mutex(false, MutexName);
+                Console.WriteLine($"[RavenTestServerProvider] Waiting for Mutex '{MutexName}'. PID={pid}, TID={tid}");
+                _mutex.WaitOne(); // Wait for exclusive access
+                Console.WriteLine($"[RavenTestServerProvider] Acquired Mutex '{MutexName}'. PID={pid}, TID={tid}");
+                try
                 {
-                    _mutex = new Mutex(false, MutexName);
-                    Debug.WriteLine($"[RavenTestServer] Waiting for Mutex '{MutexName}'. PID={pid}, TID={tid}");
-                    _mutex.WaitOne(); // Wait for exclusive access
-                    Debug.WriteLine($"[RavenTestServer] Acquired Mutex '{MutexName}'. PID={pid}, TID={tid}");
-                    try
-                    {
-                        var uniqueDir = Path.Combine(
-                            Path.GetTempPath(),
-                            $"StarConflictsRevoltTest_RavenDb_{pid}_{Guid.NewGuid()}"
-                        );
-                        Directory.CreateDirectory(uniqueDir);
-                        _dataDir = uniqueDir;
-                        Debug.WriteLine($"[RavenTestServer] Starting EmbeddedServer at {_dataDir}. PID={pid}, TID={tid}");
-                        EmbeddedServer.Instance.StartServer(new ServerOptions { DataDirectory = _dataDir });
-                        Debug.WriteLine($"[RavenTestServer] EmbeddedServer started. PID={pid}, TID={tid}");
-                        _started = true;
-                    }
-                    finally
-                    {
-                        Debug.WriteLine($"[RavenTestServer] Releasing Mutex '{MutexName}'. PID={pid}, TID={tid}");
-                        _mutex.ReleaseMutex();
-                    }
+                    var uniqueDir = Path.Combine(
+                        Path.GetTempPath(),
+                        $"StarConflictsRevoltTest_RavenDb_{pid}_{Guid.NewGuid()}"
+                    );
+                    Directory.CreateDirectory(uniqueDir);
+                    _dataDir = uniqueDir;
+                    Console.WriteLine($"[RavenTestServerProvider] Starting EmbeddedServer at {_dataDir}. PID={pid}, TID={tid}");
+                    EmbeddedServer.Instance.StartServer(new ServerOptions { DataDirectory = _dataDir });
+                    Console.WriteLine($"[RavenTestServerProvider] EmbeddedServer started. PID={pid}, TID={tid}");
+                    _started = true;
                 }
-                var dbName = $"TestDb_{Guid.NewGuid()}";
-                Debug.WriteLine($"[RavenTestServer] Getting DocumentStore '{dbName}'. PID={pid}, TID={tid}");
-                _documentStore = EmbeddedServer.Instance.GetDocumentStore(dbName);
-                Debug.WriteLine($"[RavenTestServer] DocumentStore '{dbName}' acquired. PID={pid}, TID={tid}");
-                return _documentStore;
+                finally
+                {
+                    Console.WriteLine($"[RavenTestServerProvider] Releasing Mutex '{MutexName}'. PID={pid}, TID={tid}");
+                    _mutex.ReleaseMutex();
+                }
             }
+            var name = dbName ?? $"TestDb_{Guid.NewGuid()}";
+            Console.WriteLine($"[RavenTestServerProvider] Getting DocumentStore '{name}'. PID={pid}, TID={tid}");
+            _documentStore = EmbeddedServer.Instance.GetDocumentStore(name);
+            Console.WriteLine($"[RavenTestServerProvider] DocumentStore '{name}' acquired. PID={pid}, TID={tid}");
+            return _documentStore;
         }
     }
 } 

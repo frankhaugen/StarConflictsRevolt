@@ -21,8 +21,9 @@ public class CoreGameLogicTests
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
         // Use embedded RavenDB event store
-        var documentStore = RavenTestServer.DocumentStore;
-        services.AddSingleton<IDocumentStore>(documentStore);
+        // Remove or refactor this line:
+        // var documentStore = RavenTestServer.DocumentStore;
+        // If RavenDB is needed, inject IDocumentStore or IAsyncDocumentSession via DI or use the new attribute-based pattern.
         services.AddSingleton<IEventStore, RavenEventStore>();
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
