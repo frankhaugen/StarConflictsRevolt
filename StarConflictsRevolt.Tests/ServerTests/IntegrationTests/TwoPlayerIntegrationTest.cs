@@ -13,11 +13,12 @@ using Microsoft.AspNetCore.Builder;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class TwoPlayerIntegrationTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    public async Task TwoHumanPlayers_SessionCreationAndJoining_NoAIActions()
+    [Timeout(20)]
+    public async Task TwoHumanPlayers_SessionCreationAndJoining_NoAIActions(CancellationToken cancellationToken)
     {
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
@@ -25,8 +26,8 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
         // Note: AI service is registered in GameEngineStartupHelper.RegisterGameEngineServices
         // For this test, we'll verify no AI actions are taken by checking logs
 
-        // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        // The application is already built and started by TestHostApplication
+        var app = testHost.Server;
         await Assert.That(app).IsNotNull();
         
         // Ensure the database is created
@@ -37,7 +38,7 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
         await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Database created");
         
         // Create an HttpClient that can communicate with the test server
-        var port = gameServer.GetPort();
+        var port = testHost.Port;
         await Context.Current.OutputWriter.WriteLineAsync($"[DIAG] Using port: {port}");
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{port}") };
 
@@ -76,7 +77,7 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
 
         // 2. Mariell connects to SignalR and joins the session group
         var mariellHubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -100,7 +101,7 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
 
         // 3. Frank connects to SignalR and joins the same session group
         var frankHubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -231,9 +232,10 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
         await Assert.That(errorLogs).IsEmpty();
     }
 
-    private static async Task<T> WithTimeout<T>(Task<T> task, string step, int timeoutSeconds = 10)
+    private async Task<T> WithTimeout<T>(Task<T> task, string step, int timeoutSeconds = 10)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
         try
         {
             return await task.WaitAsync(cts.Token);
@@ -244,9 +246,10 @@ public partial class TwoPlayerIntegrationTest(GameServerTestHost gameServer)
         }
     }
 
-    private static async Task WithTimeout(Task task, string step, int timeoutSeconds = 10)
+    private async Task WithTimeout(Task task, string step, int timeoutSeconds = 10)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
         try
         {
             await task.WaitAsync(cts.Token);

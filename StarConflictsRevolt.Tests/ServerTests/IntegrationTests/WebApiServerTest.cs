@@ -4,25 +4,26 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class WebApiServerTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class WebApiServerTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    public void WebApiServer_ShouldStartAndRespond()
+    [Timeout(20)]
+    public async Task WebApiServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
-        // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        // The application is already built and started by TestHostApplication
+        var app = testHost.Server;
         
         // Assert: Check if the application is running and can respond to requests
         app.Services.GetService(typeof(IEventStore))
             .Should().NotBeNull("because the event store should be registered in the service provider");
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
-        var response = httpClient.GetAsync("/").GetAwaiter().GetResult();
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
+        var response = await httpClient.GetAsync("/", cancellationToken);
         response.IsSuccessStatusCode.Should().BeTrue("because the root endpoint should respond successfully");
         
-        Context.Current.OutputWriter.WriteLine(
-            $"Web API server started at http://localhost:{gameServer.GetPort()} and responded successfully with status code {response.StatusCode} and content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}"
+        await Context.Current.OutputWriter.WriteLineAsync(
+            $"Web API server started at http://localhost:{testHost.Port} and responded successfully with status code {response.StatusCode} and content: {await response.Content.ReadAsStringAsync(cancellationToken)}"
         );
     }
 }

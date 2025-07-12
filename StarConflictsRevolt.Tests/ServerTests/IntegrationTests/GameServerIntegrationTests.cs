@@ -9,14 +9,15 @@ using TUnit.Core;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class GameServerIntegrationTests(GameServerTestHost testHost)
+[TestHostApplication]
+public partial class GameServerIntegrationTests(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    public async Task GameServer_CanStartAndServeRequests()
+    [Timeout(20)]
+    public async Task GameServer_CanStartAndServeRequests(CancellationToken cancellationToken)
     {
         // Test that the server is running and can serve requests
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         
         // Test basic connectivity
         var response = await httpClient.GetAsync("/health");
@@ -24,9 +25,10 @@ public partial class GameServerIntegrationTests(GameServerTestHost testHost)
     }
 
     [Test]
-    public async Task GameServer_CanCreateSessionAndJoinViaSignalR()
+    [Timeout(20)]
+    public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
     {
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // Get authentication token
         var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = "test-client", Secret = "test-secret" });
@@ -62,9 +64,10 @@ public partial class GameServerIntegrationTests(GameServerTestHost testHost)
     }
 
     [Test]
-    public async Task GameServer_CanUseRavenDbForPersistence()
+    [Timeout(20)]
+    public async Task GameServer_CanUseRavenDbForPersistence(CancellationToken cancellationToken)
     {
-        using var session = testHost.CreateSession();
+        using var session = testHost.DocumentStore.OpenAsyncSession();
         
         var testEntity = new TestEntity { Name = "Test", Value = 42 };
         await session.StoreAsync(testEntity);

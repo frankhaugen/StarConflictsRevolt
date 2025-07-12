@@ -8,18 +8,19 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class SessionJoinWorldIntegrationTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class SessionJoinWorldIntegrationTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient()
+    [Timeout(20)]
+    public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient(CancellationToken cancellationToken)
     {
-        // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        // The application is already built and started by TestHostApplication
+        var app = testHost.Server;
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // Authenticate
         var testClientId = $"test-client-{Guid.NewGuid()}";
@@ -38,7 +39,7 @@ public partial class SessionJoinWorldIntegrationTest(GameServerTestHost gameServ
 
         // Connect to SignalR and join world
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .Build();
         WorldDto? receivedWorld = null;
