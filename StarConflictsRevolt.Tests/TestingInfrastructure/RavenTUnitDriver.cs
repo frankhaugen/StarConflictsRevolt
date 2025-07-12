@@ -5,6 +5,6 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
 internal sealed class RavenTUnitDriver : RavenTestDriver
 {
-    public IDocumentStore NewStore(string caller) =>
-        GetDocumentStore();
+    public IDocumentStore NewStore(string database) =>
+        GetDocumentStore(database: database);
 } 

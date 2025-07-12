@@ -8,8 +8,8 @@ using TUnit;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 
-[GameServerDataSource]
-public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -26,7 +26,7 @@ public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
         // The application is already built and started by GameServerTestHost
         var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -41,7 +41,7 @@ public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
         // The application is already built and started by GameServerTestHost
         var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -87,7 +87,7 @@ public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
         // The application is already built and started by GameServerTestHost
         var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -103,7 +103,7 @@ public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
         // The application is already built and started by GameServerTestHost
         var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -118,7 +118,7 @@ public partial class SessionTypeIntegrationTests(GameServerTestHost gameServer)
         // The application is already built and started by GameServerTestHost
         var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         

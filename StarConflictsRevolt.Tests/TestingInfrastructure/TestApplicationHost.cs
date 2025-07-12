@@ -21,6 +21,7 @@ public class TestHostApplication : IDisposable
     private readonly int _port;
     private readonly string _uniqueDataDir;
     private readonly IHttpApiClient _apiClient;
+    private readonly IDocumentStore _documentStore;
 
     public TestHostApplication()
     {
@@ -30,7 +31,13 @@ public class TestHostApplication : IDisposable
         
         var builder = WebApplication.CreateBuilder();
         
-        InitializeRavenDbServer(builder);
+        
+        // Use the same shared document store as RavenDbDataSourceAttribute
+        _documentStore = SharedDocumentStore.CreateStore("test-database-" + Guid.NewGuid().ToString("N"));
+        builder.Services.AddSingleton(_documentStore);
+        builder.Services.AddScoped<IAsyncDocumentSession>(sp => 
+            sp.GetRequiredService<IDocumentStore>().OpenAsyncSession());
+        
         AddInMemoryConfigurationOverrides(builder);
         OpenSqliteConnectionAndConfigureDbContext(builder);
 
@@ -38,7 +45,7 @@ public class TestHostApplication : IDisposable
         builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
         
         // Register test-specific services instead of production StartupHelper
-        builder.Services.AddTestApplicationServicesWithoutHostedServices();
+        builder.Services.AddTestApplicationServices();
         
         // Configure the web application
         builder.WebHost.UseUrls($"http://localhost:{_port}");
@@ -78,15 +85,6 @@ public class TestHostApplication : IDisposable
             ["TokenProviderOptions:ClientId"] = "test-client",
             ["TokenProviderOptions:Secret"] = "test-secret",
         }!);
-    }
-
-    private void InitializeRavenDbServer(WebApplicationBuilder builder)
-    {
-        // Use the same shared document store as RavenDbDataSourceAttribute
-        var documentStore = SharedDocumentStore.Instance;
-        builder.Services.AddSingleton(documentStore);
-        builder.Services.AddScoped<IAsyncDocumentSession>(sp => 
-            sp.GetRequiredService<IDocumentStore>().OpenAsyncSession());
     }
 
     private void ConfigureTestApplication(WebApplication app)
@@ -154,9 +152,16 @@ public class TestHostApplication : IDisposable
 
     // Public properties for test access
     public WebApplication Server => _app;
+    public WebApplication App => _app;
     public IHttpApiClient Client => _apiClient;
-    public IDocumentStore DocumentStore => SharedDocumentStore.Instance;
-    public GameDbContext GameDbContext => _app.Services.GetRequiredService<GameDbContext>();
+    public IDocumentStore DocumentStore => _documentStore ?? throw new InvalidOperationException("DocumentStore not initialized");
+    public async Task UseGameDbContextAsync(Func<GameDbContext, Task> action)
+    {
+        await using var scope = _app.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        await action(dbContext);
+    }
+    
     public int Port => _port;
     public string GetGameServerHubUrl() => $"http://localhost:{_port}/gamehub";
 
@@ -176,4 +181,6 @@ public class TestHostApplication : IDisposable
         }
         catch { /* ignore cleanup errors */ }
     }
+
+    public string GetPortAsString() => _port.ToString();
 } 

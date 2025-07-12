@@ -5,7 +5,17 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 internal static class SharedDocumentStore
 {
     private static readonly RavenTUnitDriver Driver = new();
-    private static readonly Lazy<IDocumentStore> _store = new(() => Driver.NewStore("Shared"));
+    private static readonly Dictionary<string, IDocumentStore> Stores = new();
     
-    public static IDocumentStore Instance => _store.Value;
+    public static IDocumentStore CreateStore(string database)
+    {
+        if (Stores.TryGetValue(database, out var store))
+        {
+            return store;
+        }
+
+        store = Driver.NewStore(database);
+        Stores[database] = store;
+        return store;
+    }
 } 

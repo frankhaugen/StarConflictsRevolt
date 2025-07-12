@@ -13,8 +13,8 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 
-[RavenDbDataSource]
-public partial class CoreGameLogicTests(IAsyncDocumentSession session)
+[TestHostApplication]
+public partial class CoreGameLogicTests(TestHostApplication testHost)
 {
     private SessionAggregate CreateAggregate(Guid sessionId, World world)
     {
@@ -24,7 +24,7 @@ public partial class CoreGameLogicTests(IAsyncDocumentSession session)
         services.AddSingleton<IEventStore>(sp => 
         {
             var logger = sp.GetRequiredService<ILogger<RavenEventStore>>();
-            var documentStore = session.Advanced.DocumentStore;
+            var documentStore = sp.GetRequiredService<IDocumentStore>();
             return new RavenEventStore(documentStore, logger);
         });
         services.AddSingleton<SessionAggregateManager>();

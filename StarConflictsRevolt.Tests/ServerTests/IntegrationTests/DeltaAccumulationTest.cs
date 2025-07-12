@@ -10,8 +10,8 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class DeltaAccumulationTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class DeltaAccumulationTest(TestHostApplication gameServer)
 {
     [Test]
     public async Task Should_Not_Accumulate_Deltas_Repeatedly()
@@ -28,7 +28,7 @@ public partial class DeltaAccumulationTest(GameServerTestHost gameServer)
         await dbContext.Database.EnsureCreatedAsync();
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";

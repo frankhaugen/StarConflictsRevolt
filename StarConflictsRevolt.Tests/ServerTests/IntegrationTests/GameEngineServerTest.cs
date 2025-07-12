@@ -12,8 +12,8 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class GameEngineServerTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class GameEngineServerTest(TestHostApplication gameServer)
 {
     [Test]
     public async Task GameEngineServer_ShouldStartAndRespond()
@@ -28,7 +28,7 @@ public partial class GameEngineServerTest(GameServerTestHost gameServer)
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";

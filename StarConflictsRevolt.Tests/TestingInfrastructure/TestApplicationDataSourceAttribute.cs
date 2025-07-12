@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using TUnit.Core;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 

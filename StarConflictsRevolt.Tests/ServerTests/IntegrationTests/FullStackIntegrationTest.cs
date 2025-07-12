@@ -11,8 +11,8 @@ using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[GameServerDataSource]
-public partial class FullStackIntegrationTest(GameServerTestHost gameServer)
+[TestHostApplication]
+public partial class FullStackIntegrationTest(TestHostApplication gameServer)
 {
     [Test]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta()
@@ -29,7 +29,7 @@ public partial class FullStackIntegrationTest(GameServerTestHost gameServer)
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";

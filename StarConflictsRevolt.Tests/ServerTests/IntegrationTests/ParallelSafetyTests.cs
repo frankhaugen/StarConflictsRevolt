@@ -4,12 +4,12 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[RavenDbDataSource]
-public partial class ParallelSafetyTests(IAsyncDocumentSession session)
+public partial class ParallelSafetyTests
 {
     [Test]
     public async Task Concurrent_sessions_do_not_clash()
     {
+        using var session = SharedDocumentStore.CreateStore("ParallelSafetyTests").OpenAsyncSession();
         var range = Enumerable.Range(0, 1000);
         await Parallel.ForEachAsync(range, async (i, _) =>
         {
