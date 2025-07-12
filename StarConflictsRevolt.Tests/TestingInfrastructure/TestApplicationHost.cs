@@ -8,15 +8,13 @@ using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Http.Http;
-using StarConflictsRevolt.Clients.Raylib.Services;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
-public class TestApplicationHost : IDisposable
+public class TestHostApplication : IDisposable
 {
     private readonly WebApplication _app;
     private readonly SqliteConnection _sqliteConnection;
@@ -24,7 +22,7 @@ public class TestApplicationHost : IDisposable
     private readonly string _uniqueDataDir;
     private readonly IHttpApiClient _apiClient;
 
-    public TestApplicationHost()
+    public TestHostApplication()
     {
         _port = FindRandomUnusedPort();
         _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
@@ -97,7 +95,7 @@ public class TestApplicationHost : IDisposable
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<TestApplicationHost>>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<TestHostApplication>>();
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
             var connectionString = configuration.GetConnectionString("gameDb");
             if (!string.IsNullOrEmpty(connectionString))

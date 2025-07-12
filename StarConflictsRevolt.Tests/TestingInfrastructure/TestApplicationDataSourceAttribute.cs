@@ -3,11 +3,11 @@ using TUnit.Core;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
-public sealed class TestApplicationDataSourceAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
+public sealed class TestHostApplicationAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
 {
     private static readonly Lazy<IServiceProvider> Root = new(() =>
         new ServiceCollection()
-            .AddSingleton<TestApplicationHost>()
+            .AddSingleton<TestHostApplication>()
             .BuildServiceProvider());
 
     public override IServiceScope CreateScope(DataGeneratorMetadata _) =>
