@@ -2,6 +2,7 @@ using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
 using StarConflictsRevolt.Server.WebApi.Enums;
@@ -12,27 +13,25 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 
-public class CoreGameLogicTests
+[RavenDbDataSource]
+public partial class CoreGameLogicTests(IAsyncDocumentSession session)
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public CoreGameLogicTests()
+    private SessionAggregate CreateAggregate(Guid sessionId, World world)
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
-        // Use embedded RavenDB event store
-        // Remove or refactor this line:
-        // var documentStore = RavenTestServer.DocumentStore;
-        // If RavenDB is needed, inject IDocumentStore or IAsyncDocumentSession via DI or use the new attribute-based pattern.
-        services.AddSingleton<IEventStore, RavenEventStore>();
+        // Use the injected RavenDB session for event store
+        services.AddSingleton<IEventStore>(sp => 
+        {
+            var logger = sp.GetRequiredService<ILogger<RavenEventStore>>();
+            var documentStore = session.Advanced.DocumentStore;
+            return new RavenEventStore(documentStore, logger);
+        });
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
-        _serviceProvider = services.BuildServiceProvider();
-    }
-
-    private SessionAggregate CreateAggregate(Guid sessionId, World world)
-    {
-        var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         return new SessionAggregate(sessionId, world, loggerFactory.CreateLogger<SessionAggregate>());
     }
 

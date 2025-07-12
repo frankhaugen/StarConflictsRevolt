@@ -2,11 +2,13 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using StarConflictsRevolt.Tests.TestingInfrastructure;
 using TUnit;
 
 namespace StarConflictsRevolt.Tests.ServerTests;
 
-public class SessionTypeStressTests
+[GameServerDataSource]
+public partial class SessionTypeStressTests(GameServerTestHost gameServer)
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -20,11 +22,10 @@ public class SessionTypeStressTests
     [Test]
     public async Task Create_50_Sessions_Quickly_Succeeds()
     {
-        using var builder = new TestingInfrastructure.FullIntegrationTestWebApplicationBuilder();
-        var app = builder.Build();
-        await app.StartAsync();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -34,18 +35,15 @@ public class SessionTypeStressTests
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
-        
-        await app.StopAsync();
     }
 
     [Test]
     public async Task Create_And_Join_20_Sessions_Succeeds()
     {
-        using var builder = new TestingInfrastructure.FullIntegrationTestWebApplicationBuilder();
-        var app = builder.Build();
-        await app.StartAsync();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -56,18 +54,15 @@ public class SessionTypeStressTests
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
             // Simulate join (would be a GET or SignalR join in real app)
         }
-        
-        await app.StopAsync();
     }
 
     [Test]
     public async Task Create_Sessions_With_Random_Types_Succeeds()
     {
-        using var builder = new TestingInfrastructure.FullIntegrationTestWebApplicationBuilder();
-        var app = builder.Build();
-        await app.StartAsync();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -79,18 +74,15 @@ public class SessionTypeStressTests
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
-        
-        await app.StopAsync();
     }
 
     [Test]
     public async Task Create_Sessions_With_Long_Names_Succeeds()
     {
-        using var builder = new TestingInfrastructure.FullIntegrationTestWebApplicationBuilder();
-        var app = builder.Build();
-        await app.StartAsync();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -100,18 +92,15 @@ public class SessionTypeStressTests
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
-        
-        await app.StopAsync();
     }
 
     [Test]
     public async Task Create_Sessions_With_Special_Chars_Succeeds()
     {
-        using var builder = new TestingInfrastructure.FullIntegrationTestWebApplicationBuilder();
-        var app = builder.Build();
-        await app.StartAsync();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{builder.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -121,8 +110,6 @@ public class SessionTypeStressTests
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
-        
-        await app.StopAsync();
     }
 
     private record TokenResponse(string access_token, int expires_in, string token_type);

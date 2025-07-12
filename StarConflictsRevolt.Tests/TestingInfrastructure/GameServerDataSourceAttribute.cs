@@ -1,16 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
-using Raven.Client.Documents;
-using Raven.Client.Documents.Session;
 using TUnit.Core;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
-public sealed class RavenDbDataSourceAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
+public sealed class GameServerDataSourceAttribute : DependencyInjectionDataSourceAttribute<IServiceScope>
 {
     private static readonly IServiceProvider Root = new ServiceCollection()
-        .AddSingleton<IDocumentStore>(SharedDocumentStore.Instance)
-        .AddScoped<IAsyncDocumentSession>(sp =>
-            sp.GetRequiredService<IDocumentStore>().OpenAsyncSession())
+        .AddSingleton<GameServerTestHost>()
         .BuildServiceProvider();
 
     public override IServiceScope CreateScope(DataGeneratorMetadata _) =>

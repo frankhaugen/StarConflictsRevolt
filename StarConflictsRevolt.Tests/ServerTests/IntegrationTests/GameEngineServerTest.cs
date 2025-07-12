@@ -12,16 +12,14 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-public class GameEngineServerTest
+[GameServerDataSource]
+public partial class GameEngineServerTest(GameServerTestHost gameServer)
 {
     [Test]
     public async Task GameEngineServer_ShouldStartAndRespond()
     {
-        // Arrange: Create a test server for the game engine
-        using var signalRTestServer = new FullIntegrationTestWebApplicationBuilder();
-        
-        // Arrange: Get the web application from the test server
-        var app = signalRTestServer.Build();
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
         // Fill the database with test data if necessary
         using var scope = app.Services.CreateScope();
@@ -29,11 +27,8 @@ public class GameEngineServerTest
         var dbContext = serviceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
-        // Start the application
-        await app.StartAsync();
-        
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{signalRTestServer.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
@@ -48,7 +43,7 @@ public class GameEngineServerTest
         // Listen to SignalR events and persist them in memory for assertions:
         var worldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(signalRTestServer.GetGameServerHubUrl())
+            .WithUrl(gameServer.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -147,9 +142,6 @@ public class GameEngineServerTest
         
         // Gracefully stop the SignalR connection
         await hubConnection.StopAsync();
-        
-        // Stop the application after tests
-        await app.StopAsync();
     }
     
     private record SessionResponse(Guid SessionId);

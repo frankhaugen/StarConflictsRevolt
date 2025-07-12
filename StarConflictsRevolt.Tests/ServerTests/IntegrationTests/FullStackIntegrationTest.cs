@@ -11,7 +11,8 @@ using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-public class FullStackIntegrationTest
+[GameServerDataSource]
+public partial class FullStackIntegrationTest(GameServerTestHost gameServer)
 {
     [Test]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta()
@@ -19,22 +20,16 @@ public class FullStackIntegrationTest
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
 
-        using var appBuilderHost = new FullIntegrationTestWebApplicationBuilder();
-        
-        // Add our log provider to capture all logs from the application
-        appBuilderHost.LoggingBuilder.AddProvider(new TestLoggerProvider(logSink));
-        
-        var app = appBuilderHost.WebApplication;
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         
         // Ensure the database is created
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
-        await app.StartAsync();
-        
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{appBuilderHost.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
@@ -57,7 +52,7 @@ public class FullStackIntegrationTest
         await Context.Current.OutputWriter.WriteLineAsync($"Created session: {sessionId}");
 
         // 2. Connect to SignalR and join the session group
-        var hubUrl = appBuilderHost.GetGameServerHubUrl();
+        var hubUrl = gameServer.GetGameServerHubUrl();
         var _hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
@@ -134,10 +129,8 @@ public class FullStackIntegrationTest
             await Context.Current.OutputWriter.WriteLineAsync($"Session exists: {sessionExists}");
         }
         
-        // 6. Gracefully stop the application and SignalR connection
+        // 6. Gracefully stop the SignalR connection
         await _hubConnection.StopAsync();
-        await app.StopAsync();
-        await app.DisposeAsync();
         
         // 7. Assertions - these should fail if there are errors
         await Assert.That(_receivedDeltas).IsNotEmpty();

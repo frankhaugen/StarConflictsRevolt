@@ -8,18 +8,18 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-public class SessionJoinWorldIntegrationTest
+[GameServerDataSource]
+public partial class SessionJoinWorldIntegrationTest(GameServerTestHost gameServer)
 {
     [Test]
     public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient()
     {
-        using var appBuilderHost = new FullIntegrationTestWebApplicationBuilder();
-        var app = appBuilderHost.WebApplication;
+        // The application is already built and started by GameServerTestHost
+        var app = gameServer.App;
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
-        await app.StartAsync();
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{appBuilderHost.GetPort()}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.GetPort()}") };
 
         // Authenticate
         var testClientId = $"test-client-{Guid.NewGuid()}";
@@ -38,7 +38,7 @@ public class SessionJoinWorldIntegrationTest
 
         // Connect to SignalR and join world
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(appBuilderHost.GetGameServerHubUrl())
+            .WithUrl(gameServer.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .Build();
         WorldDto? receivedWorld = null;
@@ -53,8 +53,6 @@ public class SessionJoinWorldIntegrationTest
         // Wait for FullWorld event
         var received = await Task.WhenAny(fullWorldReceived.Task, Task.Delay(2000));
         await hubConnection.StopAsync();
-        await app.StopAsync();
-        await app.DisposeAsync();
         await Assert.That(fullWorldReceived.Task.IsCompleted).IsTrue();
         await Assert.That(receivedWorld).IsNotNull();
         await Assert.That(receivedWorld!.Galaxy).IsNotNull();
