@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Http;
@@ -99,6 +98,9 @@ public class TestHostApplication : IDisposable
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
+        
+        // Register AI strategy for AiTurnService
+        builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
 
         // Add SignalR
         builder.Services.AddSignalR(config =>

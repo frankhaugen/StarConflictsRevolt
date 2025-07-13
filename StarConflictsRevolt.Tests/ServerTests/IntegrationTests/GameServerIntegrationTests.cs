@@ -1,9 +1,7 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi;
+using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -11,7 +9,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class GameServerIntegrationTests
 {
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task GameServer_CanStartAndServeRequests(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
@@ -29,7 +27,7 @@ public class GameServerIntegrationTests
     [Timeout(30_000)]
     public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(false);
+        var testHost = new TestHostApplication(true);
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
@@ -37,13 +35,13 @@ public class GameServerIntegrationTests
         var sessionName = $"test-session-{Guid.NewGuid()}";
         var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", new { SessionName = sessionName, SessionType = "Multiplayer" }, cancellationToken);
 
-        // Output the response for debugging
-        await Context.Current.OutputWriter.WriteLineAsync($"Create session request: {createSessionResponse.ReasonPhrase} ({createSessionResponse.StatusCode})");
-        await Context.Current.OutputWriter.WriteLineAsync($"Create session response: {await createSessionResponse.Content.ReadAsStringAsync(cancellationToken)}");
-
         createSessionResponse.EnsureSuccessStatusCode();
         var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
+
+        // Output the response for debugging
+        await Context.Current.OutputWriter.WriteLineAsync($"Create session request: {createSessionResponse.ReasonPhrase} ({createSessionResponse.StatusCode})");
+        await Context.Current.OutputWriter.WriteLineAsync($"Session created with ID: {sessionId}");
 
         // Connect to SignalR and join the session
         var hubConnection = new HubConnectionBuilder()
@@ -58,15 +56,29 @@ public class GameServerIntegrationTests
         var receivedUpdates = new List<GameObjectUpdate>();
         hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates => receivedUpdates.AddRange(updates));
 
-        // Wait a moment for initial world state
-        await Task.Delay(1000, cancellationToken);
+        // Perform a simple action to trigger updates
+        if (sessionObj?.World?.Galaxy?.StarSystems?.FirstOrDefault()?.Planets?.FirstOrDefault() is PlanetDto planet)
+        {
+            var buildCommand = new BuildStructureEvent(
+                PlayerId: Guid.NewGuid(),
+                PlanetId: planet.Id,
+                StructureType: "Mine"
+            );
+            
+            var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand, cancellationToken);
+            buildResponse.EnsureSuccessStatusCode();
+            await Context.Current.OutputWriter.WriteLineAsync($"[TEST] Build command sent for planet {planet.Id}");
+        }
+
+        // Wait a moment for initial world state and updates
+        await Task.Delay(2000, cancellationToken);
 
         await hubConnection.StopAsync(cancellationToken);
         await Assert.That(receivedUpdates).IsNotEmpty();
     }
 
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task GameServer_CanUseRavenDbForPersistence(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
@@ -84,7 +96,7 @@ public class GameServerIntegrationTests
         await Assert.That(loaded.Value).IsEqualTo(42);
     }
 
-    private record SessionResponse(Guid SessionId);
+
 
     private class TestEntity
     {

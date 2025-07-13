@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Models;
@@ -146,9 +148,48 @@ public static class MinimalApiHelper
                 var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
                 sessionManagerService.CreateSession(sessionId, world);
                 context.Response.StatusCode = 201;
-                await context.Response.WriteAsJsonAsync(new { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
             })
             .WithName("CreateGameSession")
+            .RequireAuthorization();
+
+        app.MapPost("/game/session/{sessionId}/join", async context =>
+            {
+                var sessionIdStr = context.Request.RouteValues["sessionId"]?.ToString();
+                if (!Guid.TryParse(sessionIdStr, out var sessionId))
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Invalid session ID");
+                    return;
+                }
+
+                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
+                var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
+                
+                // Check if session exists
+                var session = await dbContext.GetSessionAsync(sessionId, context.RequestAborted);
+                if (session == null)
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("Session not found");
+                    return;
+                }
+
+                // Get the world for this session
+                var worldService = context.RequestServices.GetRequiredService<WorldService>();
+                var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
+                
+                // Ensure session aggregate exists
+                if (!sessionManagerService.HasAggregate(sessionId))
+                {
+                    sessionManagerService.CreateSession(sessionId, world);
+                }
+
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
+            })
+            .WithName("JoinGameSession")
             .RequireAuthorization();
 
         app.MapPost("/game/move-fleet", async context =>

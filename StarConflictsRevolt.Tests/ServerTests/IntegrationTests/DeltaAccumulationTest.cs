@@ -1,11 +1,9 @@
 using System.Collections.Concurrent;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -214,5 +212,5 @@ public class DeltaAccumulationTest
 
     private record SessionResponse(Guid SessionId);
 
-    private record TokenResponse(string access_token, int expires_in, string token_type);
+    private record TokenResponse(string AccessToken, int ExpiresIn, string TokenType);
 }

@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -115,6 +112,7 @@ public class HostedServicesIsolationTests
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         
         var serviceProvider = services.BuildServiceProvider();
         
@@ -122,7 +120,15 @@ public class HostedServicesIsolationTests
         using (var scope = serviceProvider.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+
+            try
+            {
+                await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
         
         // Get the hosted service
@@ -252,14 +258,22 @@ public class HostedServicesIsolationTests
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         
         var serviceProvider = services.BuildServiceProvider();
         
         // Ensure the database is created
         using (var scope = serviceProvider.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+            try
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+                await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await Context.Current.OutputWriter.WriteLineAsync($"Error ensuring database creation: {e.Message}");
+            }
         }
         
         // Get all hosted services

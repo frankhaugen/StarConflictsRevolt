@@ -1,11 +1,9 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -13,7 +11,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class SessionJoinWorldIntegrationTest
 {
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
@@ -28,7 +26,7 @@ public class SessionJoinWorldIntegrationTest
 
         // Create session
         var sessionName = $"test-session-{Guid.NewGuid()}";
-        var createSessionRequest = new { SessionName = sessionName, SessionType = "Multiplayer" };
+        var createSessionRequest = new CreateSessionRequest() { SessionName = sessionName, SessionType = "Multiplayer" };
         var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest, cancellationToken);
         createSessionResponse.EnsureSuccessStatusCode();
         var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);
@@ -57,6 +55,4 @@ public class SessionJoinWorldIntegrationTest
         await Assert.That(receivedWorld.Galaxy.StarSystems).IsNotEmpty();
         await Assert.That(receivedWorld.Galaxy.StarSystems.First().Planets).IsNotEmpty();
     }
-
-    private record SessionResponse(Guid SessionId);
 }

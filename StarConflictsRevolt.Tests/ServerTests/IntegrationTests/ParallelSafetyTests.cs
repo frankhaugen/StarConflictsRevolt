@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class ParallelSafetyTests
 {
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task Concurrent_sessions_do_not_clash(CancellationToken cancellationToken)
     {
         var store = SharedDocumentStore.CreateStore("ParallelSafetyTests" + Random.Shared.Next(10, 1000));

@@ -1,6 +1,4 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -115,5 +113,5 @@ public class SessionTypeIntegrationTests
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
     }
 
-    private record TokenResponse(string access_token, int expires_in, string token_type);
+    private record TokenResponse(string AccessToken, int ExpiresIn, string TokenType);
 }

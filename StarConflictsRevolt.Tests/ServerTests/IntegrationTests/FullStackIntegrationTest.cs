@@ -1,12 +1,10 @@
 using System.Collections.Concurrent;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
@@ -34,7 +32,7 @@ public class FullStackIntegrationTest
         // Ensure the database is created
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken); // Ensure the database is created
 
         // Create an HttpClient that can communicate with the test server
         var httpClient = testHost.GetHttpClient();
@@ -51,7 +49,7 @@ public class FullStackIntegrationTest
 
         // 2. Connect to SignalR and join the session group
         var hubUrl = testHost.GetGameServerHubUrl();
-        var _hubConnection = new HubConnectionBuilder()
+        var hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
@@ -60,25 +58,25 @@ public class FullStackIntegrationTest
                 logging.SetMinimumLevel(LogLevel.Information);
             })
             .Build();
-        var _receivedDeltas = new List<GameObjectUpdate>();
-        _hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", async deltas =>
+        var receivedDeltas = new List<GameObjectUpdate>();
+        hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", async deltas =>
         {
-            _receivedDeltas.AddRange(deltas);
+            receivedDeltas.AddRange(deltas);
             await Context.Current.OutputWriter.WriteLineAsync($"Received {deltas.Count} deltas via SignalR");
         });
-        await _hubConnection.StartAsync();
-        await _hubConnection.SendAsync("JoinWorld", sessionId.ToString());
+        await hubConnection.StartAsync(cancellationToken);
+        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken: cancellationToken);
 
         // 3. Get the world state to find a valid planet ID
-        var worldResponse = await httpClient.GetAsync("/game/state");
+        var worldResponse = await httpClient.GetAsync("/game/state", cancellationToken);
         if (!worldResponse.IsSuccessStatusCode)
         {
-            var errorContent = await worldResponse.Content.ReadAsStringAsync();
+            var errorContent = await worldResponse.Content.ReadAsStringAsync(cancellationToken);
             await Context.Current.OutputWriter.WriteLineAsync($"World state request failed: {worldResponse.StatusCode} - {errorContent}");
             throw new Exception($"Failed to get world state: {worldResponse.StatusCode}");
         }
 
-        var world = await worldResponse.Content.ReadFromJsonAsync<World>();
+        var world = await worldResponse.Content.ReadFromJsonAsync<World>(cancellationToken: cancellationToken);
         await Context.Current.OutputWriter.WriteLineAsync($"World state retrieved: {world?.Id}");
         await Context.Current.OutputWriter.WriteLineAsync($"World before build command: {JsonSerializer.Serialize(world)}");
 
@@ -117,9 +115,9 @@ public class FullStackIntegrationTest
 
         // 5. Wait for a delta update via SignalR
         await Task.Delay(1000); // Give more time for the command to be processed
-        await Context.Current.OutputWriter.WriteLineAsync($"Total received deltas: {_receivedDeltas.Count}");
+        await Context.Current.OutputWriter.WriteLineAsync($"Total received deltas: {receivedDeltas.Count}");
 
-        if (_receivedDeltas.Count == 0)
+        if (receivedDeltas.Count == 0)
         {
             await Context.Current.OutputWriter.WriteLineAsync("No deltas received. Checking if session exists...");
             var aggregateManager = scope.ServiceProvider.GetRequiredService<SessionAggregateManager>();
@@ -128,14 +126,14 @@ public class FullStackIntegrationTest
         }
 
         // 6. Gracefully stop the SignalR connection
-        await _hubConnection.StopAsync();
+        await hubConnection.StopAsync();
 
         // 7. Assertions - these should fail if there are errors
-        await Assert.That(_receivedDeltas).IsNotEmpty();
+        await Assert.That(receivedDeltas).IsNotEmpty();
 
         // Debug: Log all received deltas
-        await Context.Current.OutputWriter.WriteLineAsync($"Received {_receivedDeltas.Count} deltas:");
-        foreach (var delta in _receivedDeltas)
+        await Context.Current.OutputWriter.WriteLineAsync($"Received {receivedDeltas.Count} deltas:");
+        foreach (var delta in receivedDeltas)
         {
             await Context.Current.OutputWriter.WriteLineAsync($"  Delta: Id={delta.Id}, Type={delta.Type}, HasData={delta.Data.HasValue}");
             if (delta.Data.HasValue)
@@ -146,7 +144,7 @@ public class FullStackIntegrationTest
         }
 
         // Check that we received the expected delta (structure added to planet)
-        var structureDelta = _receivedDeltas.FirstOrDefault(d =>
+        var structureDelta = receivedDeltas.FirstOrDefault(d =>
             (d.Type == UpdateType.Added || d.Type == UpdateType.Changed) &&
             (
                 (d.Data.HasValue && d.Data.Value.TryGetProperty("variant", out var variant) && variant.GetString() == "mine") ||
@@ -182,7 +180,7 @@ public class FullStackIntegrationTest
 
     private record SessionResponse(Guid SessionId);
 
-    private record TokenResponse(string access_token, int expires_in, string token_type);
+    private record TokenResponse(string AccessToken, int ExpiresIn, string TokenType);
 }
 
 // Logger provider for capturing logs

@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 
 namespace StarConflictsRevolt.Server.WebApi.Services;
@@ -9,12 +6,12 @@ public class ProjectionService : BackgroundService
 {
     private readonly IEventStore _eventStore;
     private readonly ILogger<ProjectionService> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly List<Task> _activeOperations = new();
+    private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
 
-    public ProjectionService(IEventStore eventStore, IServiceProvider serviceProvider, ILogger<ProjectionService> logger)
+    public ProjectionService(IEventStore eventStore, ILogger<ProjectionService> logger)
     {
         _eventStore = eventStore;
-        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
@@ -25,15 +22,7 @@ public class ProjectionService : BackgroundService
         {
             await _eventStore.SubscribeAsync(async envelope =>
             {
-                try
-                {
-                    await UpdateProjectionsAsync(envelope, stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error updating projections for event {EventType} in world {WorldId}",
-                        envelope.Event.GetType().Name, envelope.WorldId);
-                }
+                await ProcessEventWithTimeoutAsync(envelope, stoppingToken);
             }, stoppingToken);
 
             // Wait until cancellation is requested, then exit promptly
@@ -53,75 +42,148 @@ public class ProjectionService : BackgroundService
         }
     }
 
-    private async Task UpdateProjectionsAsync(EventEnvelope envelope, CancellationToken ct)
+    private async Task ProcessEventWithTimeoutAsync(EventEnvelope envelope, CancellationToken stoppingToken)
     {
-        using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        // Create a timeout for this operation
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(30)); // 30-second timeout per event
 
-        switch (envelope.Event)
+        try
         {
-            case MoveFleetEvent move:
-                await UpdateFleetOwnershipAsync(dbContext, move, envelope.WorldId, ct);
-                break;
-            case BuildStructureEvent build:
-                await UpdateStructureCountAsync(dbContext, build, envelope.WorldId, ct);
-                break;
-            case AttackEvent attack:
-                await UpdateBattleStatsAsync(dbContext, attack, envelope.WorldId, ct);
-                break;
-        }
-
-        await dbContext.SaveChangesAsync(ct);
-    }
-
-    private async Task UpdateFleetOwnershipAsync(GameDbContext dbContext, MoveFleetEvent move, Guid worldId, CancellationToken ct)
-    {
-        var stats = await GetOrCreatePlayerStatsAsync(dbContext, move.PlayerId, worldId, ct);
-        // Update fleet count logic here
-        stats.LastUpdated = DateTime.UtcNow;
-    }
-
-    private async Task UpdateStructureCountAsync(GameDbContext dbContext, BuildStructureEvent build, Guid worldId, CancellationToken ct)
-    {
-        var stats = await GetOrCreatePlayerStatsAsync(dbContext, build.PlayerId, worldId, ct);
-        stats.StructuresBuilt++;
-        stats.LastUpdated = DateTime.UtcNow;
-    }
-
-    private async Task UpdateBattleStatsAsync(GameDbContext dbContext, AttackEvent attack, Guid worldId, CancellationToken ct)
-    {
-        var attackerStats = await GetOrCreatePlayerStatsAsync(dbContext, attack.PlayerId, worldId, ct);
-        // Simple logic: attacker wins if defender fleet is removed
-        attackerStats.BattlesWon++;
-        attackerStats.LastUpdated = DateTime.UtcNow;
-    }
-
-    private async Task<PlayerStats> GetOrCreatePlayerStatsAsync(GameDbContext dbContext, Guid playerId, Guid sessionId, CancellationToken ct)
-    {
-        var stats = await dbContext.PlayerStats
-            .FirstOrDefaultAsync(s => s.PlayerId == playerId && s.SessionId == sessionId, ct);
-
-        if (stats == null)
-        {
-            // Try to get player name from the session aggregate
-            var playerName = $"Player_{playerId}"; // Default fallback
-
-            // In a full implementation, we would query the session aggregate to get the player name
-            // For now, we'll use a more descriptive default name
-            playerName = $"Player_{playerId:N}"[..12]; // Use first 12 chars of GUID for readability
-
-            stats = new PlayerStats
+            await _operationSemaphore.WaitAsync(timeoutCts.Token);
+            try
             {
-                Id = Guid.NewGuid(),
-                PlayerId = playerId,
-                SessionId = sessionId,
-                PlayerName = playerName,
-                Created = DateTime.UtcNow,
-                LastUpdated = DateTime.UtcNow
-            };
-            dbContext.PlayerStats.Add(stats);
+                var operationTask = ProcessEventAsync(envelope, timeoutCts.Token);
+                _activeOperations.Add(operationTask);
+                
+                await operationTask;
+                
+                _activeOperations.Remove(operationTask);
+            }
+            finally
+            {
+                _operationSemaphore.Release();
+            }
         }
+        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
+        {
+            _logger.LogWarning("Event processing timed out for event {EventType} in world {WorldId}", 
+                envelope.Event.GetType().Name, envelope.WorldId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing event {EventType} in world {WorldId}", 
+                envelope.Event.GetType().Name, envelope.WorldId);
+        }
+    }
 
-        return stats;
+    private async Task ProcessEventAsync(EventEnvelope envelope, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Processing projection for event {EventType} in world {WorldId}", 
+            envelope.Event.GetType().Name, envelope.WorldId);
+
+        try
+        {
+            // Process different event types for projections
+            switch (envelope.Event)
+            {
+                case MoveFleetEvent move:
+                    await ProcessFleetMoveProjectionAsync(move, cancellationToken);
+                    break;
+                case BuildStructureEvent build:
+                    await ProcessStructureBuildProjectionAsync(build, cancellationToken);
+                    break;
+                case AttackEvent attack:
+                    await ProcessAttackProjectionAsync(attack, cancellationToken);
+                    break;
+                case DiplomacyEvent diplo:
+                    await ProcessDiplomacyProjectionAsync(diplo, cancellationToken);
+                    break;
+                default:
+                    _logger.LogDebug("No projection handler for event type {EventType}", envelope.Event.GetType().Name);
+                    break;
+            }
+
+            _logger.LogInformation("Successfully processed projection for event {EventType} in world {WorldId}", 
+                envelope.Event.GetType().Name, envelope.WorldId);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Projection processing cancelled for event {EventType} in world {WorldId}", 
+                envelope.Event.GetType().Name, envelope.WorldId);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process projection for event {EventType} in world {WorldId}", 
+                envelope.Event.GetType().Name, envelope.WorldId);
+            throw;
+        }
+    }
+
+    private async Task ProcessFleetMoveProjectionAsync(MoveFleetEvent move, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Processing fleet move projection: Fleet {FleetId} from {FromPlanet} to {ToPlanet}", 
+            move.FleetId, move.FromPlanetId, move.ToPlanetId);
+        
+        // Add projection logic here (e.g., updating leaderboards, statistics, etc.)
+        await Task.CompletedTask; // Placeholder for actual projection work
+    }
+
+    private async Task ProcessStructureBuildProjectionAsync(BuildStructureEvent build, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Processing structure build projection: {StructureType} on planet {PlanetId}", 
+            build.StructureType, build.PlanetId);
+        
+        // Add projection logic here
+        await Task.CompletedTask; // Placeholder for actual projection work
+    }
+
+    private async Task ProcessAttackProjectionAsync(AttackEvent attack, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Processing attack projection: {AttackerFleet} vs {DefenderFleet} at {Location}", 
+            attack.AttackerFleetId, attack.DefenderFleetId, attack.LocationPlanetId);
+        
+        // Add projection logic here
+        await Task.CompletedTask; // Placeholder for actual projection work
+    }
+
+    private async Task ProcessDiplomacyProjectionAsync(DiplomacyEvent diplo, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Processing diplomacy projection: {ProposalType} from {PlayerId} to {TargetPlayerId}", 
+            diplo.ProposalType, diplo.PlayerId, diplo.TargetPlayerId);
+        
+        // Add projection logic here
+        await Task.CompletedTask; // Placeholder for actual projection work
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("ProjectionService stopping...");
+        
+        // Wait for active operations to complete with timeout
+        if (_activeOperations.Count > 0)
+        {
+            try
+            {
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(10)); // 10-second timeout for shutdown
+                
+                await Task.WhenAll(_activeOperations).WaitAsync(timeoutCts.Token);
+                _logger.LogInformation("All active operations completed during shutdown");
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Some operations did not complete during shutdown timeout");
+            }
+        }
+        
+        await base.StopAsync(cancellationToken);
+    }
+
+    public override void Dispose()
+    {
+        _operationSemaphore?.Dispose();
+        base.Dispose();
     }
 }
