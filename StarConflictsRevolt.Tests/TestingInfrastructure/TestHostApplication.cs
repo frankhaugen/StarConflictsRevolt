@@ -1,11 +1,14 @@
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Http;
@@ -24,27 +27,21 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
 public class TestHostApplication : IDisposable
 {
-    private readonly WebApplication _app;
-    private readonly SqliteConnection _sqliteConnection;
-    private readonly int _port;
-    private readonly string _uniqueDataDir;
-    private readonly IHttpApiClient _apiClient;
     private readonly IDocumentStore _documentStore;
+    private readonly SqliteConnection _sqliteConnection;
+    private readonly string _uniqueDataDir;
 
     public TestHostApplication(bool includeClientServices = true)
     {
-        _port = FindRandomUnusedPort();
+        Port = FindRandomUnusedPort();
         _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
         _sqliteConnection = new SqliteConnection("DataSource=:memory:");
-        
+
         var builder = WebApplication.CreateBuilder();
-        
+
         // Add client services
         // Configure HTTP client with the new standardized library
-        builder.Services.AddStarConflictsHttpClients(builder.Configuration, clientName: "GameApi", client =>
-        {
-            client.BaseAddress = new Uri("http://127.0.0.1:" + _port);
-        });
+        builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", client => { client.BaseAddress = new Uri("http://127.0.0.1:" + Port); });
 
         if (includeClientServices)
         {
@@ -75,40 +72,40 @@ public class TestHostApplication : IDisposable
             // Register client initialization services
             builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();
             builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
-            
+
             // Add client services
             builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
         }
-        
+
         // Use the same shared document store as RavenDbDataSourceAttribute
         _documentStore = SharedDocumentStore.CreateStore("test-database-" + Guid.NewGuid().ToString("N"));
         builder.Services.AddSingleton(_documentStore);
-        builder.Services.AddScoped<IAsyncDocumentSession>(sp => 
+        builder.Services.AddScoped<IAsyncDocumentSession>(sp =>
             sp.GetRequiredService<IDocumentStore>().OpenAsyncSession());
-        
+
         AddInMemoryConfigurationOverrides(builder);
         OpenSqliteConnectionAndConfigureDbContext(builder);
 
         // Set the log level of "Microsoft.EntityFrameworkCore.Database.Command" to "Warning" to reduce noise
         builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
-        
+
         // Register test-specific services instead of production StartupHelper
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
-        
+
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
-        
+
         // Add SignalR
         builder.Services.AddSignalR(config =>
         {
             config.EnableDetailedErrors = true;
             config.MaximumReceiveMessageSize = 1024 * 1024; // 1 MB
         });
-        
+
         // Add CORS
         builder.Services.AddCors(options =>
         {
@@ -119,15 +116,15 @@ public class TestHostApplication : IDisposable
                     .AllowAnyHeader();
             });
         });
-        
+
         // Add OpenAPI
         builder.Services.AddOpenApi();
-        
+
         // Add JWT authentication
         builder.Services.AddAuthentication("Test")
             .AddJwtBearer("Test", options =>
             {
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
                     ValidateAudience = false,
@@ -136,33 +133,63 @@ public class TestHostApplication : IDisposable
                     ValidateIssuerSigningKey = false
                 };
             });
-        
+
         // Add API versioning
         builder.Services.AddApiVersioning(options =>
         {
-            options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+            options.DefaultApiVersion = new ApiVersion(1, 0);
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.ReportApiVersions = true;
         });
-        
+
         // Add hosted services for full application testing
         // services.AddHostedService<GameUpdateService>();
         // services.AddHostedService<AiTurnService>();
         // services.AddHostedService<ProjectionService>();
         // services.AddHostedService<EventBroadcastService>();
-        
-        
+
+
         // Configure the web application
-        builder.WebHost.UseUrls($"http://localhost:{_port}");
-        
-        _app = builder.Build();
-        _app.Urls.Add($"http://localhost:{_port}");
-        
+        builder.WebHost.UseUrls($"http://localhost:{Port}");
+
+        Server = builder.Build();
+        Server.Urls.Add($"http://localhost:{Port}");
+
         // Configure the HTTP request pipeline for tests
-        ConfigureTestApplication(_app);
+        ConfigureTestApplication(Server);
 
         // Create the API client
-        _apiClient = new HttpApiClient(_app.Services.GetRequiredService<IHttpClientFactory>(), "GameApi");
+        Client = new HttpApiClient(Server.Services.GetRequiredService<IHttpClientFactory>(), Constants.HttpClientName);
+    }
+
+    // Public properties for test access
+    public WebApplication Server { get; }
+
+    public WebApplication App => Server;
+    public IHttpApiClient Client { get; }
+
+    public IDocumentStore DocumentStore => _documentStore ?? throw new InvalidOperationException("DocumentStore not initialized");
+
+    public int Port { get; }
+
+    public void Dispose()
+    {
+        if (Server is IAsyncDisposable asyncApp)
+            asyncApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        else
+            (Server as IDisposable)?.Dispose();
+
+        _sqliteConnection.Dispose();
+
+        try
+        {
+            if (Directory.Exists(_uniqueDataDir))
+                Directory.Delete(_uniqueDataDir, true);
+        }
+        catch
+        {
+            /* ignore cleanup errors */
+        }
     }
 
     private void OpenSqliteConnectionAndConfigureDbContext(WebApplicationBuilder builder)
@@ -183,11 +210,11 @@ public class TestHostApplication : IDisposable
         {
             ["ConnectionStrings:gameDb"] = "DataSource=:memory:",
             ["ConnectionStrings:ravenDb"] = "http://localhost:8080",
-            ["TokenProviderOptions:TokenEndpoint"] = "http://localhost:" + _port + "/token",
+            ["TokenProviderOptions:TokenEndpoint"] = "http://localhost:" + Port + "/token",
             ["TokenProviderOptions:ClientId"] = "test-client",
             ["TokenProviderOptions:Secret"] = Constants.Secret,
-            ["GameClientConfiguration:GameServerHubUrl"] = "http://localhost:" + _port + "/gamehub",
-            ["GameClientConfiguration:GameApiBaseUrl"] = "http://localhost:" + _port,
+            ["GameClientConfiguration:GameServerHubUrl"] = "http://localhost:" + Port + "/gamehub",
+            ["GameClientConfiguration:GameApiBaseUrl"] = "http://localhost:" + Port,
             ["GameClientConfiguration:DefaultSessionName"] = "Test Session",
             ["GameClientConfiguration:DefaultSessionType"] = "Multiplayer"
         }!);
@@ -201,7 +228,7 @@ public class TestHostApplication : IDisposable
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
-        
+
         // Ensure database is created with retry logic
         using (var scope = app.Services.CreateScope())
         {
@@ -213,15 +240,13 @@ public class TestHostApplication : IDisposable
             {
                 var safeConnectionString = connectionString.Replace("Password=", "Password=***");
                 logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
-                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT")
-                {
-                    logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
-                }
+                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT") logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
             }
             else
             {
                 logger.LogWarning("No connection string found for 'gameDb'");
             }
+
             var maxRetries = 2;
             var retryDelay = TimeSpan.FromSeconds(1);
             for (var attempt = 1; attempt <= maxRetries; attempt++)
@@ -240,6 +265,7 @@ public class TestHostApplication : IDisposable
                         logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
                         break;
                     }
+
                     Thread.Sleep(retryDelay);
                 }
 
@@ -251,9 +277,9 @@ public class TestHostApplication : IDisposable
     {
         try
         {
-            using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+            using var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
-            int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
             listener.Stop();
             return port;
         }
@@ -264,52 +290,42 @@ public class TestHostApplication : IDisposable
         }
     }
 
-    // Public properties for test access
-    public WebApplication Server => _app;
-    public WebApplication App => _app;
-    public IHttpApiClient Client => _apiClient;
-    public IDocumentStore DocumentStore => _documentStore ?? throw new InvalidOperationException("DocumentStore not initialized");
     public async Task UseGameDbContextAsync(Func<GameDbContext, Task> action)
     {
-        await using var scope = _app.Services.CreateAsyncScope();
+        await using var scope = Server.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await action(dbContext);
     }
-    
-    public int Port => _port;
-    public string GetGameServerHubUrl() => $"http://localhost:{_port}/gamehub";
 
-    public void Dispose()
+    public string GetGameServerHubUrl()
     {
-        if (_app is IAsyncDisposable asyncApp)
-            asyncApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        else
-            (_app as IDisposable)?.Dispose();
-        
-        _sqliteConnection.Dispose();
-        
-        try
-        {
-            if (Directory.Exists(_uniqueDataDir))
-                Directory.Delete(_uniqueDataDir, true);
-        }
-        catch { /* ignore cleanup errors */ }
+        return $"http://localhost:{Port}/gamehub";
     }
 
-    public string GetPortAsString() => _port.ToString();
+    public string GetPortAsString()
+    {
+        return Port.ToString();
+    }
 
     public async Task StartServerAsync(CancellationToken cancellationToken)
     {
-        if (_app == null)
+        if (Server == null)
             throw new InvalidOperationException("Application is not initialized. Call the constructor first.");
 
         // Start the application if not already started
-        if (_app.Lifetime.ApplicationStarted.IsCancellationRequested)
-        {
-            return; // Already started
-        }
+        if (Server.Lifetime.ApplicationStarted.IsCancellationRequested) return; // Already started
 
         // Ensure the application is started
-        await _app.StartAsync(cancellationToken);
+        await Server.StartAsync(cancellationToken);
     }
-} 
+
+    public HttpClient GetHttpClient()
+    {
+        if (Server == null)
+            throw new InvalidOperationException("Application is not initialized. Call the constructor first.");
+        if (Server.Services == null)
+            throw new InvalidOperationException("Application services are not available. Ensure the application is started.");
+
+        return Server.Services.GetRequiredService<IHttpClientFactory>().CreateClient(Constants.HttpClientName);
+    }
+}

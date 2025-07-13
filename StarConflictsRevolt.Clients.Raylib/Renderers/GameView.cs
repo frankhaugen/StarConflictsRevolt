@@ -7,7 +7,7 @@ public enum GameView
     Galaxy,
     System,
     Planet,
-    
+
     // Strategic & Finder Views (F1-F7)
     GameOptions,
     PlanetaryFinder,
@@ -16,7 +16,7 @@ public enum GameView
     PersonnelFinder,
     MessageWindow,
     Encyclopedia,
-    
+
     // Agent menu / GID Views (ALT-A to ALT-V)
     BuildShips,
     BuildTroops,
@@ -36,14 +36,13 @@ public enum GameView
     IdleShipyard,
     IdleTrainingFacilities,
     IdleConstruction,
-    
+
     // Tactical / Battle Views
     TacticalBattle,
     DeathStarControl,
-    
+
     // System & Miscellaneous Windows
     SaveLoadScreen,
     MultiplayerOptions,
     PauseDialog
 }
-

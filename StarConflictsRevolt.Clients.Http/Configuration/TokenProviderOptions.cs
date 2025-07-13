@@ -6,4 +6,4 @@ public class TokenProviderOptions
     public string ClientId { get; set; } = string.Empty;
     public string Secret { get; set; } = string.Empty;
     public TimeSpan TokenExpiry { get; set; } = TimeSpan.FromHours(1);
-} 
+}

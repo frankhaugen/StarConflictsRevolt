@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -12,8 +13,8 @@ StartupHelper.RegisterGameDbContext(builder);
 var app = builder.Build();
 
 var config = app.Services.GetRequiredService<IConfiguration>();
-System.Diagnostics.Debug.Assert(config.GetConnectionString("gameDb") != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override gameDb connection string");
-System.Diagnostics.Debug.Assert(config.GetConnectionString("ravenDb") != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override ravenDb connection string");
+Debug.Assert(config.GetConnectionString("gameDb") != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override gameDb connection string");
+Debug.Assert(config.GetConnectionString("ravenDb") != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Aspire did not override ravenDb connection string");
 
 app.MapDefaultEndpoints();
 

@@ -1,13 +1,13 @@
-using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Security;
-using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Clients.Models.Authentication;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using StarConflictsRevolt.Clients.Models.Authentication;
+using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Security;
+using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -33,6 +33,7 @@ public static class MinimalApiHelper
                 logger.LogCritical("Invalid token request: {Request}", request);
                 return;
             }
+
             if (request.ClientSecret != Constants.Secret)
             {
                 context.Response.StatusCode = 401;
@@ -42,6 +43,7 @@ public static class MinimalApiHelper
                 logger.LogWarning("Invalid client secret for client {ClientId}", request.ClientId);
                 return;
             }
+
             var gameDbContext = context.RequestServices.GetRequiredService<GameDbContext>();
             // Use direct lookup if GetClientAsync is not available
             var existingClient = gameDbContext.Clients.FirstOrDefault(c => c.Id == request.ClientId);
@@ -57,6 +59,7 @@ public static class MinimalApiHelper
                 gameDbContext.Clients.Update(existingClient);
                 await gameDbContext.SaveChangesAsync(context.RequestAborted);
             }
+
             var claims = new[] { new Claim("client_id", request.ClientId) };
             var now = DateTime.UtcNow;
             var jwt = new JwtSecurityToken(
@@ -70,11 +73,11 @@ public static class MinimalApiHelper
                     SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
-            var token = new TokenResponse()
+            var token = new TokenResponse
             {
                 AccessToken = tokenString,
                 TokenType = TokenType.Bearer,
-                ExpiresAt = now.AddHours(1),
+                ExpiresAt = now.AddHours(1)
             };
             await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
         });
@@ -110,6 +113,7 @@ public static class MinimalApiHelper
                     await context.Response.WriteAsync("World not found");
                     return;
                 }
+
                 await context.Response.WriteAsJsonAsync(world.ToDto(), context.RequestAborted);
             })
             .WithName("GetGameState")
@@ -375,4 +379,4 @@ public static class MinimalApiHelper
             context.Response.StatusCode = 201;
         }).RequireAuthorization();
     }
-} 
+}

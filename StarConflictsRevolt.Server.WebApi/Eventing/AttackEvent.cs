@@ -4,7 +4,7 @@ namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFleetId, Guid LocationPlanetId) : IGameEvent
 {
-    public void ApplyTo(World world, Microsoft.Extensions.Logging.ILogger logger)
+    public void ApplyTo(World world, ILogger logger)
     {
         // Find the planet and its containing system
         Planet? planet = null;
@@ -53,7 +53,7 @@ public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFlee
         var attackerPower = CalculateFleetPower(attackerFleet);
         var defenderPower = CalculateFleetPower(defenderFleet);
 
-        logger.LogInformation("Combat initiated: Attacker power {AttackerPower} vs Defender power {DefenderPower}", 
+        logger.LogInformation("Combat initiated: Attacker power {AttackerPower} vs Defender power {DefenderPower}",
             attackerPower, defenderPower);
 
         // Resolve combat
@@ -70,7 +70,7 @@ public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFlee
         if (updatedAttackerFleet.Ships.Any(s => s.Health > 0))
         {
             updatedFleets.Add(updatedAttackerFleet);
-            logger.LogInformation("Attacker fleet {AttackerFleetId} survived with {RemainingShips} ships", 
+            logger.LogInformation("Attacker fleet {AttackerFleetId} survived with {RemainingShips} ships",
                 AttackerFleetId, updatedAttackerFleet.Ships.Count(s => s.Health > 0));
         }
         else
@@ -81,7 +81,7 @@ public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFlee
         if (updatedDefenderFleet.Ships.Any(s => s.Health > 0))
         {
             updatedFleets.Add(updatedDefenderFleet);
-            logger.LogInformation("Defender fleet {DefenderFleetId} survived with {RemainingShips} ships", 
+            logger.LogInformation("Defender fleet {DefenderFleetId} survived with {RemainingShips} ships",
                 DefenderFleetId, updatedDefenderFleet.Ships.Count(s => s.Health > 0));
         }
         else
@@ -92,10 +92,7 @@ public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFlee
         // Replace the planet in the system's planet list with updated fleets
         var updatedPlanet = planet with { Fleets = updatedFleets };
         var planetIndex = containingSystem.Planets.FindIndex(p => p.Id == LocationPlanetId);
-        if (planetIndex >= 0)
-        {
-            containingSystem.Planets[planetIndex] = updatedPlanet;
-        }
+        if (planetIndex >= 0) containingSystem.Planets[planetIndex] = updatedPlanet;
     }
 
     private static int CalculateFleetPower(Fleet fleet)
@@ -106,7 +103,7 @@ public record AttackEvent(Guid PlayerId, Guid AttackerFleetId, Guid DefenderFlee
     private static (int attackerDamage, int defenderDamage) ResolveCombat(int attackerPower, int defenderPower)
     {
         var random = new Random();
-        
+
         // Base damage calculation
         var attackerDamage = (int)(attackerPower * (0.5 + random.NextDouble() * 0.5)); // 50-100% of power
         var defenderDamage = (int)(defenderPower * (0.5 + random.NextDouble() * 0.5)); // 50-100% of power

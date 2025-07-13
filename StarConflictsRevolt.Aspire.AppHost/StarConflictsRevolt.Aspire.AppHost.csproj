@@ -12,14 +12,14 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1"/>
-        <PackageReference Include="Aspire.Hosting.Redis" Version="9.3.1" />
-        <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.3.1" />
-        <PackageReference Include="CommunityToolkit.Aspire.Hosting.RavenDB" Version="9.4.0" />
+        <PackageReference Include="Aspire.Hosting.Redis" Version="9.3.1"/>
+        <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.3.1"/>
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.RavenDB" Version="9.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj" />
-      <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj"/>
+        <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿namespace StarConflictsRevolt.Tests.TestingInfrastructure.InfrastructureTests;
 
-public partial class ParallelSafetyTests
+public class ParallelSafetyTests
 {
     [Test]
     public async Task Concurrent_sessions_do_not_clash()
@@ -22,7 +22,7 @@ public partial class ParallelSafetyTests
 
     private sealed class Item
     {
-        public string Id { get; set; } = default!;
+        public string Id { get; } = default!;
         public int Value { get; init; }
     }
 }

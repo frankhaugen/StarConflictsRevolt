@@ -1,6 +1,8 @@
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Raylib.Services;
@@ -13,7 +15,7 @@ public class MenuViewSessionTypeTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddSingleton<IOptions<GameClientConfiguration>>(Options.Create(new GameClientConfiguration()));
+        services.AddSingleton(Options.Create(new GameClientConfiguration()));
         services.AddSingleton<IClientWorldStore, TestWorldStore>();
         services.AddSingleton<RenderContext>();
         services.AddSingleton<GameCommandService>(sp => new GameCommandService(
@@ -76,7 +78,7 @@ public class MenuViewSessionTypeTests
         var provider = BuildServiceProvider();
         var menuView = provider.GetRequiredService<MenuView>();
         var renderContext = provider.GetRequiredService<RenderContext>();
-        renderContext.GameState.Session = new SessionDto { Id = System.Guid.NewGuid(), SessionName = "Test", SessionType = "SinglePlayer" };
+        renderContext.GameState.Session = new SessionDto { Id = Guid.NewGuid(), SessionName = "Test", SessionType = "SinglePlayer" };
         await Assert.That(renderContext.GameState.Session.SessionName).IsEqualTo("Test");
     }
 
@@ -93,25 +95,56 @@ public class MenuViewSessionTypeTests
     // Minimal fake for IClientWorldStore
     private class TestWorldStore : IClientWorldStore
     {
-        public WorldDto? GetCurrent() => null;
-        public void ApplyFull(WorldDto? world) { }
-        public void ApplyDeltas(IEnumerable<GameObjectUpdate> deltas) { }
+        public WorldDto? GetCurrent()
+        {
+            return null;
+        }
+
+        public void ApplyFull(WorldDto? world)
+        {
+        }
+
+        public void ApplyDeltas(IEnumerable<GameObjectUpdate> deltas)
+        {
+        }
+
         public IReadOnlyList<WorldDto?> History => new List<WorldDto?>();
         public SessionDto? Session { get; set; }
     }
 
     // Minimal fake for IHttpApiClient
-    private class TestHttpApiClient : StarConflictsRevolt.Clients.Http.Http.IHttpApiClient
+    private class TestHttpApiClient : IHttpApiClient
     {
         /// <inheritdoc />
-        public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct) => new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct)
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
 
-        public Task<T?> GetAsync<T>(string uri, CancellationToken ct = default) => Task.FromResult<T?>(default);
-        public Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
-        public Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
-        public Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
+        public Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
+        {
+            return Task.FromResult<T?>(default);
+        }
+
+        public Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default)
+        {
+            return Task.FromResult(new HttpResponseMessage());
+        }
+
+        public Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default)
+        {
+            return Task.FromResult(new HttpResponseMessage());
+        }
+
+        public Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default)
+        {
+            return Task.FromResult(new HttpResponseMessage());
+        }
 
         /// <inheritdoc />
-        public async Task<bool> IsHealthyAsync(CancellationToken ct = default) => true;
+        public async Task<bool> IsHealthyAsync(CancellationToken ct = default)
+        {
+            return true;
+        }
     }
-} 
+}

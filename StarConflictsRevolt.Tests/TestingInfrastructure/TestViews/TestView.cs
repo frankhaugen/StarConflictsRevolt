@@ -10,5 +10,8 @@ public class TestView : IView
     }
 
     public GameView ViewType { get; }
-    public void Draw() { }
+
+    public void Draw()
+    {
+    }
 }

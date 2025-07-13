@@ -37,5 +37,8 @@ public class ShipCollection : IEnumerable<Ship>
         yield return StarDestroyer;
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-} 
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}

@@ -3,7 +3,7 @@
 namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public record Structure(
-    StructureVariant Variant, 
+    StructureVariant Variant,
     Planet Planet,
     Guid OwnerId,
     int Health = 100,

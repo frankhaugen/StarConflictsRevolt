@@ -3,6 +3,9 @@
 public interface IGameObject
 {
     Guid Id { get; }
-    
-    public static Guid CreateId() => Guid.CreateVersion7();
+
+    public static Guid CreateId()
+    {
+        return Guid.CreateVersion7();
+    }
 }

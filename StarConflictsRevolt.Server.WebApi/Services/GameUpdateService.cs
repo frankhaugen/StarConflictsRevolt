@@ -5,15 +5,15 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class GameUpdateService : BackgroundService
 {
-    private readonly IHubContext<WorldHub> _hubContext;
-    private readonly ILogger<GameUpdateService> _logger;
     private readonly SessionAggregateManager _aggregateManager;
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly IEventStore _eventStore;
+    private readonly IHubContext<WorldHub> _hubContext;
+    private readonly ILogger<GameUpdateService> _logger;
 
     public GameUpdateService(
-        IHubContext<WorldHub> hubContext, 
-        ILogger<GameUpdateService> logger, 
+        IHubContext<WorldHub> hubContext,
+        ILogger<GameUpdateService> logger,
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
         CommandQueue<IGameEvent> commandQueue)
@@ -31,7 +31,6 @@ public class GameUpdateService : BackgroundService
         try
         {
             while (!stoppingToken.IsCancellationRequested)
-            {
                 try
                 {
                     var aggregates = _aggregateManager.GetAllAggregates();
@@ -48,9 +47,10 @@ public class GameUpdateService : BackgroundService
                             sessionAggregate.Apply(command);
                             await _eventStore.PublishAsync(sessionId, command);
                             _aggregateManager.IncrementEventCount(sessionId);
-                            _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}", 
+                            _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}",
                                 command.GetType().Name, sessionId, _aggregateManager.GetEventCount(sessionId));
                         }
+
                         if (commandsProcessed > 0)
                         {
                             var previousWorld = _aggregateManager.GetPreviousWorldState(sessionId);
@@ -88,15 +88,15 @@ public class GameUpdateService : BackgroundService
                         {
                             _logger.LogDebug("No commands processed for session {SessionId}, skipping delta computation", sessionId);
                         }
+
                         if (_aggregateManager.GetEventCount(sessionId) > 0 && _aggregateManager.GetEventCount(sessionId) % 100 == 0)
-                        {
                             if (_eventStore is RavenEventStore raven)
                             {
                                 raven.SnapshotWorld(sessionId, sessionAggregate.World);
                                 _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, _aggregateManager.GetEventCount(sessionId));
                             }
-                        }
                     }
+
                     await Task.Delay(1000, stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -109,7 +109,6 @@ public class GameUpdateService : BackgroundService
                     _logger.LogError(ex, "Error in GameUpdateService main loop");
                     await Task.Delay(1000, stoppingToken);
                 }
-            }
         }
         finally
         {

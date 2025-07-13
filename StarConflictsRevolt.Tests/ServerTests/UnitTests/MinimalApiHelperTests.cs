@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -17,7 +18,7 @@ public class MinimalApiHelperTests
         await host.ExecuteAsync(async (client, services) =>
         {
             // Log all registered endpoints
-            var endpointDataSource = services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>();
+            var endpointDataSource = services.GetRequiredService<EndpointDataSource>();
             foreach (var endpoint in endpointDataSource.Endpoints)
             {
                 Console.WriteLine($"Registered endpoint: {endpoint.DisplayName}");
@@ -31,4 +32,4 @@ public class MinimalApiHelperTests
             content.Should().Be("Game on!");
         });
     }
-} 
+}

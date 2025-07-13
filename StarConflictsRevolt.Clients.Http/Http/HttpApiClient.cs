@@ -4,8 +4,8 @@ namespace StarConflictsRevolt.Clients.Http.Http;
 
 public class HttpApiClient : IHttpApiClient
 {
-    private readonly IHttpClientFactory _factory;
     private readonly string _clientName;
+    private readonly IHttpClientFactory _factory;
 
     public HttpApiClient(IHttpClientFactory factory, string clientName)
     {
@@ -15,17 +15,10 @@ public class HttpApiClient : IHttpApiClient
 
     public HttpClient Client => _factory.CreateClient(_clientName);
 
-    private async Task EnsureHealthAsync(CancellationToken ct = default)
+    public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct)
     {
-        var healthResponse = await RetrieveHealthCheckAsync(ct);
-        if (!healthResponse.IsSuccessStatusCode)
-        {
-            var content = await healthResponse.Content.ReadAsStringAsync();
-            throw new InvalidOperationException($"API health check failed: GET /health/game returned {(int)healthResponse.StatusCode} {healthResponse.ReasonPhrase}.\nResponse body: '{content}'.\nThis likely indicates a misconfiguration, server startup failure, or network issue. Please check the API base URL, server logs, and connectivity.");
-        }
+        return await Client.GetAsync("/health/game", ct);
     }
-
-    public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct) => await Client.GetAsync("/health/game", ct);
 
     public async Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
     {
@@ -50,7 +43,7 @@ public class HttpApiClient : IHttpApiClient
         await EnsureHealthAsync(ct);
         return await Client.DeleteAsync(uri, ct);
     }
-    
+
     public async Task<bool> IsHealthyAsync(CancellationToken ct = default)
     {
         try
@@ -63,6 +56,14 @@ public class HttpApiClient : IHttpApiClient
             return false;
         }
     }
-    
-    
-} 
+
+    private async Task EnsureHealthAsync(CancellationToken ct = default)
+    {
+        var healthResponse = await RetrieveHealthCheckAsync(ct);
+        if (!healthResponse.IsSuccessStatusCode)
+        {
+            var content = await healthResponse.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"API health check failed: GET /health/game returned {(int)healthResponse.StatusCode} {healthResponse.ReasonPhrase}.\nResponse body: '{content}'.\nThis likely indicates a misconfiguration, server startup failure, or network issue. Please check the API base URL, server logs, and connectivity.");
+        }
+    }
+}

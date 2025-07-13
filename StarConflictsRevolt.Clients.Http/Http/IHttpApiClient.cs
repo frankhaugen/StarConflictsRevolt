@@ -8,4 +8,4 @@ public interface IHttpApiClient
     Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default);
     Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default);
     Task<bool> IsHealthyAsync(CancellationToken ct = default);
-} 
+}

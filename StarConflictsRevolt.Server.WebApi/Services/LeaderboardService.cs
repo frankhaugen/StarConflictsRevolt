@@ -39,4 +39,4 @@ public class LeaderboardService
             .Take(count)
             .ToListAsync(ct);
     }
-} 
+}

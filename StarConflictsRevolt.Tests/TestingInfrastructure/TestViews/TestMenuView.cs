@@ -5,5 +5,8 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 public class TestMenuView : IView
 {
     public GameView ViewType => GameView.Menu;
-    public void Draw() { }
+
+    public void Draw()
+    {
+    }
 }

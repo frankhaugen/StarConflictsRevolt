@@ -4,13 +4,6 @@ namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public class World
 {
-    public Guid Id { get; set; }
-    public Galaxy Galaxy { get; set; }
-    public List<PlayerController> Players { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? LastUpdated { get; set; }
-    public bool IsActive { get; set; }
-
     public World()
     {
         Id = Guid.Empty;
@@ -30,4 +23,11 @@ public class World
         LastUpdated = lastUpdated;
         IsActive = isActive;
     }
+
+    public Guid Id { get; set; }
+    public Galaxy Galaxy { get; set; }
+    public List<PlayerController> Players { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? LastUpdated { get; set; }
+    public bool IsActive { get; set; }
 }

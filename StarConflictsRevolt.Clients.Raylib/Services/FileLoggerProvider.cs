@@ -4,21 +4,21 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class FileLoggerProvider : ILoggerProvider
 {
-    private readonly string _logFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly object _lock = new();
+    private readonly string _logFilePath;
 
     public FileLoggerProvider()
     {
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         _logFilePath = Path.Combine(AppContext.BaseDirectory, $"{timestamp}.log");
-        
+
         _jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-        
+
         // Create the log file and write header
         File.WriteAllText(_logFilePath, $"# StarConflictsRevolt Raylib Client Log - Started at {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}\n");
     }
@@ -37,9 +37,9 @@ public class FileLoggerProvider : ILoggerProvider
     private class FileLogger : ILogger
     {
         private readonly string _categoryName;
-        private readonly string _logFilePath;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly object _lock;
+        private readonly string _logFilePath;
 
         public FileLogger(string categoryName, string logFilePath, JsonSerializerOptions jsonOptions, object lockObj)
         {
@@ -49,9 +49,15 @@ public class FileLoggerProvider : ILoggerProvider
             _lock = lockObj;
         }
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        {
+            return null;
+        }
 
-        public bool IsEnabled(LogLevel logLevel) => true;
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return true;
+        }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -96,4 +102,4 @@ public class FileLoggerProvider : ILoggerProvider
             public string? State { get; set; }
         }
     }
-} 
+}

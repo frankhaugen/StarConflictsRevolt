@@ -25,8 +25,8 @@ public class TestApiHostTests
             await Assert.That(content).IsEqualTo("bar");
             await Assert.That(calls).Contains("GET /foo");
         });
-        
+
         // Ensure the middleware was called
         await Assert.That(calls).Contains("GET /foo");
     }
-} 
+}

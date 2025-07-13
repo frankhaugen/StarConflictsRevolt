@@ -13,4 +13,4 @@ public record Session(
     {
         return new Session(Guid.CreateVersion7(), sessionName, DateTime.UtcNow, true, null, sessionType);
     }
-};
+}

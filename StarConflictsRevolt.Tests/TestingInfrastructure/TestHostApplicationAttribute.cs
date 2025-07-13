@@ -9,12 +9,14 @@ public sealed class TestHostApplicationAttribute : DependencyInjectionDataSource
         var services = new ServiceCollection();
         services.AddSingleton<TestHostApplication>();
         var provider = services.BuildServiceProvider();
-        
+
         return provider;
     });
 
-    public override IServiceScope CreateScope(DataGeneratorMetadata _) =>
-        Root.Value.CreateAsyncScope();
+    public override IServiceScope CreateScope(DataGeneratorMetadata _)
+    {
+        return Root.Value.CreateAsyncScope();
+    }
 
     public override object? Create(IServiceScope scope, Type type)
     {
@@ -23,4 +25,4 @@ public sealed class TestHostApplicationAttribute : DependencyInjectionDataSource
         // testHost.StartServerAsync(CancellationToken.None).GetAwaiter().GetResult();
         return testHost;
     }
-} 
+}

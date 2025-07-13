@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public record DiplomacyEvent(Guid PlayerId, Guid TargetPlayerId, string ProposalType, string? Message) : IGameEvent
 {
-    public void ApplyTo(World world, Microsoft.Extensions.Logging.ILogger logger)
+    public void ApplyTo(World world, ILogger logger)
     {
         // Find the players
         var player = world.Players?.FirstOrDefault(p => p.PlayerId == PlayerId);
@@ -43,31 +43,31 @@ public record DiplomacyEvent(Guid PlayerId, Guid TargetPlayerId, string Proposal
                 break;
         }
 
-        logger.LogInformation("Diplomacy event processed: {PlayerId} -> {TargetPlayerId} ({ProposalType})", 
+        logger.LogInformation("Diplomacy event processed: {PlayerId} -> {TargetPlayerId} ({ProposalType})",
             PlayerId, TargetPlayerId, ProposalType);
     }
 
-    private static void ProcessAllianceProposal(PlayerController player, PlayerController targetPlayer, World world, Microsoft.Extensions.Logging.ILogger logger)
+    private static void ProcessAllianceProposal(PlayerController player, PlayerController targetPlayer, World world, ILogger logger)
     {
         // For now, automatically accept alliance proposals
         // In a full implementation, this would require acceptance from the target player
         logger.LogInformation("Alliance formed between {PlayerId} and {TargetPlayerId}", player.PlayerId, targetPlayer.PlayerId);
-        
+
         // Update player relations (in a full implementation, this would be stored in a relations table)
         // For now, just log the alliance
     }
 
-    private static void ProcessPeaceProposal(PlayerController player, PlayerController targetPlayer, World world, Microsoft.Extensions.Logging.ILogger logger)
+    private static void ProcessPeaceProposal(PlayerController player, PlayerController targetPlayer, World world, ILogger logger)
     {
         logger.LogInformation("Peace treaty proposed between {PlayerId} and {TargetPlayerId}", player.PlayerId, targetPlayer.PlayerId);
     }
 
-    private static void ProcessTradeProposal(PlayerController player, PlayerController targetPlayer, World world, Microsoft.Extensions.Logging.ILogger logger)
+    private static void ProcessTradeProposal(PlayerController player, PlayerController targetPlayer, World world, ILogger logger)
     {
         logger.LogInformation("Trade agreement proposed between {PlayerId} and {TargetPlayerId}", player.PlayerId, targetPlayer.PlayerId);
     }
 
-    private static void ProcessWarDeclaration(PlayerController player, PlayerController targetPlayer, World world, Microsoft.Extensions.Logging.ILogger logger)
+    private static void ProcessWarDeclaration(PlayerController player, PlayerController targetPlayer, World world, ILogger logger)
     {
         logger.LogInformation("War declared by {PlayerId} against {TargetPlayerId}", player.PlayerId, targetPlayer.PlayerId);
     }

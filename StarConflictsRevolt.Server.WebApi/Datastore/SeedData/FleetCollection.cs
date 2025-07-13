@@ -9,14 +9,14 @@ public class FleetCollection : IEnumerable<Fleet>
     public static readonly Fleet RebelFlagship = new(
         Guid.Parse("00000000-0000-0000-0000-000000000001"),
         "Rebel Flagship",
-        new List<Ship> { },
+        new List<Ship>(),
         FleetStatus.Idle
     );
 
     public static readonly Fleet ImperialFleet = new(
         Guid.Parse("00000000-0000-0000-0000-000000000002"),
         "Imperial Fleet",
-        new List<Ship> { },
+        new List<Ship>(),
         FleetStatus.Idle
     );
 
@@ -26,5 +26,8 @@ public class FleetCollection : IEnumerable<Fleet>
         yield return ImperialFleet;
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-} 
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}

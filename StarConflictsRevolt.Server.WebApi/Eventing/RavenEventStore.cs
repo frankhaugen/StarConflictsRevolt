@@ -5,10 +5,12 @@ namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public class RavenEventStore : IEventStore
 {
-    readonly Channel<EventEnvelope> _channel;
-    readonly IDocumentStore _store;
-    readonly CancellationTokenSource _cts = new();
-    readonly ILogger<RavenEventStore> _logger;
+    private readonly Channel<EventEnvelope> _channel;
+    private readonly CancellationTokenSource _cts = new();
+    private readonly ILogger<RavenEventStore> _logger;
+    private readonly IDocumentStore _store;
+
+    private readonly List<Func<EventEnvelope, Task>> _subscribers = new();
 
     public RavenEventStore(IDocumentStore store, ILogger<RavenEventStore> logger, int capacity = 1000)
     {
@@ -30,14 +32,21 @@ public class RavenEventStore : IEventStore
         _logger.LogDebug("Event published to channel: {EventType} for world {WorldId}", @event.GetType().Name, worldId);
     }
 
-    readonly List<Func<EventEnvelope, Task>> _subscribers = new();
-
     public Task SubscribeAsync(Func<EventEnvelope, Task> handler, CancellationToken ct)
     {
         _logger.LogDebug("Registering event store subscriber: {Subscriber}", handler.Method.Name);
         _subscribers.Add(handler);
         _logger.LogDebug("Subscriber registered: {Subscriber}", handler.Method.Name);
         return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _logger.LogDebug("Disposing RavenEventStore");
+        _channel.Writer.Complete();
+        await _cts.CancelAsync();
+        await Task.CompletedTask;
+        _logger.LogDebug("RavenEventStore disposed");
     }
 
     private async Task ProcessLoop()
@@ -64,6 +73,7 @@ public class RavenEventStore : IEventStore
                 _logger.LogDebug("Event dispatched to subscriber: {Subscriber}", sub.Method.Name);
             }
         }
+
         _logger.LogDebug("RavenEventStore ProcessLoop exiting");
     }
 
@@ -86,19 +96,7 @@ public class RavenEventStore : IEventStore
         var oldEvents = session.Query<EventEnvelope>()
             .Where(e => e.WorldId == worldId && e.Timestamp <= snapshotTime)
             .ToList();
-        foreach (var ev in oldEvents)
-        {
-            session.Delete(ev);
-        }
+        foreach (var ev in oldEvents) session.Delete(ev);
         session.SaveChanges();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _logger.LogDebug("Disposing RavenEventStore");
-        _channel.Writer.Complete();
-        await _cts.CancelAsync();
-        await Task.CompletedTask;
-        _logger.LogDebug("RavenEventStore disposed");
     }
 }

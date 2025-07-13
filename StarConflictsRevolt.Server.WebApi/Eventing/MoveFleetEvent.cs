@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Guid ToPlanetId) : IGameEvent
 {
-    public void ApplyTo(World world, Microsoft.Extensions.Logging.ILogger logger)
+    public void ApplyTo(World world, ILogger logger)
     {
         // Find the fleet and validate the move
         Fleet? fleet = null;
@@ -24,10 +24,7 @@ public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Gui
 
             // Find destination planet
             var destPlanet = system.Planets.FirstOrDefault(p => p.Id == ToPlanetId);
-            if (destPlanet != null)
-            {
-                toPlanet = destPlanet;
-            }
+            if (destPlanet != null) toPlanet = destPlanet;
         }
 
         if (fleet == null)
@@ -71,7 +68,7 @@ public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Gui
         // Add fleet to destination planet (it will arrive when the time comes)
         toPlanet.Fleets.Add(updatedFleet);
 
-        logger.LogInformation("Fleet {FleetId} started moving from {FromPlanet} to {ToPlanet}, arrival in {TravelTime}s", 
+        logger.LogInformation("Fleet {FleetId} started moving from {FromPlanet} to {ToPlanet}, arrival in {TravelTime}s",
             FleetId, FromPlanetId, ToPlanetId, travelTime);
     }
 
@@ -90,7 +87,7 @@ public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Gui
         // Calculate average speed of the fleet
         var avgSpeed = ships.Average(s => s.Speed);
         var travelTime = distance / avgSpeed;
-        
+
         // Clamp between 30 seconds and 5 minutes for game balance
         return Math.Max(30, Math.Min(300, travelTime));
     }

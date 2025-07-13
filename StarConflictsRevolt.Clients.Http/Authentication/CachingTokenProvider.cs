@@ -1,7 +1,7 @@
+using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Http.Configuration;
-using System.Net.Http.Json;
 using StarConflictsRevolt.Clients.Models.Authentication;
 
 namespace StarConflictsRevolt.Clients.Http.Authentication;
@@ -9,8 +9,8 @@ namespace StarConflictsRevolt.Clients.Http.Authentication;
 public class CachingTokenProvider : ITokenProvider
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IOptions<TokenProviderOptions> _options;
     private readonly ILogger<CachingTokenProvider> _logger;
+    private readonly IOptions<TokenProviderOptions> _options;
     private string? _cachedToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
 
@@ -39,7 +39,7 @@ public class CachingTokenProvider : ITokenProvider
         try
         {
             var httpClient = _httpClientFactory.CreateClient("TokenProvider");
-            
+
             var request = new TokenRequest
             {
                 ClientId = _options.Value.ClientId,
@@ -49,11 +49,8 @@ public class CachingTokenProvider : ITokenProvider
             var response = await httpClient.PostAsJsonAsync(_options.Value.TokenEndpoint, request, ct);
             response.EnsureSuccessStatusCode();
 
-            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: ct);
-            if (tokenResponse?.AccessToken == null)
-            {
-                throw new InvalidOperationException("Token response did not contain access_token");
-            }
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
+            if (tokenResponse?.AccessToken == null) throw new InvalidOperationException("Token response did not contain access_token");
 
             _cachedToken = tokenResponse.AccessToken;
             _tokenExpiry = tokenResponse.ExpiresAt;
@@ -67,4 +64,4 @@ public class CachingTokenProvider : ITokenProvider
             throw;
         }
     }
-} 
+}

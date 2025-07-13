@@ -1,11 +1,12 @@
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Clients.Http.Authentication;
 
 public class JwtTokenHandler : DelegatingHandler
 {
-    private readonly ITokenProvider _tokenProvider;
     private readonly ILogger<JwtTokenHandler> _logger;
+    private readonly ITokenProvider _tokenProvider;
 
     public JwtTokenHandler(ITokenProvider tokenProvider, ILogger<JwtTokenHandler> logger)
     {
@@ -18,7 +19,7 @@ public class JwtTokenHandler : DelegatingHandler
         try
         {
             var token = await _tokenProvider.GetTokenAsync(cancellationToken);
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             _logger.LogDebug("Added Bearer token to request to {Uri}", request.RequestUri);
         }
         catch (Exception ex)
@@ -29,4 +30,4 @@ public class JwtTokenHandler : DelegatingHandler
 
         return await base.SendAsync(request, cancellationToken);
     }
-} 
+}

@@ -4,8 +4,8 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class CommandQueue<TCommand>
 {
-    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<TCommand>> _queues = new();
     private readonly ILogger<CommandQueue<TCommand>> _logger;
+    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<TCommand>> _queues = new();
 
     public CommandQueue(ILogger<CommandQueue<TCommand>> logger)
     {
@@ -25,15 +25,15 @@ public class CommandQueue<TCommand>
         if (_queues.TryGetValue(sessionId, out var queue))
         {
             var dequeued = queue.TryDequeue(out command);
-            if (dequeued)
-            {
-                _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", command?.GetType().Name, sessionId);
-            }
+            if (dequeued) _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", command?.GetType().Name, sessionId);
             return dequeued;
         }
+
         return false;
     }
 
     public ConcurrentQueue<TCommand> GetOrCreateQueue(Guid sessionId)
-        => _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<TCommand>());
-} 
+    {
+        return _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<TCommand>());
+    }
+}

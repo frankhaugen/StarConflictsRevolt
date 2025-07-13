@@ -4,11 +4,11 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class ClientServiceHost : BackgroundService
 {
-    private readonly SignalRService _signalRService;
-    private readonly RenderContext _renderContext;
     private readonly IGameRenderer _gameRenderer;
     private readonly ILogger<ClientServiceHost> _logger;
-    
+    private readonly RenderContext _renderContext;
+    private readonly SignalRService _signalRService;
+
     public ClientServiceHost(SignalRService renderService, RenderContext renderContext, IGameRenderer gameRenderer, ILogger<ClientServiceHost> logger)
     {
         _signalRService = renderService;
@@ -22,16 +22,16 @@ public class ClientServiceHost : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Starting ClientServiceHost");
-        
+
         _logger.LogInformation("Setting initial view to Menu");
         _renderContext.CurrentView = GameView.Menu; // Set initial view to Menu
-        
+
         _logger.LogInformation("Starting game renderer");
         await _gameRenderer.RenderAsync(null, stoppingToken);
-        
+
         _logger.LogInformation("Starting SignalR service");
         await _signalRService.StartAsync(stoppingToken);
-        
+
         _logger.LogInformation("ClientServiceHost started successfully");
     }
 

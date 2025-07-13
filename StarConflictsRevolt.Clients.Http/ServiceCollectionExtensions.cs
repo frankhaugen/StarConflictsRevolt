@@ -9,7 +9,7 @@ namespace StarConflictsRevolt.Clients.Http;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds all HTTP client and authentication services for Star Conflicts Revolt clients.
+    ///     Adds all HTTP client and authentication services for Star Conflicts Revolt clients.
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <param name="configuration">The configuration</param>
@@ -43,14 +43,11 @@ public static class ServiceCollectionExtensions
         var builder = services.AddHttpClient(clientName)
             .AddHttpMessageHandler<JwtTokenHandler>();
 
-        if (configureClient != null)
-        {
-            builder.ConfigureHttpClient(configureClient);
-        }
+        if (configureClient != null) builder.ConfigureHttpClient(configureClient);
 
         // Register HTTP API client
         services.AddTransient<IHttpApiClient>(sp => new HttpApiClient(sp.GetRequiredService<IHttpClientFactory>(), clientName));
 
         return services;
     }
-} 
+}

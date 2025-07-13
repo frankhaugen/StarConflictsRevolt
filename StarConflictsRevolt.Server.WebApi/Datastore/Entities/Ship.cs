@@ -16,4 +16,4 @@ public class Ship : GameObject
 
     public string Model { get; set; }
     public bool IsUnderConstruction { get; set; }
-} 
+}

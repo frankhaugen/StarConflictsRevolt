@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using StarConflictsRevolt.Clients.Http.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 
@@ -5,9 +6,9 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class ClientInitializer : IClientInitializer
 {
-    private readonly ILogger<ClientInitializer> _logger;
     private readonly IConfiguration _configuration;
     private readonly IClientIdentityService _identityService;
+    private readonly ILogger<ClientInitializer> _logger;
     private readonly RenderContext _renderContext;
     private readonly ITokenProvider _tokenProvider;
 
@@ -43,11 +44,11 @@ public class ClientInitializer : IClientInitializer
 
     private void ValidateConfiguration()
     {
-        _logger.LogInformation("Configuration sections: {Sections}", 
+        _logger.LogInformation("Configuration sections: {Sections}",
             string.Join(", ", _configuration.GetChildren().Select(c => c.Key)));
-        _logger.LogInformation("TokenProviderOptions section exists: {Exists}", 
+        _logger.LogInformation("TokenProviderOptions section exists: {Exists}",
             _configuration.GetSection("TokenProviderOptions").Exists());
-        _logger.LogInformation("TokenProviderOptions ClientId: {ClientId}", 
+        _logger.LogInformation("TokenProviderOptions ClientId: {ClientId}",
             _configuration["TokenProviderOptions:ClientId"]);
 
         var apiBaseUrl = _configuration["GameClientConfiguration:ApiBaseUrl"];
@@ -57,11 +58,11 @@ public class ClientInitializer : IClientInitializer
         var secret = _configuration["TokenProviderOptions:Secret"];
 
         // Check for unset or placeholder values
-        System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(apiBaseUrl) && apiBaseUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "ApiBaseUrl is not set correctly");
-        System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(hubUrl) && hubUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "GameServerHubUrl is not set correctly");
-        System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(tokenEndpoint) && tokenEndpoint != "SET_BY_ASPIRE_OR_ENVIRONMENT", "TokenEndpoint is not set correctly");
-        System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(clientId) && clientId != "SET_BY_ASPIRE_OR_ENVIRONMENT", "ClientId is not set correctly");
-        System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(secret) && secret != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Secret is not set correctly");
+        Debug.Assert(!string.IsNullOrWhiteSpace(apiBaseUrl) && apiBaseUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "ApiBaseUrl is not set correctly");
+        Debug.Assert(!string.IsNullOrWhiteSpace(hubUrl) && hubUrl != "SET_BY_ASPIRE_OR_ENVIRONMENT", "GameServerHubUrl is not set correctly");
+        Debug.Assert(!string.IsNullOrWhiteSpace(tokenEndpoint) && tokenEndpoint != "SET_BY_ASPIRE_OR_ENVIRONMENT", "TokenEndpoint is not set correctly");
+        Debug.Assert(!string.IsNullOrWhiteSpace(clientId) && clientId != "SET_BY_ASPIRE_OR_ENVIRONMENT", "ClientId is not set correctly");
+        Debug.Assert(!string.IsNullOrWhiteSpace(secret) && secret != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Secret is not set correctly");
 
         // Optionally, enforce expected values for manual runs
 #if DEBUG
@@ -72,11 +73,11 @@ public class ClientInitializer : IClientInitializer
         const string expectedClientId = "raylib-client";
         const string expectedSecret = "SuperSecretKeyForJwtTokenGeneration123";
 
-        System.Diagnostics.Debug.Assert(apiBaseUrl == expectedBaseUrl, $"ApiBaseUrl should be {expectedBaseUrl} for manual runs");
-        System.Diagnostics.Debug.Assert(hubUrl == expectedHubUrl, $"GameServerHubUrl should be {expectedHubUrl} for manual runs");
-        System.Diagnostics.Debug.Assert(tokenEndpoint == expectedTokenEndpoint, $"TokenEndpoint should be {expectedTokenEndpoint} for manual runs");
-        System.Diagnostics.Debug.Assert(clientId == expectedClientId, $"ClientId should be {expectedClientId} for manual runs");
-        System.Diagnostics.Debug.Assert(secret == expectedSecret, $"Secret should be {expectedSecret} for manual runs");
+        Debug.Assert(apiBaseUrl == expectedBaseUrl, $"ApiBaseUrl should be {expectedBaseUrl} for manual runs");
+        Debug.Assert(hubUrl == expectedHubUrl, $"GameServerHubUrl should be {expectedHubUrl} for manual runs");
+        Debug.Assert(tokenEndpoint == expectedTokenEndpoint, $"TokenEndpoint should be {expectedTokenEndpoint} for manual runs");
+        Debug.Assert(clientId == expectedClientId, $"ClientId should be {expectedClientId} for manual runs");
+        Debug.Assert(secret == expectedSecret, $"Secret should be {expectedSecret} for manual runs");
 #endif
     }
 
@@ -105,7 +106,7 @@ public class ClientInitializer : IClientInitializer
         {
             var token = await _tokenProvider.GetTokenAsync();
             _renderContext.AccessToken = token;
-            _logger.LogInformation("Successfully obtained access token: {TokenPrefix}...", 
+            _logger.LogInformation("Successfully obtained access token: {TokenPrefix}...",
                 token.Substring(0, Math.Min(10, token.Length)));
         }
         catch (Exception ex)
@@ -114,4 +115,4 @@ public class ClientInitializer : IClientInitializer
             _renderContext.AccessToken = null;
         }
     }
-} 
+}

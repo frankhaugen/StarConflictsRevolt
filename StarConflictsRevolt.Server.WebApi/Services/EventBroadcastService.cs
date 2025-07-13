@@ -30,37 +30,41 @@ public class EventBroadcastService : BackgroundService
                 switch (envelope.Event)
                 {
                     case MoveFleetEvent move:
-                        updates.Add(GameObjectUpdate.Update(move.FleetId, new { 
-                            FleetId = move.FleetId, 
-                            FromPlanetId = move.FromPlanetId,
-                            ToPlanetId = move.ToPlanetId,
-                            PlayerId = move.PlayerId,
+                        updates.Add(GameObjectUpdate.Update(move.FleetId, new
+                        {
+                            move.FleetId,
+                            move.FromPlanetId,
+                            move.ToPlanetId,
+                            move.PlayerId,
                             EventType = "FleetMoved"
                         }));
                         break;
                     case BuildStructureEvent build:
-                        updates.Add(GameObjectUpdate.Update(build.PlanetId, new { 
-                            PlanetId = build.PlanetId,
-                            StructureType = build.StructureType,
-                            PlayerId = build.PlayerId,
+                        updates.Add(GameObjectUpdate.Update(build.PlanetId, new
+                        {
+                            build.PlanetId,
+                            build.StructureType,
+                            build.PlayerId,
                             EventType = "StructureBuilt"
                         }));
                         break;
                     case AttackEvent attack:
-                        updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new { 
-                            AttackerFleetId = attack.AttackerFleetId, 
-                            DefenderFleetId = attack.DefenderFleetId,
-                            LocationPlanetId = attack.LocationPlanetId,
-                            PlayerId = attack.PlayerId,
+                        updates.Add(GameObjectUpdate.Update(attack.AttackerFleetId, new
+                        {
+                            attack.AttackerFleetId,
+                            attack.DefenderFleetId,
+                            attack.LocationPlanetId,
+                            attack.PlayerId,
                             EventType = "CombatResolved"
                         }));
                         break;
                     case DiplomacyEvent diplo:
-                        updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new { 
-                            PlayerId = diplo.PlayerId,
-                            TargetPlayerId = diplo.TargetPlayerId, 
-                            ProposalType = diplo.ProposalType,
-                            Message = diplo.Message,
+                        updates.Add(GameObjectUpdate.Update(diplo.PlayerId, new
+                        {
+                            diplo.PlayerId,
+                            diplo.TargetPlayerId,
+                            diplo.ProposalType,
+                            diplo.Message,
                             EventType = "DiplomacyEvent"
                         }));
                         break;
@@ -68,11 +72,10 @@ public class EventBroadcastService : BackgroundService
                         _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
                         break;
                 }
+
                 if (updates.Count > 0)
-                {
                     // Broadcast to the world group
-                    await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken: stoppingToken);
-                }
+                    await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, stoppingToken);
             }, stoppingToken);
             // Wait until cancellation is requested, then exit promptly
             var tcs = new TaskCompletionSource();
@@ -90,4 +93,4 @@ public class EventBroadcastService : BackgroundService
             _logger.LogInformation("EventBroadcastService exiting.");
         }
     }
-} 
+}

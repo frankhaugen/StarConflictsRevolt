@@ -1,66 +1,65 @@
 ﻿using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions
+namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
+
+// Mostly mapping extensions for Models into Entities
+public static class ModelExtensions
 {
-    // Mostly mapping extensions for Models into Entities
-    public static class ModelExtensions
+    public static Fleet ToEntity(this Models.Fleet model)
     {
-        public static Fleet ToEntity(this Models.Fleet model)
+        return new Fleet
         {
-            return new Fleet
-            {
-                Id = model.Id,
-                Name = model.Name,
-                Ships = model.Ships.Select(s => ModelExtensions.ToEntity(s)).ToList()
-            };
-        }
-    
-        public static Ship ToEntity(this Models.Ship model)
+            Id = model.Id,
+            Name = model.Name,
+            Ships = model.Ships.Select(s => ToEntity(s)).ToList()
+        };
+    }
+
+    public static Ship ToEntity(this Models.Ship model)
+    {
+        return new Ship
         {
-            return new Ship
-            {
-                Id = model.Id,
-                Model = model.Model,
-                IsUnderConstruction = model.IsUnderConstruction
-            };
-        }
-    
-        public static Planet ToEntity(this Models.Planet model)
+            Id = model.Id,
+            Model = model.Model,
+            IsUnderConstruction = model.IsUnderConstruction
+        };
+    }
+
+    public static Planet ToEntity(this Models.Planet model)
+    {
+        // Only map persistent properties; Fleets and Structures are not persisted directly
+        return new Planet
         {
-            // Only map persistent properties; Fleets and Structures are not persisted directly
-            return new Planet
-            {
-                Id = model.Id,
-                Name = model.Name,
-                Radius = model.Radius,
-                Mass = model.Mass,
-                RotationSpeed = model.RotationSpeed,
-                OrbitSpeed = model.OrbitSpeed,
-                DistanceFromSun = model.DistanceFromSun
-            };
-        }
-    
-        public static StarSystem ToEntity(this Models.StarSystem model)
+            Id = model.Id,
+            Name = model.Name,
+            Radius = model.Radius,
+            Mass = model.Mass,
+            RotationSpeed = model.RotationSpeed,
+            OrbitSpeed = model.OrbitSpeed,
+            DistanceFromSun = model.DistanceFromSun
+        };
+    }
+
+    public static StarSystem ToEntity(this Models.StarSystem model)
+    {
+        return new StarSystem
         {
-            return new StarSystem
-            {
-                Id = model.Id,
-                Name = model.Name,
-                Coordinates = model.Coordinates,
-                Planets = model.Planets.Select(p => ModelExtensions.ToEntity(p)).ToList()
-            };
-        }
-    
-        public static Session ToEntity(this Models.Session model)
+            Id = model.Id,
+            Name = model.Name,
+            Coordinates = model.Coordinates,
+            Planets = model.Planets.Select(p => ToEntity(p)).ToList()
+        };
+    }
+
+    public static Session ToEntity(this Models.Session model)
+    {
+        return new Session
         {
-            return new Session
-            {
-                Id = model.Id,
-                SessionName = model.SessionName,
-                Created = model.Created,
-                IsActive = model.IsActive,
-                Ended = model.Ended
-            };
-        }
+            Id = model.Id,
+            SessionName = model.SessionName,
+            Created = model.Created,
+            IsActive = model.IsActive,
+            Ended = model.Ended
+        };
     }
 }

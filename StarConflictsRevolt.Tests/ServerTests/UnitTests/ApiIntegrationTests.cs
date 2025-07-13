@@ -1,4 +1,6 @@
+using System.Net;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +25,7 @@ public class ApiIntegrationTests
                 await context.Response.WriteAsync("Invalid MoveFleetEvent");
                 return;
             }
+
             context.Response.StatusCode = 202;
         });
         var port = GetRandomUnusedPort();
@@ -35,16 +38,16 @@ public class ApiIntegrationTests
         var response = await client.PostAsJsonAsync("/game/move-fleet", moveEventObj);
 
         // Assert
-        await Assert.That(response.StatusCode).IsEqualTo(System.Net.HttpStatusCode.Accepted);
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Accepted);
 
         await app.StopAsync();
     }
 
     private static int GetRandomUnusedPort()
     {
-        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
-        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
     }

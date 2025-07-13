@@ -4,4 +4,4 @@ public interface IClientIdentityService
 {
     string GetOrCreateClientId();
     UserProfile GetUserProfile();
-} 
+}

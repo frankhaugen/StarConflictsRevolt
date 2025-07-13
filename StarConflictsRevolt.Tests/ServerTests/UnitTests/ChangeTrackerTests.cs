@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
@@ -11,8 +12,8 @@ namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class ChangeTrackerTests
 {
-    private readonly IServiceProvider _provider;
     private readonly ConcurrentBag<string> _logSink = new();
+    private readonly IServiceProvider _provider;
 
     public ChangeTrackerTests()
     {
@@ -26,13 +27,13 @@ public class ChangeTrackerTests
     {
         var planetId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
-        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new())
+        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>())
         {
-            Id = planetId,
+            Id = planetId
         };
         var newStructure = new Structure(StructureVariant.Mine, oldPlanet, playerId);
         var newPlanet = oldPlanet with { Structures = new List<Structure> { newStructure } };
-        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
+        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new Vector2(0, 0));
         var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
         var oldGalaxy = new Galaxy(new List<StarSystem> { oldSystem });
         var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
@@ -49,13 +50,13 @@ public class ChangeTrackerTests
         var planetId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
         var structure = new Structure(StructureVariant.Mine, null!, playerId);
-        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new(), new List<Structure> { structure })
+        var oldPlanet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure> { structure })
         {
             Id = planetId,
             Structures = new List<Structure> { structure }
         };
         var newPlanet = oldPlanet with { Structures = new List<Structure>() };
-        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new System.Numerics.Vector2(0, 0));
+        var oldSystem = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { oldPlanet }, new Vector2(0, 0));
         var newSystem = oldSystem with { Planets = new List<Planet> { newPlanet } };
         var oldGalaxy = new Galaxy(new List<StarSystem> { oldSystem });
         var newGalaxy = oldGalaxy with { StarSystems = new List<StarSystem> { newSystem } };
@@ -71,12 +72,12 @@ public class ChangeTrackerTests
     {
         var logger = _provider.GetRequiredService<ILogger<SessionAggregate>>();
         var ownerId = Guid.NewGuid();
-        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new(), ownerId)
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>(), ownerId)
         {
             Id = Guid.NewGuid(),
             Structures = new List<Structure>()
         };
-        var system = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { planet }, new System.Numerics.Vector2(0, 0));
+        var system = new StarSystem(Guid.NewGuid(), "Sys", new List<Planet> { planet }, new Vector2(0, 0));
         var galaxy = new Galaxy(new List<StarSystem> { system });
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = new SessionAggregate(Guid.NewGuid(), world, logger);

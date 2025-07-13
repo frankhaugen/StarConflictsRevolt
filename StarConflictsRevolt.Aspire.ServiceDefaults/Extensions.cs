@@ -30,10 +30,7 @@ public static class Extensions
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
             // Turn on resilience by default with only two retries
-            http.AddStandardResilienceHandler(options =>
-            {
-                options.Retry.MaxRetryAttempts = 2;
-            });
+            http.AddStandardResilienceHandler(options => { options.Retry.MaxRetryAttempts = 2; });
             // Turn on service discovery by default
             http.AddServiceDiscovery();
         });
@@ -84,10 +81,7 @@ public static class Extensions
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
-        if (useOtlpExporter)
-        {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
-        }
+        if (useOtlpExporter) builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
         return builder;
     }

@@ -6,8 +6,13 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
 {
-    WorldDto? _current;
-    readonly List<WorldDto?> _history = new();
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private readonly List<WorldDto?> _history = new();
+    private WorldDto? _current;
 
     public IReadOnlyList<WorldDto?> History => _history;
 
@@ -18,10 +23,14 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
     {
         logger.LogInformation("ApplyFull called with world: {WorldId}, StarSystems: {StarSystemCount}",
             world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
-        
-        _current = world with { Galaxy = world.Galaxy with {
-            StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
-        }};
+
+        _current = world with
+        {
+            Galaxy = world.Galaxy with
+            {
+                StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
+            }
+        };
         Snapshot();
     }
 
@@ -36,10 +45,9 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
         }
 
         var starSystems = _current.Galaxy.StarSystems.ToList();
-        
+
         var planets = starSystems.SelectMany(x => x.Planets).ToList();
         foreach (var d in deltas)
-        {
             switch (d.Type)
             {
                 case UpdateType.Added:
@@ -51,12 +59,13 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
                         if (idx >= 0) planets[idx] = dto;
                         else planets.Add(dto);
                     }
+
                     break;
                 case UpdateType.Removed:
                     planets.RemoveAll(p => p.Id == d.Id);
                     break;
             }
-        }
+
         Snapshot();
     }
 
@@ -64,30 +73,30 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
     {
         if (_current is null)
             return null;
-        return _current with {
-            Galaxy = _current.Galaxy with {
-                StarSystems = _current.Galaxy.StarSystems.Select(system => system with {
+        return _current with
+        {
+            Galaxy = _current.Galaxy with
+            {
+                StarSystems = _current.Galaxy.StarSystems.Select(system => system with
+                {
                     Planets = system.Planets.ToList() // Ensure we have a mutable list
                 }).ToList()
             }
         };
     }
 
-    void Snapshot()
+    private void Snapshot()
     {
         if (_current is null)
         {
             logger.LogWarning("Snapshot called but current world is null");
             return;
         }
+
         logger.LogInformation("Snapshotting current world: {WorldId}, StarSystems: {StarSystemCount}",
             _current.Id, _current.Galaxy?.StarSystems?.Count() ?? 0);
         _history.Add(GetCurrent());
         if (_history.Count > 100)
             _history.RemoveAt(0);
     }
-
-    static readonly JsonSerializerOptions _jsonOptions = new() {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
 }

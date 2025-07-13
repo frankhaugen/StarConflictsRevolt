@@ -1,3 +1,8 @@
 ﻿namespace StarConflictsRevolt.Clients.Models;
 
-public enum UpdateType { Added, Changed, Removed }
+public enum UpdateType
+{
+    Added,
+    Changed,
+    Removed
+}

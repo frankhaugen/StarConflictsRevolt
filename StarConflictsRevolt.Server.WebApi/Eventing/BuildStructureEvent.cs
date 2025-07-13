@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Server.WebApi.Eventing;
 
 public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string StructureType) : IGameEvent
 {
-    public void ApplyTo(World world, Microsoft.Extensions.Logging.ILogger logger)
+    public void ApplyTo(World world, ILogger logger)
     {
         // Find the planet and its containing system
         Planet? planet = null;
@@ -57,19 +57,16 @@ public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string Structure
                 variant,
                 planet, // reference to the planet
                 PlayerId,
-                Health: 100,
-                MaxHealth: 100,
-                IsOperational: true,
-                LastProductionTime: DateTime.UtcNow
+                100,
+                100,
+                true,
+                DateTime.UtcNow
             )).ToList()
         };
 
         // Replace the planet in the system's planet list
         var planetIndex = containingSystem.Planets.FindIndex(p => p.Id == PlanetId);
-        if (planetIndex >= 0)
-        {
-            containingSystem.Planets[planetIndex] = updatedPlanet;
-        }
+        if (planetIndex >= 0) containingSystem.Planets[planetIndex] = updatedPlanet;
 
         logger.LogInformation("Built {StructureType} on planet {PlanetId} for player {PlayerId}", StructureType, PlanetId, PlayerId);
     }

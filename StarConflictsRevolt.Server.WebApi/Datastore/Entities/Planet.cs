@@ -8,4 +8,4 @@ public class Planet : GameObject
     public double RotationSpeed { get; set; }
     public double OrbitSpeed { get; set; }
     public double DistanceFromSun { get; set; }
-};
+}

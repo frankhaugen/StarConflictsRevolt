@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using Microsoft.AspNetCore.Http;
 
 namespace StarConflictsRevolt.Tests.ClientTests;
 
@@ -57,8 +57,8 @@ public class ClientIntegrationTests
             .With(HttpMethod.Get, "/health/game", async ctx => await ctx.Response.WriteAsync("Game on!"))
             .With(HttpMethod.Post, "/token", async ctx =>
             {
-                var req = await ctx.Request.ReadFromJsonAsync<TokenRequest>(cancellationToken: ctx.RequestAborted);
-                await ctx.Response.WriteAsJsonAsync(fakeToken, cancellationToken: ctx.RequestAborted);
+                var req = await ctx.Request.ReadFromJsonAsync<TokenRequest>(ctx.RequestAborted);
+                await ctx.Response.WriteAsJsonAsync(fakeToken, ctx.RequestAborted);
             })
             .Build(new Uri("http://127.0.0.1:0"));
 
@@ -85,7 +85,7 @@ public class ClientIntegrationTests
             .With(HttpMethod.Get, "/health/game", async ctx => await ctx.Response.WriteAsync("Game on!"))
             .With(HttpMethod.Post, "/token", async ctx =>
             {
-                var req = await ctx.Request.ReadFromJsonAsync<TokenRequest>(cancellationToken: ctx.RequestAborted);
+                var req = await ctx.Request.ReadFromJsonAsync<TokenRequest>(ctx.RequestAborted);
                 if (req?.ClientSecret == "fail")
                 {
                     ctx.Response.StatusCode = 401;
@@ -98,7 +98,7 @@ public class ClientIntegrationTests
                         AccessToken = "fake-jwt",
                         TokenType = TokenType.Bearer,
                         ExpiresAt = DateTime.UtcNow.AddHours(1)
-                    }, cancellationToken: ctx.RequestAborted);
+                    }, ctx.RequestAborted);
                 }
             })
             .Build(new Uri("http://127.0.0.1:0"));
@@ -125,11 +125,11 @@ public class ClientIntegrationTests
             .With(HttpMethod.Get, "/health/game", async ctx => await ctx.Response.WriteAsync("Game on!"))
             .With(HttpMethod.Post, "/game/session", async ctx =>
             {
-                var req = await ctx.Request.ReadFromJsonAsync<JsonElement>(cancellationToken: ctx.RequestAborted);
+                var req = await ctx.Request.ReadFromJsonAsync<JsonElement>(ctx.RequestAborted);
                 var sessionType = req.TryGetProperty("SessionType", out var st) ? st.GetString() : "Multiplayer";
                 var resp = new { sessionId = fakeSessionId, world = fakeWorld, sessionType };
                 ctx.Response.StatusCode = 201;
-                await ctx.Response.WriteAsJsonAsync(resp, cancellationToken: ctx.RequestAborted);
+                await ctx.Response.WriteAsJsonAsync(resp, ctx.RequestAborted);
             })
             .Build(new Uri("http://127.0.0.1:0"));
 
@@ -184,7 +184,7 @@ public class ClientIntegrationTests
             .With(HttpMethod.Get, "/game/session", async ctx =>
             {
                 var resp = new { sessionId = fakeSessionId, world = fakeWorld };
-                await ctx.Response.WriteAsJsonAsync(resp, cancellationToken: ctx.RequestAborted);
+                await ctx.Response.WriteAsJsonAsync(resp, ctx.RequestAborted);
             })
             .Build(new Uri("http://127.0.0.1:0"));
 
@@ -201,4 +201,4 @@ public class ClientIntegrationTests
             await Assert.That(getSessionResp!.GetProperty("sessionId").GetGuid()).IsEqualTo(fakeSessionId);
         });
     }
-} 
+}

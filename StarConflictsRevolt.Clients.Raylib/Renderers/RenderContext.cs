@@ -6,8 +6,8 @@ namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public class RenderContext
 {
-    private readonly ILogger<RenderContext> _logger;
     private readonly IOptions<GameClientConfiguration> _configurationOptions;
+    private readonly ILogger<RenderContext> _logger;
     private readonly IClientWorldStore _worldStore;
 
     public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore)
@@ -18,39 +18,39 @@ public class RenderContext
     }
 
     public GameClientConfiguration Configuration => _configurationOptions.Value;
-    
+
     public WorldDto? World => _worldStore.GetCurrent();
-    
+
     // Game state management
     public GameState GameState { get; } = new();
-    
+
     // Legacy properties for backward compatibility
-    public SessionDto? Session 
-    { 
+    public SessionDto? Session
+    {
         get => GameState.Session;
         set => GameState.Session = value;
     }
-    
-    public IGameObject? SelectedObject 
-    { 
+
+    public IGameObject? SelectedObject
+    {
         get => GameState.SelectedObject;
         set => GameState.SelectedObject = value;
     }
-    
-    public GameView CurrentView 
-    { 
+
+    public GameView CurrentView
+    {
         get => GameState.CurrentView;
         set => GameState.CurrentView = value;
     }
-    
-    public string? AccessToken 
-    { 
+
+    public string? AccessToken
+    {
         get => GameState.AccessToken;
         set => GameState.AccessToken = value;
     }
-    
-    public string? ClientId 
-    { 
+
+    public string? ClientId
+    {
         get => GameState.PlayerId;
         set => GameState.PlayerId = value;
     }

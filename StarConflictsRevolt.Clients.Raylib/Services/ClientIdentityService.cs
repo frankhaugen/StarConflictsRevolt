@@ -37,8 +37,8 @@ public class ClientIdentityService : IClientIdentityService
     {
         _logger.LogInformation("Retrieving Windows user profile");
         var userProfile = UserProfile.GetUserProfile();
-        _logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={DisplayName}, UserName={UserName}", 
+        _logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={DisplayName}, UserName={UserName}",
             userProfile.UserId, userProfile.DisplayName, userProfile.UserName);
         return userProfile;
     }
-} 
+}

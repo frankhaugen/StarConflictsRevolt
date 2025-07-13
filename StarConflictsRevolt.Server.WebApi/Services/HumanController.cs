@@ -3,8 +3,10 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Services;
 
-class HumanController: PlayerController
+internal class HumanController : PlayerController
 {
+    public string ConnectionId { get; set; }
+
     /// <inheritdoc />
     public override List<IGameEvent> GenerateCommands(World world)
     {
@@ -12,7 +14,4 @@ class HumanController: PlayerController
         // This method can be overridden to handle specific game logic if needed.
         return new List<IGameEvent>();
     }
-
-    public string ConnectionId { get; set; }
-
 }

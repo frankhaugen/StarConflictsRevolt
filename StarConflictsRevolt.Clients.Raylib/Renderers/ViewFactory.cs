@@ -12,11 +12,8 @@ public class ViewFactory : IViewFactory
     public IView CreateView(GameView viewType)
     {
         var view = _views.FirstOrDefault(v => v.ViewType == viewType);
-        if (view == null)
-        {
-            throw new ArgumentException($"No view implementation found for view type: {viewType}");
-        }
-        
+        if (view == null) throw new ArgumentException($"No view implementation found for view type: {viewType}");
+
         return view;
     }
-} 
+}

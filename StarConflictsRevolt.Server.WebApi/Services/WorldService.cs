@@ -16,19 +16,13 @@ public class WorldService
     public async Task<World> GetWorldAsync(CancellationToken contextRequestAborted)
     {
         var aggregates = _aggregateManager.GetAllAggregates();
-        if (aggregates.Any())
-        {
-            return aggregates.First().World;
-        }
+        if (aggregates.Any()) return aggregates.First().World;
         return _worldFactory.CreateDefaultWorld();
     }
 
     public async Task<World> GetWorldAsync(Guid sessionId, CancellationToken contextRequestAborted)
     {
-        if (_aggregateManager.HasAggregate(sessionId))
-        {
-            return _aggregateManager.GetOrCreateAggregate(sessionId, _worldFactory.CreateDefaultWorld()).World;
-        }
+        if (_aggregateManager.HasAggregate(sessionId)) return _aggregateManager.GetOrCreateAggregate(sessionId, _worldFactory.CreateDefaultWorld()).World;
         return _worldFactory.CreateDefaultWorld();
     }
 }

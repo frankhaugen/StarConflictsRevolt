@@ -3,22 +3,22 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-       <OutputType>Exe</OutputType>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions-apache-2.0" Version="8.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.7" />
-        <PackageReference Include="RavenDB.Embedded" Version="7.1.0" />
-        <PackageReference Include="RavenDB.TestDriver" Version="7.1.0" />
-        <PackageReference Include="TUnit" Version="0.25.21" />
+        <PackageReference Include="FluentAssertions-apache-2.0" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.7"/>
+        <PackageReference Include="RavenDB.Embedded" Version="7.1.0"/>
+        <PackageReference Include="RavenDB.TestDriver" Version="7.1.0"/>
+        <PackageReference Include="TUnit" Version="0.25.21"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj" />
-      <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj"/>
+        <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj"/>
     </ItemGroup>
 
 </Project>

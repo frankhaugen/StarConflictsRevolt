@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.DirectoryServices.AccountManagement;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;
@@ -8,7 +9,7 @@ public record UserProfile
     public string UserId { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string UserName { get; init; } = string.Empty;
-    
+
     // Helper method to get Windows user profile
     public static UserProfile GetUserProfile()
     {
@@ -16,18 +17,15 @@ public record UserProfile
         {
             var identity = WindowsIdentity.GetCurrent();
             var name = identity?.Name ?? "Unknown User";
-        
+
             // Try to get display name from Windows
-            string displayName = name;
+            var displayName = name;
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var userPrincipal = System.DirectoryServices.AccountManagement.UserPrincipal.Current;
-                    if (userPrincipal != null)
-                    {
-                        displayName = userPrincipal.DisplayName ?? userPrincipal.Name ?? name;
-                    }
+                    var userPrincipal = UserPrincipal.Current;
+                    if (userPrincipal != null) displayName = userPrincipal.DisplayName ?? userPrincipal.Name ?? name;
                 }
             }
             catch (Exception ex)
@@ -36,7 +34,7 @@ public record UserProfile
                 displayName = name;
                 Console.WriteLine($"Failed to get display name: {ex.Message}");
             }
-        
+
             return new UserProfile
             {
                 UserId = identity?.User?.Value ?? Guid.NewGuid().ToString(),

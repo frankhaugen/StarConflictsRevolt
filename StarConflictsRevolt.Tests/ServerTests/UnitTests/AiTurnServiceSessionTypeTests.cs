@@ -61,8 +61,16 @@ public class AiTurnServiceSessionTypeTests
     [Test]
     public async Task AiTurnService_Handles_Exception_Gracefully()
     {
-        bool exceptionHandled = false;
-        try { throw new System.Exception("AI error"); } catch { exceptionHandled = true; }
+        var exceptionHandled = false;
+        try
+        {
+            throw new Exception("AI error");
+        }
+        catch
+        {
+            exceptionHandled = true;
+        }
+
         await Assert.That(exceptionHandled).IsTrue();
     }
-} 
+}

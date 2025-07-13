@@ -8,8 +8,8 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 public class ProjectionService : BackgroundService
 {
     private readonly IEventStore _eventStore;
-    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ProjectionService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public ProjectionService(IEventStore eventStore, IServiceProvider serviceProvider, ILogger<ProjectionService> logger)
     {
@@ -31,7 +31,7 @@ public class ProjectionService : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error updating projections for event {EventType} in world {WorldId}", 
+                    _logger.LogError(ex, "Error updating projections for event {EventType} in world {WorldId}",
                         envelope.Event.GetType().Name, envelope.WorldId);
                 }
             }, stoppingToken);
@@ -105,7 +105,7 @@ public class ProjectionService : BackgroundService
         {
             // Try to get player name from the session aggregate
             var playerName = $"Player_{playerId}"; // Default fallback
-            
+
             // In a full implementation, we would query the session aggregate to get the player name
             // For now, we'll use a more descriptive default name
             playerName = $"Player_{playerId:N}"[..12]; // Use first 12 chars of GUID for readability
@@ -124,4 +124,4 @@ public class ProjectionService : BackgroundService
 
         return stats;
     }
-} 
+}

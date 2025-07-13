@@ -11,12 +11,12 @@ namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public class RaylibRenderer : IGameRenderer, IAsyncDisposable
 {
-    private readonly ILogger<RaylibRenderer> _logger;
     private readonly List<Vector2> _backgroundStars = new();
-    private Camera2D _camera;
-    private bool _running = false;
-    private readonly IViewFactory _viewFactory;
+    private readonly ILogger<RaylibRenderer> _logger;
     private readonly RenderContext _renderContext;
+    private readonly IViewFactory _viewFactory;
+    private Camera2D _camera;
+    private bool _running;
 
     public RaylibRenderer(ILogger<RaylibRenderer> logger, IViewFactory viewFactory, RenderContext renderContext)
     {
@@ -24,6 +24,17 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         _viewFactory = viewFactory;
         _renderContext = renderContext;
         _logger.LogInformation("RaylibRenderer initialized with ViewFactory");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _logger.LogInformation("Disposing RaylibRenderer");
+        _running = false;
+        if (Window.IsReady())
+        {
+            Window.Close();
+            _logger.LogInformation("Raylib window closed");
+        }
     }
 
     public Task<bool> RenderAsync(WorldDto? world, CancellationToken cancellationToken)
@@ -39,30 +50,27 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         _logger.LogInformation("Initializing Raylib window");
         Window.Init(1200, 800, "Star Conflicts Revolt");
         Time.SetTargetFPS(60);
-        
+
         _logger.LogInformation("Setting up camera");
         _camera = new Camera2D(Vector2.Zero, Vector2.Zero, 0.0f, 1.0f);
-        
+
         _logger.LogInformation("Generating background stars");
         var random = new Random();
-        for (int i = 0; i < 100; i++)
-        {
-            _backgroundStars.Add(new Vector2(random.Next(0, 1200), random.Next(0, 800)));
-        }
-        
+        for (var i = 0; i < 100; i++) _backgroundStars.Add(new Vector2(random.Next(0, 1200), random.Next(0, 800)));
+
         _logger.LogInformation("Starting render loop");
-        
+
         while (!Window.ShouldClose() && _running)
         {
             HandleCameraInput();
-            
+
             Graphics.BeginDrawing();
             Graphics.ClearBackground(Color.Black);
-            
+
             DrawBackground();
-            
+
             Graphics.BeginMode2D(_camera);
-            
+
             // Draw current view
             var currentView = _viewFactory.CreateView(_renderContext.CurrentView);
             if (currentView != null)
@@ -74,15 +82,15 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
                 _logger.LogWarning("No view found for current view type: {ViewType}", _renderContext.CurrentView);
                 Graphics.DrawText($"View not found: {_renderContext.CurrentView}", 10, 10, 20, Color.White);
             }
-            
+
             Graphics.EndMode2D();
-            
+
             // Draw UI elements that should be in screen space
             DrawUI();
-            
+
             Graphics.EndDrawing();
         }
-        
+
         _logger.LogInformation("Render loop ended, closing window");
         Window.Close();
     }
@@ -95,7 +103,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
             _camera.Target += mouseDelta;
             _logger.LogDebug("Camera moved by delta: {Delta}", mouseDelta);
         }
-        
+
         var scroll = Input.GetMouseWheelMove();
         if (scroll != 0)
         {
@@ -107,10 +115,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
 
     private void DrawBackground()
     {
-        foreach (var star in _backgroundStars)
-        {
-            Graphics.DrawPixelV(star, Color.White);
-        }
+        foreach (var star in _backgroundStars) Graphics.DrawPixelV(star, Color.White);
     }
 
     private void DrawUI()
@@ -118,11 +123,8 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         // Draw UI elements in screen space
         Graphics.DrawText($"FPS: {Time.GetFPS()}", 10, 10, 20, Color.White);
         Graphics.DrawText($"View: {_renderContext.CurrentView}", 10, 35, 20, Color.White);
-        
-        if (_renderContext.GameState.FeedbackMessage != null)
-        {
-            Graphics.DrawText(_renderContext.GameState.FeedbackMessage, 10, 60, 20, Color.Yellow);
-        }
+
+        if (_renderContext.GameState.FeedbackMessage != null) Graphics.DrawText(_renderContext.GameState.FeedbackMessage, 10, 60, 20, Color.Yellow);
     }
 
     private void DrawStar(StarSystemDto system)
@@ -131,16 +133,5 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         var screenPos = system.Coordinates;
         Graphics.DrawCircle((int)screenPos.X, (int)screenPos.Y, 5, Color.Yellow);
         Graphics.DrawText(system.Name, (int)screenPos.X + 10, (int)screenPos.Y - 10, 12, Color.White);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _logger.LogInformation("Disposing RaylibRenderer");
-        _running = false;
-        if (Window.IsReady())
-        {
-            Window.Close();
-            _logger.LogInformation("Raylib window closed");
-        }
     }
 }

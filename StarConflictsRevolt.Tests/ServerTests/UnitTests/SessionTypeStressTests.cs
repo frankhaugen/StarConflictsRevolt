@@ -1,11 +1,11 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-
-public partial class SessionTypeStressTests()
+public class SessionTypeStressTests
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -23,12 +23,12 @@ public partial class SessionTypeStressTests()
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-        
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        
-        for (int i = 0; i < 50; i++)
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        for (var i = 0; i < 50; i++)
         {
             var req = new { SessionName = $"stress-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -43,12 +43,12 @@ public partial class SessionTypeStressTests()
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-        
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        
-        for (int i = 0; i < 20; i++)
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        for (var i = 0; i < 20; i++)
         {
             var req = new { SessionName = $"join-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -64,13 +64,13 @@ public partial class SessionTypeStressTests()
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-        
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         var rand = new Random();
-        for (int i = 0; i < 15; i++)
+        for (var i = 0; i < 15; i++)
         {
             var type = rand.Next(2) == 0 ? "SinglePlayer" : "Multiplayer";
             var req = new { SessionName = $"random-type-{i}-{Guid.NewGuid()}", SessionType = type };
@@ -86,12 +86,12 @@ public partial class SessionTypeStressTests()
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-        
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        
-        for (int i = 0; i < 10; i++)
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        for (var i = 0; i < 10; i++)
         {
             var req = new { SessionName = new string('X', 200) + i, SessionType = "SinglePlayer" };
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -106,12 +106,12 @@ public partial class SessionTypeStressTests()
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-        
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        
-        for (int i = 0; i < 10; i++)
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        for (var i = 0; i < 10; i++)
         {
             var req = new { SessionName = $"!@#$%^&*()_+-={i}", SessionType = "Multiplayer" };
             var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -120,4 +120,4 @@ public partial class SessionTypeStressTests()
     }
 
     private record TokenResponse(string access_token, int expires_in, string token_type);
-} 
+}

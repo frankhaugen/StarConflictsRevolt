@@ -1,16 +1,16 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-
-public partial class SessionJoinWorldIntegrationTest()
+public class SessionJoinWorldIntegrationTest
 {
     [Test]
     [Timeout(20_000)]
@@ -28,17 +28,17 @@ public partial class SessionJoinWorldIntegrationTest()
 
         // Authenticate
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest() { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
 
         // Create session
         var sessionName = $"test-session-{Guid.NewGuid()}";
         var createSessionRequest = new { SessionName = sessionName, SessionType = "Multiplayer" };
-        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest, cancellationToken: cancellationToken);
+        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest, cancellationToken);
         createSessionResponse.EnsureSuccessStatusCode();
-        var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken: cancellationToken);
+        var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
 
         // Connect to SignalR and join world
@@ -66,4 +66,4 @@ public partial class SessionJoinWorldIntegrationTest()
     }
 
     private record SessionResponse(Guid SessionId);
-} 
+}

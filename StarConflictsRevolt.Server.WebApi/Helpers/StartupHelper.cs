@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Security;
+using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -23,16 +22,16 @@ public static class StartupHelper
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
-        
+
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
-        
+
         builder.Services.AddHostedService<GameUpdateService>();
         builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
         builder.Services.AddHostedService<EventBroadcastService>();
-        
+
         // Add SignalR
         builder.Services.AddSignalR(config =>
         {
@@ -51,7 +50,7 @@ public static class StartupHelper
         });
         // Add OpenAPI
         builder.Services.AddOpenApi();
-        
+
         // Add JWT authentication
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -85,18 +84,18 @@ public static class StartupHelper
             ravenDbUrl = ravenDbConnectionString.Substring(4);
         else
             ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
-        
+
         var documentStore = new DocumentStore
         {
             Urls = new[] { ravenDbUrl },
             Database = "StarConflictsRevolt"
         }.Initialize();
-        
+
         builder.Services.AddSingleton<IDocumentStore>(documentStore);
-        
+
         Console.WriteLine("Registering RavenDB document store completed.");
     }
-    
+
     public static void RegisterGameDbContext(WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<GameDbContext>(options =>
@@ -121,15 +120,13 @@ public static class StartupHelper
             {
                 var safeConnectionString = connectionString.Replace("Password=", "Password=***");
                 logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
-                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT")
-                {
-                    logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
-                }
+                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT") logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
             }
             else
             {
                 logger.LogWarning("No connection string found for 'gameDb'");
             }
+
             var maxRetries = 2;
             var retryDelay = TimeSpan.FromSeconds(1);
             for (var attempt = 1; attempt <= maxRetries; attempt++)
@@ -148,6 +145,7 @@ public static class StartupHelper
                         logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
                         break;
                     }
+
                     Thread.Sleep(retryDelay);
                 }
 
@@ -161,4 +159,4 @@ public static class StartupHelper
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
     }
-} 
+}

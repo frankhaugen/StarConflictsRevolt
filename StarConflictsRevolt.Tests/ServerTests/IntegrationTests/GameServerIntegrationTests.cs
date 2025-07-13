@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using StarConflictsRevolt.Clients.Models;
@@ -7,42 +8,47 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-
-public partial class GameServerIntegrationTests()
+public class GameServerIntegrationTests
 {
     [Test]
     [Timeout(20_000)]
     public async Task GameServer_CanStartAndServeRequests(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
+        await testHost.StartServerAsync(cancellationToken);
 
         // Test that the server is running and can serve requests
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        
+
         // Test basic connectivity
         var response = await httpClient.GetAsync("/health", cancellationToken);
         await Assert.That(response.IsSuccessStatusCode).IsTrue();
     }
 
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
-
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
+        await testHost.StartServerAsync(cancellationToken);
+        var httpClient = testHost.GetHttpClient();
 
         // Get authentication token
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest() { ClientId = "test-client", ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest { ClientId = "test-client", ClientSecret = Constants.Secret }, cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
 
         // Create a session
         var sessionName = $"test-session-{Guid.NewGuid()}";
-        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", new { SessionName = sessionName, SessionType = "Multiplayer" }, cancellationToken: cancellationToken);
+        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", new { SessionName = sessionName, SessionType = "Multiplayer" }, cancellationToken);
+
+        // Output the response for debugging
+        await Context.Current.OutputWriter.WriteLineAsync($"Create session request: {createSessionResponse.ReasonPhrase} ({createSessionResponse.StatusCode})");
+        await Context.Current.OutputWriter.WriteLineAsync($"Create session response: {await createSessionResponse.Content.ReadAsStringAsync(cancellationToken)}");
+
         createSessionResponse.EnsureSuccessStatusCode();
-        var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken: cancellationToken);
+        var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);
         var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
 
         // Connect to SignalR and join the session
@@ -52,7 +58,7 @@ public partial class GameServerIntegrationTests()
             .Build();
 
         await hubConnection.StartAsync(cancellationToken);
-        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken: cancellationToken);
+        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken);
 
         // Verify we can receive updates
         var receivedUpdates = new List<GameObjectUpdate>();
@@ -70,9 +76,10 @@ public partial class GameServerIntegrationTests()
     public async Task GameServer_CanUseRavenDbForPersistence(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
+        await testHost.StartServerAsync(cancellationToken);
 
         using var session = testHost.DocumentStore.OpenAsyncSession();
-        
+
         var testEntity = new TestEntity { Name = "Test", Value = 42 };
         await session.StoreAsync(testEntity, cancellationToken);
         await session.SaveChangesAsync(cancellationToken);
@@ -87,8 +94,8 @@ public partial class GameServerIntegrationTests()
 
     private class TestEntity
     {
-        public string Id { get; set; } = default!;
+        public string Id { get; } = default!;
         public string Name { get; set; } = string.Empty;
         public int Value { get; set; }
     }
-} 
+}

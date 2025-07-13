@@ -8,19 +8,17 @@ using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-
-public partial class CoreGameLogicTests()
+public class CoreGameLogicTests
 {
     private SessionAggregate CreateAggregate(Guid sessionId, World world)
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
         // Use the injected RavenDB session for event store
-        services.AddSingleton<IEventStore>(sp => 
+        services.AddSingleton<IEventStore>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<RavenEventStore>>();
             var documentStore = sp.GetRequiredService<IDocumentStore>();
@@ -29,7 +27,7 @@ public partial class CoreGameLogicTests()
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
         var serviceProvider = services.BuildServiceProvider();
-        
+
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         return new SessionAggregate(sessionId, world, loggerFactory.CreateLogger<SessionAggregate>());
     }
@@ -39,12 +37,12 @@ public partial class CoreGameLogicTests()
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var planetA = new Planet("A", 1, 1, 1, 1, 1, new(), new());
-        var planetB = new Planet("B", 1, 1, 1, 1, 2, new(), new());
+        var planetA = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>());
+        var planetB = new Planet("B", 1, 1, 1, 1, 2, new List<Fleet>(), new List<Structure>());
         var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { ShipCollection.XWing.ToModel() }, planetA.Id, playerId);
         planetA.Fleets.Add(fleet);
-        var system = new StarSystem(Guid.NewGuid(), "Sys", [ planetA, planetB ], new Vector2(0, 0));
-        var galaxy = new Galaxy([ system ]);
+        var system = new StarSystem(Guid.NewGuid(), "Sys", [planetA, planetB], new Vector2(0, 0));
+        var galaxy = new Galaxy([system]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -56,7 +54,7 @@ public partial class CoreGameLogicTests()
         // Assert
         await Assert.That(aggregate.UncommittedEvents.Any(e => e.Equals(moveEvent))).IsTrue();
         await Assert.That(aggregate.Version).IsEqualTo(initialVersion + 1);
-        
+
         // Verify fleet was moved
         await Assert.That(planetA.Fleets).IsEmpty();
         await Assert.That(planetB.Fleets.Count).IsEqualTo(1);
@@ -70,9 +68,9 @@ public partial class CoreGameLogicTests()
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new(), playerId, Minerals: 100, Energy: 100);
-        var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy([ system ]);
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>(), playerId, Minerals: 100, Energy: 100);
+        var system = new StarSystem(Guid.NewGuid(), "Sys", [planet], new Vector2(0, 0));
+        var galaxy = new Galaxy([system]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -86,7 +84,7 @@ public partial class CoreGameLogicTests()
         // Assert
         await Assert.That(aggregate.UncommittedEvents.Any(e => e.Equals(buildEvent))).IsTrue();
         await Assert.That(aggregate.Version).IsEqualTo(initialVersion + 1);
-        
+
         // Fetch the mutated planet from the world
         var mutatedPlanet = aggregate.World.Galaxy.StarSystems.SelectMany(s => s.Planets).First(p => p.Id == planet.Id);
         // Verify structure was added
@@ -104,17 +102,19 @@ public partial class CoreGameLogicTests()
         // Arrange
         var attackerId = Guid.NewGuid();
         var defenderId = Guid.NewGuid();
-        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new());
-        var attackerFleet = new Fleet(Guid.NewGuid(), "Attacker", new List<Ship> { 
-            new Ship(Guid.NewGuid(), "Fighter", false, Health: 100, AttackPower: 20, DefensePower: 10) 
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>());
+        var attackerFleet = new Fleet(Guid.NewGuid(), "Attacker", new List<Ship>
+        {
+            new(Guid.NewGuid(), "Fighter", false, AttackPower: 20, DefensePower: 10)
         }, planet.Id, attackerId);
-        var defenderFleet = new Fleet(Guid.NewGuid(), "Defender", new List<Ship> { 
-            new Ship(Guid.NewGuid(), "Fighter", false, Health: 100, AttackPower: 15, DefensePower: 15) 
+        var defenderFleet = new Fleet(Guid.NewGuid(), "Defender", new List<Ship>
+        {
+            new(Guid.NewGuid(), "Fighter", false, AttackPower: 15, DefensePower: 15)
         }, planet.Id, defenderId);
         planet.Fleets.Add(attackerFleet);
         planet.Fleets.Add(defenderFleet);
-        var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy([ system ]);
+        var system = new StarSystem(Guid.NewGuid(), "Sys", [planet], new Vector2(0, 0));
+        var galaxy = new Galaxy([system]);
         var world = new World(Guid.NewGuid(), galaxy);
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -126,7 +126,7 @@ public partial class CoreGameLogicTests()
         // Assert
         await Assert.That(aggregate.UncommittedEvents.Any(e => e.Equals(attackEvent))).IsTrue();
         await Assert.That(aggregate.Version).IsEqualTo(initialVersion + 1);
-        
+
         // Fetch the mutated planet from the world
         var mutatedPlanet = aggregate.World.Galaxy.StarSystems.SelectMany(s => s.Planets).First(p => p.Id == planet.Id);
         // Verify combat was resolved (at least one fleet should have damage)
@@ -140,13 +140,13 @@ public partial class CoreGameLogicTests()
         // Arrange
         var playerId = Guid.NewGuid();
         var targetPlayerId = Guid.NewGuid();
-        var planet = new Planet("A", 1, 1, 1, 1, 1, new(), new());
-        var system = new StarSystem(Guid.NewGuid(), "Sys", [ planet ], new Vector2(0, 0));
-        var galaxy = new Galaxy([ system ]);
-        var world = new World(Guid.NewGuid(), galaxy, new List<PlayerController> 
-        { 
-            new PlayerController { PlayerId = playerId, Name = "Player1" },
-            new PlayerController { PlayerId = targetPlayerId, Name = "Player2" }
+        var planet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>());
+        var system = new StarSystem(Guid.NewGuid(), "Sys", [planet], new Vector2(0, 0));
+        var galaxy = new Galaxy([system]);
+        var world = new World(Guid.NewGuid(), galaxy, new List<PlayerController>
+        {
+            new() { PlayerId = playerId, Name = "Player1" },
+            new() { PlayerId = targetPlayerId, Name = "Player2" }
         });
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;
@@ -158,7 +158,7 @@ public partial class CoreGameLogicTests()
         // Assert
         await Assert.That(aggregate.UncommittedEvents.Any(e => e.Equals(diploEvent))).IsTrue();
         await Assert.That(aggregate.Version).IsEqualTo(initialVersion + 1);
-        
+
         // Verify diplomacy event was processed (should be logged)
         // In a full implementation, we would verify player relations were updated
     }

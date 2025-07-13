@@ -67,4 +67,4 @@ public class SessionTypeUnitTests
         await Assert.That(values).Contains(SessionType.SinglePlayer);
         await Assert.That(values).Contains(SessionType.Multiplayer);
     }
-} 
+}
