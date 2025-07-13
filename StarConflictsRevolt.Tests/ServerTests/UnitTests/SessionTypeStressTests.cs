@@ -20,9 +20,7 @@ public class SessionTypeStressTests
     public async Task Create_50_Sessions_Quickly_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -40,9 +38,7 @@ public class SessionTypeStressTests
     public async Task Create_And_Join_20_Sessions_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -61,9 +57,7 @@ public class SessionTypeStressTests
     public async Task Create_Sessions_With_Random_Types_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -83,9 +77,7 @@ public class SessionTypeStressTests
     public async Task Create_Sessions_With_Long_Names_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -103,9 +95,7 @@ public class SessionTypeStressTests
     public async Task Create_Sessions_With_Special_Chars_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);

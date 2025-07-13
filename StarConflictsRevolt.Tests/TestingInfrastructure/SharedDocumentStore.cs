@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 internal static class SharedDocumentStore
 {
     private static readonly RavenTUnitDriver Driver = new();
-    private static readonly Dictionary<string, IDocumentStore> Stores = new();
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, IDocumentStore> Stores = new();
 
     public static IDocumentStore CreateStore(string database)
     {
@@ -13,10 +13,6 @@ internal static class SharedDocumentStore
 
         var storeKey = $"{database}-{threadId}";
 
-        if (Stores.TryGetValue(storeKey, out var store)) return store;
-
-        store = Driver.NewStore(storeKey);
-        Stores[storeKey] = store;
-        return store;
+        return Stores.GetOrAdd(storeKey, key => Driver.NewStore(key));
     }
 }

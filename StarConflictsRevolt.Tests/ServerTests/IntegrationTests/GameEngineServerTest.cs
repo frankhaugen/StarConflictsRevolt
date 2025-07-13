@@ -20,7 +20,7 @@ public class GameEngineServerTest
     [Timeout(30_000)]
     public async Task GameEngineServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(false);
+        var testHost = new TestHostApplication(true);
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 

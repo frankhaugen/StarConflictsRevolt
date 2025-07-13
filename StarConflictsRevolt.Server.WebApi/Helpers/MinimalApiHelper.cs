@@ -73,14 +73,16 @@ public static class MinimalApiHelper
                     SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
-            var token = new TokenResponse
-            {
-                AccessToken = tokenString,
-                TokenType = TokenType.Bearer,
-                ExpiresAt = now.AddHours(1)
-            };
-            await context.Response.WriteAsJsonAsync(token, context.RequestAborted);
-        });
+            // Return JSON payload consistent with OAuth conventions and test expectations
+            await context.Response.WriteAsJsonAsync(
+                new
+                {
+                    access_token = tokenString,
+                    token_type = "Bearer",
+                    expires_in = 3600
+                },
+                context.RequestAborted);
+        }).AllowAnonymous();
         // ...
         // Leaderboard endpoints
         app.MapGet("/leaderboard/{sessionId}", async (Guid sessionId, LeaderboardService leaderboardService, CancellationToken ct) =>

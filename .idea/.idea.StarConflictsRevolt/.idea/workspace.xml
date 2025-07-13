@@ -12,20 +12,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Refactor integration tests to remove TestHostApplication parameter and instantiate it directly">
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/CoreGameLogicTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/CoreGameLogicTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplicationAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplicationAttribute.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,6 +43,8 @@
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" root0="SKIP_HIGHLIGHTING" />
@@ -227,7 +217,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
-      <workItem from="1752401395411" duration="13853000" />
+      <workItem from="1752401395411" duration="16086000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -313,7 +303,42 @@
       <option name="presentableId" value="LOCAL−00012" />
       <updated>1752415118030</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL−00013" summary="Refactor integration tests to remove TestHostApplication parameter and instantiate it directly">
+      <option name="closed" value="true" />
+      <created>1752429209754</created>
+      <option name="number" value="LOCAL−00013" />
+      <option name="presentableId" value="LOCAL−00013" />
+      <updated>1752429209754</updated>
+    </task>
+    <task id="LOCAL−00014" summary="Refactor workspace configuration to update last commit message and improve integration test handling">
+      <option name="closed" value="true" />
+      <created>1752429219815</created>
+      <option name="number" value="LOCAL−00014" />
+      <option name="presentableId" value="LOCAL−00014" />
+      <updated>1752429219815</updated>
+    </task>
+    <task id="LOCAL−00015" summary="Refactor integration tests to use TokenRequest and update token response handling">
+      <option name="closed" value="true" />
+      <created>1752429393182</created>
+      <option name="number" value="LOCAL−00015" />
+      <option name="presentableId" value="LOCAL−00015" />
+      <updated>1752429393182</updated>
+    </task>
+    <task id="LOCAL−00016" summary="Refactor health check integration test to include cancellation token">
+      <option name="closed" value="true" />
+      <created>1752429421988</created>
+      <option name="number" value="LOCAL−00016" />
+      <option name="presentableId" value="LOCAL−00016" />
+      <updated>1752429421988</updated>
+    </task>
+    <task id="LOCAL−00017" summary="Refactor code to improve formatting and consistency across multiple files">
+      <option name="closed" value="true" />
+      <created>1752430960947</created>
+      <option name="number" value="LOCAL−00017" />
+      <option name="presentableId" value="LOCAL−00017" />
+      <updated>1752430960947</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -336,7 +361,11 @@
     <MESSAGE value="Refactor integration tests to use test host application and improve token handling" />
     <MESSAGE value="Refactor authentication token handling in integration tests to use ClientSecret" />
     <MESSAGE value="Refactor integration tests to remove TestHostApplication parameter and instantiate it directly" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor integration tests to remove TestHostApplication parameter and instantiate it directly" />
+    <MESSAGE value="Refactor workspace configuration to update last commit message and improve integration test handling" />
+    <MESSAGE value="Refactor integration tests to use TokenRequest and update token response handling" />
+    <MESSAGE value="Refactor health check integration test to include cancellation token" />
+    <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor code to improve formatting and consistency across multiple files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -21,9 +21,7 @@ public class SessionTypeIntegrationTests
     public async Task Create_SinglePlayer_Session_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -38,9 +36,7 @@ public class SessionTypeIntegrationTests
     public async Task Create_Multiplayer_Session_Succeeds()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -86,9 +82,7 @@ public class SessionTypeIntegrationTests
     public async Task Create_Session_With_Invalid_Type_Fails()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -104,9 +98,7 @@ public class SessionTypeIntegrationTests
     public async Task Create_Session_Without_Type_Defaults_To_Multiplayer()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
@@ -121,9 +113,7 @@ public class SessionTypeIntegrationTests
     public async Task Create_Session_Without_Name_Fails()
     {
         var testHost = new TestHostApplication(false);
-
-        // The application is already built and started by GameServerTestHost
-        var app = testHost.App;
+        await testHost.StartServerAsync(CancellationToken.None);
 
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
