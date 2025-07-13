@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 
-namespace MockLite;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.MockLite;
 
 /// <summary>Fluent extension methods for arranging and verifying calls.</summary>
 public static class SubstituteExtensions

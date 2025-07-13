@@ -3,9 +3,9 @@
 // © 2025 Your Name – MIT licence
 // -----------------------------------------------------------------------------
 
-namespace MockLite;
-
 using System.Reflection;
+
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.MockLite;
 
 /// <summary>
 /// Entry point for creating substitutes.

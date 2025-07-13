@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace MockLite;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.MockLite;
 
 public sealed class Proxy<T> : DispatchProxy where T : class
 {
