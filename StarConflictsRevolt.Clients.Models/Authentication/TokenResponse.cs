@@ -7,10 +7,3 @@ public class TokenResponse
     public DateTime ExpiresAt { get; set; }
     public string? Scope { get; set; }
 }
-
-public enum TokenType
-{
-    None = 0,
-    Bearer,
-    Refresh
-}

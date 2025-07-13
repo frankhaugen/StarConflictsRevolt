@@ -1,9 +1,7 @@
-using System.Threading.Tasks;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
-using TUnit;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class AiTurnServiceSessionTypeTests
 {

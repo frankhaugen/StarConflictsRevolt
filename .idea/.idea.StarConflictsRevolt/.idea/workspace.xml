@@ -12,7 +12,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestRenderer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientServiceHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientServiceHost.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TestLoggerProvider.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,6 +49,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/AppData/Local/Temp/SourceGeneratedDocuments/D3631EA0F2BF9417EA0E09B6/TUnit.Core.SourceGenerator/TUnit.Core.SourceGenerator.CodeGenerators.TestsGenerator/ParallelSafetyTests-4e161ecad6ba4d519d4094b5ffbcdda9.Generated.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6da1eb24dd00463289098ee90af86cba26d000/3e/ecbc6a77/ServerLoadFailureException.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/14eac595c88dcb101dfbe5e5f9e2b9af5f2da7b9a3d7ab4a94797c76747d0dc/AccessTokenHttpMessageHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/TestingInfrastructure/MockLite/SubstituteExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -197,7 +211,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
-      <workItem from="1752401395411" duration="3246000" />
+      <workItem from="1752401395411" duration="6017000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -248,7 +262,14 @@
       <option name="presentableId" value="LOCAL−00007" />
       <updated>1752407408291</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL−00008" summary="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views">
+      <option name="closed" value="true" />
+      <created>1752407906975</created>
+      <option name="number" value="LOCAL−00008" />
+      <option name="presentableId" value="LOCAL−00008" />
+      <updated>1752407906975</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -265,7 +286,8 @@
     <MESSAGE value="Update namespaces in MockLite files to reflect new testing infrastructure structure" />
     <MESSAGE value="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions" />
     <MESSAGE value="Add Proxy class and initial tests for Substitute mocking functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add Proxy class and initial tests for Substitute mocking functionality" />
+    <MESSAGE value="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

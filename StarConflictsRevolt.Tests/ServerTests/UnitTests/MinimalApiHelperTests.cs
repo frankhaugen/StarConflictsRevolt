@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class MinimalApiHelperTests
 {

@@ -5,9 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using TUnit;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 
 namespace StarConflictsRevolt.Tests.ClientTests;
 

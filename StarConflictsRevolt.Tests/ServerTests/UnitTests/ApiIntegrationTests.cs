@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class ApiIntegrationTests
 {

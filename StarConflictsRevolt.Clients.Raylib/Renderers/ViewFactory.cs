@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace StarConflictsRevolt.Clients.Raylib.Renderers;
 
 public class ViewFactory : IViewFactory

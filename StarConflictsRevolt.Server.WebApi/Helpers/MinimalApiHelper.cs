@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Datastore;
@@ -25,8 +23,8 @@ public static class MinimalApiHelper
         // Token endpoint for client authentication
         app.MapPost("/token", async context =>
         {
-            var request = await context.Request.ReadFromJsonAsync<StarConflictsRevolt.Server.WebApi.Security.TokenRequest>(context.RequestAborted);
-            if (request == null || string.IsNullOrEmpty(request.ClientId) || string.IsNullOrEmpty(request.Secret))
+            var request = await context.Request.ReadFromJsonAsync<TokenRequest>(context.RequestAborted);
+            if (request == null || string.IsNullOrEmpty(request.ClientId) || string.IsNullOrEmpty(request.ClientSecret))
             {
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync("Invalid request");
@@ -35,7 +33,7 @@ public static class MinimalApiHelper
                 logger.LogCritical("Invalid token request: {Request}", request);
                 return;
             }
-            if (request.Secret != Constants.Secret)
+            if (request.ClientSecret != Constants.Secret)
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Invalid client secret");

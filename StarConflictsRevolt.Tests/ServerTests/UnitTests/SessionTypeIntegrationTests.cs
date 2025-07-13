@@ -1,12 +1,8 @@
-using System;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using TUnit;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 [TestHostApplication]
 public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)

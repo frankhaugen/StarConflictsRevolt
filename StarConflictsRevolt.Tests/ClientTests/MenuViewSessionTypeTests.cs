@@ -1,11 +1,9 @@
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Raylib.Services;
-using TUnit;
 
 namespace StarConflictsRevolt.Tests.ClientTests;
 
@@ -105,9 +103,15 @@ public class MenuViewSessionTypeTests
     // Minimal fake for IHttpApiClient
     private class TestHttpApiClient : StarConflictsRevolt.Clients.Http.Http.IHttpApiClient
     {
+        /// <inheritdoc />
+        public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct) => new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+
         public Task<T?> GetAsync<T>(string uri, CancellationToken ct = default) => Task.FromResult<T?>(default);
         public Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
         public Task<HttpResponseMessage> PutAsync<T>(string uri, T body, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
         public Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default) => Task.FromResult(new HttpResponseMessage());
+
+        /// <inheritdoc />
+        public async Task<bool> IsHealthyAsync(CancellationToken ct = default) => true;
     }
 } 

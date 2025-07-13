@@ -1,9 +1,6 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using TUnit;
 
-namespace StarConflictsRevolt.Tests.TestingInfrastructure.Infrastructure;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.InfrastructureTests;
 
 public class MinimalHostLifecycleTest
 {
@@ -19,11 +16,22 @@ public class MinimalHostLifecycleTest
     }
     
     [Test]
-    public async Task MinimalHost_Handles_EmptyRequest()
+    [Timeout(20_000)]
+    public async Task MinimalHost_Handles_EmptyRequest(CancellationToken cancellationToken)
     {
         var builder = new TestHostApplication();
-        await builder.App.StartAsync();
-        await builder.App.StopAsync();
+        await builder.App.StartAsync(cancellationToken);
+        
+        await Task.Delay(1000, cancellationToken);
+
+        var healthResponse = await builder.Client.RetrieveHealthCheckAsync(cancellationToken);
+        var response = await healthResponse.Content.ReadAsStringAsync(cancellationToken);
+        await Context.Current.OutputWriter.WriteLineAsync($"Health check response: ({healthResponse.StatusCode} {healthResponse.ReasonPhrase}) {response}");
+        await Assert.That(healthResponse.IsSuccessStatusCode).IsTrue();
+        
+        await Task.Delay(1000, cancellationToken);
+        
+        await builder.App.StopAsync(cancellationToken);
         await builder.App.DisposeAsync();
     }
 } 

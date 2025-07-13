@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class TestLoggerProvider : ILoggerProvider
 {

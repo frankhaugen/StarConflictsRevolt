@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Http.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 

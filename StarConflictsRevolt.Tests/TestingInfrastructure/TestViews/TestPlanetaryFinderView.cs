@@ -1,6 +1,6 @@
 ﻿using StarConflictsRevolt.Clients.Raylib.Renderers;
 
-namespace StarConflictsRevolt.Tests.TestingInfrastructure;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 
 public class TestPlanetaryFinderView : IView
 {

@@ -2,7 +2,6 @@ using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
-using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
 using StarConflictsRevolt.Server.WebApi.Enums;
@@ -11,7 +10,7 @@ using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 [TestHostApplication]
 public partial class CoreGameLogicTests(TestHostApplication testHost)

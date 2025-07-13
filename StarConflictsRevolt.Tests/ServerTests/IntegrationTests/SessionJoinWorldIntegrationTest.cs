@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using TUnit;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -12,7 +11,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public partial class SessionJoinWorldIntegrationTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    [Timeout(20)]
+    [Timeout(20_000)]
     public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient(CancellationToken cancellationToken)
     {
         // The application is already built and started by TestHostApplication

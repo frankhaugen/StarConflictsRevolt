@@ -1,9 +1,6 @@
-using System;
-using System.Threading.Tasks;
 using StarConflictsRevolt.Server.WebApi.Models;
-using TUnit;
 
-namespace StarConflictsRevolt.Tests.ServerTests;
+namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class SessionTypeUnitTests
 {

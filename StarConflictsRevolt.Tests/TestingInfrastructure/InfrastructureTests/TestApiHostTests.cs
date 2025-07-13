@@ -1,11 +1,6 @@
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using StarConflictsRevolt.Tests.TestingInfrastructure;
-using TUnit;
 
-namespace StarConflictsRevolt.Tests.TestingInfrastructure;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.InfrastructureTests;
 
 public class TestApiHostTests
 {

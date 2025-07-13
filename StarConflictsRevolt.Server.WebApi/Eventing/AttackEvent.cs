@@ -1,5 +1,4 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Eventing;
 

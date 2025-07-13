@@ -1,11 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Clients.Raylib.Services;
-using StarConflictsRevolt.Clients.Raylib.Renderers;
+﻿using StarConflictsRevolt.Clients.Raylib.Renderers;
 
 namespace StarConflictsRevolt.Clients.Raylib.Services;
 
-public class ClientServiceHost : IHostedService
+public class ClientServiceHost : BackgroundService
 {
     private readonly SignalRService _signalRService;
     private readonly RenderContext _renderContext;
@@ -21,7 +18,8 @@ public class ClientServiceHost : IHostedService
         _logger.LogInformation("ClientServiceHost initialized");
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    /// <inheritdoc />
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Starting ClientServiceHost");
         
@@ -29,15 +27,15 @@ public class ClientServiceHost : IHostedService
         _renderContext.CurrentView = GameView.Menu; // Set initial view to Menu
         
         _logger.LogInformation("Starting game renderer");
-        await _gameRenderer.RenderAsync(null, cancellationToken);
+        await _gameRenderer.RenderAsync(null, stoppingToken);
         
         _logger.LogInformation("Starting SignalR service");
-        await _signalRService.StartAsync(cancellationToken);
+        await _signalRService.StartAsync(stoppingToken);
         
         _logger.LogInformation("ClientServiceHost started successfully");
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Stopping ClientServiceHost");
         await _signalRService.StopAsync();

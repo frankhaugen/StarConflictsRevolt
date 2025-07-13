@@ -86,20 +86,40 @@ public class SignalRService : IAsyncDisposable
 
         try
         {
-            _logger.LogInformation("Attempting to start SignalR connection");
-            await _hubConnection.StartAsync(_cts.Token);
-            _logger.LogInformation("SignalR connection started successfully");
-            
-            // join the world group
-            _logger.LogInformation("Joining world group: world-1");
-            await _hubConnection.SendAsync("JoinWorld", "world-1", _cts.Token);
-            _logger.LogInformation("Successfully joined world group");
+            await StartHubConnectionAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error connecting to game hub");
-            Console.WriteLine($"Error connecting to game hub: {ex.Message}");
+            _logger.LogError(ex, "Failed to start SignalR connection. Retrying...");
+            
+            var continueRetry = true;
+            while (continueRetry && !_cts.IsCancellationRequested)
+            {
+                try
+                {
+                    _logger.LogInformation("Retrying SignalR connection...");
+                    await Task.Delay(2000, _cts.Token); // wait before retrying
+                    await StartHubConnectionAsync();
+                    continueRetry = false; // success, exit loop
+                }
+                catch (Exception retryEx)
+                {
+                    _logger.LogError(retryEx, "Retry failed. Will retry again if not cancelled");
+                }
+            }
         }
+    }
+
+    private async Task StartHubConnectionAsync()
+    {
+        _logger.LogInformation("Attempting to start SignalR connection");
+        await _hubConnection!.StartAsync(_cts.Token);
+        _logger.LogInformation("SignalR connection started successfully");
+            
+        // join the world group
+        _logger.LogInformation("Joining world group: world-1");
+        await _hubConnection.SendAsync("JoinWorld", "world-1", _cts.Token);
+        _logger.LogInformation("Successfully joined world group");
     }
 
     public async Task StopAsync()

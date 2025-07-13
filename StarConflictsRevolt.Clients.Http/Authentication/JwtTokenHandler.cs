@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Clients.Http.Authentication;
 
 namespace StarConflictsRevolt.Clients.Http.Authentication;
 

@@ -7,17 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
-using Raven.Embedded;
 using StarConflictsRevolt.Clients.Http;
 using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Renderers;
 using StarConflictsRevolt.Clients.Raylib.Services;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Tests.TestingInfrastructure.MockLite;
+using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -47,7 +47,7 @@ public class TestHostApplication : IDisposable
 
         // Register core services
         builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
-        builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
+        builder.Services.AddSingleton<IGameRenderer, TestRenderer>();
         builder.Services.AddSingleton<IViewFactory, TestViewFactory>(); // Use TestViewFactory for testing
         builder.Services.AddSingleton<RenderContext>();
         builder.Services.AddSingleton<GameCommandService>();
@@ -155,12 +155,9 @@ public class TestHostApplication : IDisposable
         
         // Configure the HTTP request pipeline for tests
         ConfigureTestApplication(_app);
-        
-        // Start the application
-        _app.StartAsync().GetAwaiter().GetResult();
 
         // Create the API client
-        _apiClient = new HttpApiClient(_app.Services.GetRequiredService<IHttpClientFactory>(), "test-client");
+        _apiClient = new HttpApiClient(_app.Services.GetRequiredService<IHttpClientFactory>(), "GameApi");
     }
 
     private void OpenSqliteConnectionAndConfigureDbContext(WebApplicationBuilder builder)
@@ -183,12 +180,23 @@ public class TestHostApplication : IDisposable
             ["ConnectionStrings:ravenDb"] = "http://localhost:8080",
             ["TokenProviderOptions:TokenEndpoint"] = "http://localhost:" + _port + "/token",
             ["TokenProviderOptions:ClientId"] = "test-client",
-            ["TokenProviderOptions:Secret"] = "test-secret",
+            ["TokenProviderOptions:Secret"] = Constants.Secret,
+            ["GameClientConfiguration:GameServerHubUrl"] = "http://localhost:" + _port + "/gamehub",
+            ["GameClientConfiguration:GameApiBaseUrl"] = "http://localhost:" + _port,
+            ["GameClientConfiguration:DefaultSessionName"] = "Test Session",
+            ["GameClientConfiguration:DefaultSessionType"] = "Multiplayer"
         }!);
     }
 
     private void ConfigureTestApplication(WebApplication app)
     {
+        app.UseAuthentication();
+        app.UseAuthorization();
+        MinimalApiHelper.MapMinimalApis(app);
+        app.MapOpenApi();
+        app.MapHub<WorldHub>("/gamehub");
+        app.UseCors();
+        
         // Ensure database is created with retry logic
         using (var scope = app.Services.CreateScope())
         {
@@ -232,13 +240,6 @@ public class TestHostApplication : IDisposable
 
             logger.LogInformation("Database created successfully");
         }
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-        MinimalApiHelper.MapMinimalApis(app);
-        app.MapOpenApi();
-        app.MapHub<WorldHub>("/gamehub");
-        app.UseCors();
     }
 
     private static int FindRandomUnusedPort()

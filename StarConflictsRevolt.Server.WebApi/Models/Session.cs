@@ -1,11 +1,5 @@
 ﻿namespace StarConflictsRevolt.Server.WebApi.Models;
 
-public enum SessionType
-{
-    SinglePlayer,
-    Multiplayer
-}
-
 public record Session(
     Guid Id,
     string SessionName,

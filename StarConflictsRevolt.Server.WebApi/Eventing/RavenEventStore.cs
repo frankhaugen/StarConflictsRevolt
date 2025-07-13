@@ -1,6 +1,5 @@
 ﻿using System.Threading.Channels;
 using Raven.Client.Documents;
-using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.WebApi.Eventing;
 

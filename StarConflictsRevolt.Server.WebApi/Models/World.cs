@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using StarConflictsRevolt.Server.WebApi.Services;
+﻿using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Server.WebApi.Models;
 

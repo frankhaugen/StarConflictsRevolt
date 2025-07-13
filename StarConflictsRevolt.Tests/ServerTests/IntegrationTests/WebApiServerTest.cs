@@ -8,7 +8,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public partial class WebApiServerTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    [Timeout(20)]
+    [Timeout(20_000)]
     public async Task WebApiServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
         // The application is already built and started by TestHostApplication

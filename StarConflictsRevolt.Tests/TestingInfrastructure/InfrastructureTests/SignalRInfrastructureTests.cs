@@ -1,16 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR.Client;
-using TUnit;
-using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-namespace StarConflictsRevolt.Tests.TestingInfrastructure.Infrastructure;
+namespace StarConflictsRevolt.Tests.TestingInfrastructure.InfrastructureTests;
 
 public class SignalRInfrastructureTests
 {

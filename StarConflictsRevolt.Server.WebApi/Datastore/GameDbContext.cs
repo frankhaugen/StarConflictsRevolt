@@ -73,12 +73,3 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
     public DbSet<PlayerStats> PlayerStats { get; set; }
     public DbSet<Client> Clients { get; set; }
 }
-
-public class Client
-{
-    public string Id { get; set; }
-    public DateTime LastSeen { get; set; }
-    public bool IsActive { get; set; } = true;
-    
-    public ICollection<Session> Sessions { get; set; }
-}

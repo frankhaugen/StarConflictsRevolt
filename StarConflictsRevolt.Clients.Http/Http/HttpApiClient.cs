@@ -17,13 +17,15 @@ public class HttpApiClient : IHttpApiClient
 
     private async Task EnsureHealthAsync(CancellationToken ct = default)
     {
-        var healthResponse = await Client.GetAsync("/health/game", ct);
+        var healthResponse = await RetrieveHealthCheckAsync(ct);
         if (!healthResponse.IsSuccessStatusCode)
         {
             var content = await healthResponse.Content.ReadAsStringAsync();
             throw new InvalidOperationException($"API health check failed: GET /health/game returned {(int)healthResponse.StatusCode} {healthResponse.ReasonPhrase}.\nResponse body: '{content}'.\nThis likely indicates a misconfiguration, server startup failure, or network issue. Please check the API base URL, server logs, and connectivity.");
         }
     }
+
+    public async Task<HttpResponseMessage> RetrieveHealthCheckAsync(CancellationToken ct) => await Client.GetAsync("/health/game", ct);
 
     public async Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
     {
@@ -48,4 +50,19 @@ public class HttpApiClient : IHttpApiClient
         await EnsureHealthAsync(ct);
         return await Client.DeleteAsync(uri, ct);
     }
+    
+    public async Task<bool> IsHealthyAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            await EnsureHealthAsync(ct);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+    
+    
 } 

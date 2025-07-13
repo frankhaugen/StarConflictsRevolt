@@ -1,5 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +8,6 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Security;
-using StarConflictsRevolt.Aspire.ServiceDefaults;
-using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
-using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
-using TokenRequest = StarConflictsRevolt.Server.WebApi.Security.TokenRequest;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 

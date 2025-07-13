@@ -7,9 +7,6 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Collections.Concurrent;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
-using TUnit;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -17,7 +14,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public partial class TwoPlayerIntegrationTest(TestHostApplication testHost, CancellationToken cancellationToken)
 {
     [Test]
-    [Timeout(20)]
+    [Timeout(20_000)]
     public async Task TwoHumanPlayers_SessionCreationAndJoining_NoAIActions(CancellationToken cancellationToken)
     {
         // Log sink for capturing logs

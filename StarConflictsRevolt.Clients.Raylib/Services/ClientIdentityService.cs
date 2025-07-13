@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public class ClientIdentityService : IClientIdentityService
