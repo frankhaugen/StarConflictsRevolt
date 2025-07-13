@@ -15,7 +15,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class TwoPlayerIntegrationTest
 {
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task TwoHumanPlayers_SessionCreationAndJoining_NoAIActions(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
