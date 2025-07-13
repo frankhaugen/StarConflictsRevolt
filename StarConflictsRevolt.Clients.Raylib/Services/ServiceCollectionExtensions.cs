@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,13 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddClientServices(this HostApplicationBuilder builder) 
+        => AddClientServices(builder.Services, builder.Configuration);
+    
+    public static IServiceCollection AddClientServices(this WebApplicationBuilder builder)
+        => AddClientServices(builder.Services, builder.Configuration);
+    
+    private static IServiceCollection AddClientServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Add custom file logging provider
         services.AddLogging(logging =>
@@ -22,6 +29,7 @@ public static class ServiceCollectionExtensions
         // Configure HTTP client with the new standardized library
         services.AddStarConflictsHttpClients(configuration, clientName: "GameApi", client =>
         {
+            var apiUrl = configuration.GetValue<string>("GameClientConfiguration:ApiUrl");
             client.BaseAddress = new Uri("http://webapi");
         });
 

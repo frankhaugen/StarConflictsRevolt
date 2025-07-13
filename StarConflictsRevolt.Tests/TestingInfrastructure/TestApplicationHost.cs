@@ -5,11 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MockLite;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using Raven.Embedded;
+using StarConflictsRevolt.Clients.Http;
 using StarConflictsRevolt.Clients.Http.Http;
+using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Raylib.Renderers;
+using StarConflictsRevolt.Clients.Raylib.Services;
 using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Helpers;
 using StarConflictsRevolt.Server.WebApi.Services;
 
@@ -32,6 +38,43 @@ public class TestHostApplication : IDisposable
         
         var builder = WebApplication.CreateBuilder();
         
+        // Add client services
+        // Configure HTTP client with the new standardized library
+        builder.Services.AddStarConflictsHttpClients(builder.Configuration, clientName: "GameApi", client =>
+        {
+            client.BaseAddress = new Uri("http://127.0.0.1:" + _port);
+        });
+
+        // Register core services
+        var renderer = Substitute.For<IGameRenderer>();
+        renderer.When(gameRenderer => gameRenderer.RenderAsync(default, default)).Returns(
+            Task.CompletedTask);
+        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
+        builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
+        builder.Services.AddSingleton<IViewFactory, ViewFactory>();
+        builder.Services.AddSingleton<RenderContext>();
+        builder.Services.AddSingleton<GameCommandService>();
+        builder.Services.AddSingleton<GameState>();
+
+        // Register all views as IView implementations
+        builder.Services.AddSingleton<IView>((Substitute.For<IView>() as MenuView)!);
+        builder.Services.AddSingleton<IView, GalaxyView>();
+        builder.Services.AddSingleton<IView, TacticalBattleView>();
+        builder.Services.AddSingleton<IView, FleetFinderView>();
+        builder.Services.AddSingleton<IView, GameOptionsView>();
+        builder.Services.AddSingleton<IView, PlanetaryFinderView>();
+
+        // Bind configuration
+        builder.Services.Configure<GameClientConfiguration>(
+            builder.Configuration.GetSection("GameClientConfiguration"));
+
+        // Register infrastructure services
+        builder.Services.AddSingleton<SignalRService>();
+        builder.Services.AddHostedService<ClientServiceHost>();
+
+        // Register client initialization services
+        builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();
+        builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
         
         // Use the same shared document store as RavenDbDataSourceAttribute
         _documentStore = SharedDocumentStore.CreateStore("test-database-" + Guid.NewGuid().ToString("N"));
@@ -46,7 +89,66 @@ public class TestHostApplication : IDisposable
         builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
         
         // Register test-specific services instead of production StartupHelper
-        builder.Services.AddTestApplicationServices();
+        builder.Services.AddSingleton<IEventStore, RavenEventStore>();
+        builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        builder.Services.AddSingleton<SessionAggregateManager>();
+        builder.Services.AddSingleton<WorldFactory>();
+        
+        builder.Services.AddScoped<SessionService>();
+        builder.Services.AddScoped<WorldService>();
+        builder.Services.AddScoped<LeaderboardService>();
+        
+        // Add SignalR
+        builder.Services.AddSignalR(config =>
+        {
+            config.EnableDetailedErrors = true;
+            config.MaximumReceiveMessageSize = 1024 * 1024; // 1 MB
+        });
+        
+        // Add CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
+        
+        // Add OpenAPI
+        builder.Services.AddOpenApi();
+        
+        // Add JWT authentication
+        builder.Services.AddAuthentication("Test")
+            .AddJwtBearer("Test", options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    RequireExpirationTime = false,
+                    ValidateIssuerSigningKey = false
+                };
+            });
+        
+        // Add API versioning
+        builder.Services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+        });
+        
+        // Add hosted services for full application testing
+        // services.AddHostedService<GameUpdateService>();
+        // services.AddHostedService<AiTurnService>();
+        // services.AddHostedService<ProjectionService>();
+        // services.AddHostedService<EventBroadcastService>();
+        
+        // Add client services
+        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
         
         // Configure the web application
         builder.WebHost.UseUrls($"http://localhost:{_port}");

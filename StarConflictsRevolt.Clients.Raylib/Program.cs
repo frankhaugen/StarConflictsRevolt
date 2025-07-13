@@ -7,7 +7,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.AddServiceDefaults();
 
 // Configure services
-builder.Services.AddClientServices(builder.Configuration);
+builder.AddClientServices();
 
 // Build and run
 var host = builder.Build();
