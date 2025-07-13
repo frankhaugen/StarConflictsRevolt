@@ -38,7 +38,7 @@ public partial class FullStackIntegrationTest(TestHostApplication testHost)
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))

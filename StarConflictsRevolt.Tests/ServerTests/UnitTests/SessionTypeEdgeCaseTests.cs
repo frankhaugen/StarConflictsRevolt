@@ -10,7 +10,7 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");

@@ -43,7 +43,7 @@ public partial class TwoPlayerIntegrationTest(TestHostApplication testHost, Canc
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
         await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Requesting token");
-        var tokenResponse = await WithTimeout(httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret }), "Token request");
+        var tokenResponse = await WithTimeout(httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret }), "Token request");
         tokenResponse.EnsureSuccessStatusCode();
         await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Token response received");
         // For ReadFromJsonAsync and similar, ensure Task is passed to WithTimeout

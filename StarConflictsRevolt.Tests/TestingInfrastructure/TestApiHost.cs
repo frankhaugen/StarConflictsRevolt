@@ -139,11 +139,19 @@ public sealed class TestApiHost : IAsyncDisposable
         /// <summary>Make a random unused port for the server to bind to.</summary>
         private static int GetRandomUnusedPort()
         {
-            var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
-            listener.Start();
-            int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
-            listener.Stop();
-            return port;
+            try
+            {
+                using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+                listener.Start();
+                int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+                listener.Stop();
+                return port;
+            }
+            catch (Exception)
+            {
+                // Fallback to a random port in a safe range
+                return Random.Shared.Next(49152, 65535);
+            }
         }
     }
     #endregion

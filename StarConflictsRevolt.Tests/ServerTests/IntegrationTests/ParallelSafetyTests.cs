@@ -8,10 +8,12 @@ public partial class ParallelSafetyTests
     [Timeout(20_000)]
     public async Task Concurrent_sessions_do_not_clash(CancellationToken cancellationToken)
     {
-        using var session = SharedDocumentStore.CreateStore("ParallelSafetyTests" + Random.Shared.Next(10,1000)).OpenAsyncSession();
+        var store = SharedDocumentStore.CreateStore("ParallelSafetyTests" + Random.Shared.Next(10,1000));
         var range = Enumerable.Range(0, 1000);
         await Parallel.ForEachAsync(range, cancellationToken, async (i, ct) =>
         {
+            // Create a new session for each operation to avoid disposal issues
+            using var session = store.OpenAsyncSession();
             var entity = new Item { Value = i };
             await session.StoreAsync(entity, ct);
             await session.SaveChangesAsync(ct);

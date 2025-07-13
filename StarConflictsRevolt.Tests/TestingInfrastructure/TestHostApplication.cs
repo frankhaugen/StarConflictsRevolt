@@ -249,11 +249,19 @@ public class TestHostApplication : IDisposable
 
     private static int FindRandomUnusedPort()
     {
-        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
-        listener.Start();
-        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
+        try
+        {
+            using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+            listener.Start();
+            int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
+        catch (Exception)
+        {
+            // Fallback to a random port in a safe range
+            return Random.Shared.Next(49152, 65535);
+        }
     }
 
     // Public properties for test access
@@ -296,7 +304,7 @@ public class TestHostApplication : IDisposable
             throw new InvalidOperationException("Application is not initialized. Call the constructor first.");
 
         // Start the application if not already started
-        if (!_app.Lifetime.ApplicationStarted.IsCancellationRequested && !_app.Lifetime.ApplicationStopping.IsCancellationRequested)
+        if (_app.Lifetime.ApplicationStarted.IsCancellationRequested)
         {
             return; // Already started
         }
