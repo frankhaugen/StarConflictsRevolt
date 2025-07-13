@@ -12,11 +12,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Add isolation tests for hosted services and update database name validation">
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplicationAttribute.cs" beforeDir="false" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -204,7 +202,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="2910000" />
+      <workItem from="1752432073576" duration="4175000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -353,7 +351,21 @@
       <option name="presentableId" value="LOCAL−00021" />
       <updated>1752434549905</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL−00022" summary="Add isolation tests for hosted services and update database name validation">
+      <option name="closed" value="true" />
+      <created>1752436822588</created>
+      <option name="number" value="LOCAL−00022" />
+      <option name="presentableId" value="LOCAL−00022" />
+      <updated>1752436822588</updated>
+    </task>
+    <task id="LOCAL−00023" summary="Update workspace configuration to reflect recent test additions and modifications">
+      <option name="closed" value="true" />
+      <created>1752436829461</created>
+      <option name="number" value="LOCAL−00023" />
+      <option name="presentableId" value="LOCAL−00023" />
+      <updated>1752436829461</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -385,7 +397,8 @@
     <MESSAGE value="Refactor integration tests to utilize TestHostApplication for improved HTTP client handling and remove manual token acquisition" />
     <MESSAGE value="Add integration tests for authentication and HTTP client configuration" />
     <MESSAGE value="Add isolation tests for hosted services and update database name validation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add isolation tests for hosted services and update database name validation" />
+    <MESSAGE value="Update workspace configuration to reflect recent test additions and modifications" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update workspace configuration to reflect recent test additions and modifications" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

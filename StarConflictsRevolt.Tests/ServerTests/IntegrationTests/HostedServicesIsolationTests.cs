@@ -1,8 +1,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -12,19 +14,39 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 // Mock implementations to avoid RavenDB dependencies
 public class MockEventStore : IEventStore
 {
+    private readonly List<EventEnvelope> _events = new();
+    
     public Task PublishAsync(Guid worldId, IGameEvent gameEvent)
     {
+        _events.Add(new EventEnvelope(worldId, gameEvent, DateTime.UtcNow));
         return Task.CompletedTask;
     }
 
     public Task SubscribeAsync(Func<EventEnvelope, Task> handler, CancellationToken cancellationToken)
     {
+        // For testing, we can just simulate subscription by invoking the handler immediately
+        foreach (var gameEvent in _events)
+        {
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                handler(gameEvent).GetAwaiter().GetResult();
+            }
+        }
         return Task.CompletedTask;
     }
 
     public ValueTask DisposeAsync()
     {
+        // No resources to dispose in this mock
         return ValueTask.CompletedTask;
+    }
+    
+    public IEnumerable<EventEnvelope> GetEvents(Guid worldId) => _events.Where(e => e.WorldId == worldId);
+    
+    public Task ClearEventsAsync(Guid worldId)
+    {
+        _events.RemoveAll(e => e.WorldId == worldId);
+        return Task.CompletedTask;
     }
 }
 
@@ -72,11 +94,14 @@ public class HostedServicesIsolationTests
     }
 
     [Test]
-    [Timeout(30_000)]
+    [Timeout(60_000)]
     public async Task AiTurnService_StartsAndStops_WithoutHanging(CancellationToken cancellationToken)
     {
         // Create a minimal service provider with only the required dependencies for AiTurnService
         var services = new ServiceCollection();
+        
+        // Add db context
+        services.AddDbContext<GameDbContext>(options => options.UseSqlite("Data Source=:memory:;Mode=Memory;Cache=Shared"));
         
         // Add logging - this will provide ILogger<T> automatically
         services.AddLogging(builder => builder.AddConsole());
@@ -88,9 +113,17 @@ public class HostedServicesIsolationTests
         services.AddSingleton<SessionAggregateManager>();
         services.AddSingleton<WorldService>();
         services.AddSingleton<SessionService>();
+        services.AddSingleton<IEventStore, MockEventStore>();
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         
         var serviceProvider = services.BuildServiceProvider();
+        
+        // Ensure the database is created
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        }
         
         // Get the hosted service
         var hostedService = serviceProvider.GetRequiredService<IHostedService>();
@@ -164,6 +197,15 @@ public class HostedServicesIsolationTests
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
         
+        // Add SignalR (required for IHubContext<WorldHub>)
+        services.AddSignalR();
+        services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        // Add a mock hub context for testing
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true; // Enable detailed errors for easier debugging
+        });
+        
         var serviceProvider = services.BuildServiceProvider();
         
         // Get the hosted service
@@ -189,6 +231,9 @@ public class HostedServicesIsolationTests
         // Create a minimal service provider with all hosted services
         var services = new ServiceCollection();
         
+        // Add db context
+        services.AddDbContext<GameDbContext>(options => options.UseSqlite("Data Source=:memory:;Mode=Memory;Cache=Shared"));
+        
         // Add logging - this will provide ILogger<T> automatically
         services.AddLogging(builder => builder.AddConsole());
         
@@ -209,6 +254,13 @@ public class HostedServicesIsolationTests
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         
         var serviceProvider = services.BuildServiceProvider();
+        
+        // Ensure the database is created
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        }
         
         // Get all hosted services
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToList();

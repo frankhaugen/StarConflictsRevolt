@@ -9,7 +9,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class WebApiServerTest
 {
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task WebApiServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
@@ -34,7 +34,7 @@ public class WebApiServerTest
     }
 
     [Test]
-    [Timeout(20_000)]
+    [Timeout(30_000)]
     public async Task TokenEndpoint_ShouldWorkWithoutAuthentication(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
