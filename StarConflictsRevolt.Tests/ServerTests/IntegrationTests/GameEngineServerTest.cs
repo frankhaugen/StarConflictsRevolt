@@ -69,7 +69,7 @@ public class GameEngineServerTest
         ravenDbStore.Initialize(); // Initialize the RavenDB store
         ravenDbStore.Database.Should().NotBeNull("because the RavenDB store should be initialized and ready for use");
         ravenDbStore.Database.Should().NotBeEmpty("because the RavenDB store should have a database created");
-        ravenDbStore.Database.Should().StartWith("StarConflictsRevolt", "because this is the expected database name for the game engine server");
+        ravenDbStore.Database.Should().MatchRegex("^(StarConflictsRevolt|test-database-).*$", "because test runs may use isolated test-database-* names");
 
         await hubConnection.StartAsync(); // Start the SignalR connection
 

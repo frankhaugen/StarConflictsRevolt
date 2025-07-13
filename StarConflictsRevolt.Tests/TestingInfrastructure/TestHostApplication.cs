@@ -145,10 +145,15 @@ public class TestHostApplication : IDisposable
         });
 
         // Add hosted services for full application testing
-        // services.AddHostedService<GameUpdateService>();
-        // services.AddHostedService<AiTurnService>();
-        // services.AddHostedService<ProjectionService>();
-        // services.AddHostedService<EventBroadcastService>();
+        // These services are disabled by default to prevent hangs in simple tests
+        // They should only be enabled for tests that specifically need the full game loop
+        if (includeClientServices)
+        {
+            builder.Services.AddHostedService<GameUpdateService>();
+            builder.Services.AddHostedService<AiTurnService>();
+            builder.Services.AddHostedService<ProjectionService>();
+            builder.Services.AddHostedService<EventBroadcastService>();
+        }
 
 
         // Configure the web application
