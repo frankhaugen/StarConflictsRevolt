@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
@@ -12,16 +13,20 @@ using StarConflictsRevolt.Server.WebApi.Services;
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 [TestHostApplication]
-public partial class FullStackIntegrationTest(TestHostApplication gameServer)
+public partial class FullStackIntegrationTest(TestHostApplication testHost)
 {
     [Test]
-    public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta()
+    [Timeout(30_000)]
+    public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta(CancellationToken cancellationToken)
     {
+        // Start the test host application
+        await testHost.StartServerAsync(cancellationToken);
+        
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
 
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
         // Ensure the database is created
         using var scope = app.Services.CreateScope();
@@ -29,11 +34,11 @@ public partial class FullStackIntegrationTest(TestHostApplication gameServer)
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
@@ -52,7 +57,7 @@ public partial class FullStackIntegrationTest(TestHostApplication gameServer)
         await Context.Current.OutputWriter.WriteLineAsync($"Created session: {sessionId}");
 
         // 2. Connect to SignalR and join the session group
-        var hubUrl = gameServer.GetGameServerHubUrl();
+        var hubUrl = testHost.GetGameServerHubUrl();
         var _hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()

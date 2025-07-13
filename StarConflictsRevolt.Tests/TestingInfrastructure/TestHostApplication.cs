@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -30,7 +31,7 @@ public class TestHostApplication : IDisposable
     private readonly IHttpApiClient _apiClient;
     private readonly IDocumentStore _documentStore;
 
-    public TestHostApplication()
+    public TestHostApplication(bool includeClientServices = true)
     {
         _port = FindRandomUnusedPort();
         _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
@@ -45,33 +46,39 @@ public class TestHostApplication : IDisposable
             client.BaseAddress = new Uri("http://127.0.0.1:" + _port);
         });
 
-        // Register core services
-        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
-        builder.Services.AddSingleton<IGameRenderer, TestRenderer>();
-        builder.Services.AddSingleton<IViewFactory, TestViewFactory>(); // Use TestViewFactory for testing
-        builder.Services.AddSingleton<RenderContext>();
-        builder.Services.AddSingleton<GameCommandService>();
-        builder.Services.AddSingleton<GameState>();
+        if (includeClientServices)
+        {
+            // Register core services
+            builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
+            builder.Services.AddSingleton<IGameRenderer, TestRenderer>();
+            builder.Services.AddSingleton<IViewFactory, TestViewFactory>(); // Use TestViewFactory for testing
+            builder.Services.AddSingleton<RenderContext>();
+            builder.Services.AddSingleton<GameCommandService>();
+            builder.Services.AddSingleton<GameState>();
 
-        // Register all views as IView implementations
-        builder.Services.AddSingleton<IView, TestMenuView>();
-        builder.Services.AddSingleton<IView, TestGalaxyView>();
-        builder.Services.AddSingleton<IView, TestTacticalBattleView>();
-        builder.Services.AddSingleton<IView, TestFleetFinderView>();
-        builder.Services.AddSingleton<IView, TestGameOptionsView>();
-        builder.Services.AddSingleton<IView, TestPlanetaryFinderView>();
+            // Register all views as IView implementations
+            builder.Services.AddSingleton<IView, TestMenuView>();
+            builder.Services.AddSingleton<IView, TestGalaxyView>();
+            builder.Services.AddSingleton<IView, TestTacticalBattleView>();
+            builder.Services.AddSingleton<IView, TestFleetFinderView>();
+            builder.Services.AddSingleton<IView, TestGameOptionsView>();
+            builder.Services.AddSingleton<IView, TestPlanetaryFinderView>();
 
-        // Bind configuration
-        builder.Services.Configure<GameClientConfiguration>(
-            builder.Configuration.GetSection("GameClientConfiguration"));
+            // Bind configuration
+            builder.Services.Configure<GameClientConfiguration>(
+                builder.Configuration.GetSection("GameClientConfiguration"));
 
-        // Register infrastructure services
-        builder.Services.AddSingleton<SignalRService>();
-        builder.Services.AddHostedService<ClientServiceHost>();
+            // Register infrastructure services
+            builder.Services.AddSingleton<SignalRService>();
+            builder.Services.AddHostedService<ClientServiceHost>();
 
-        // Register client initialization services
-        builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();
-        builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
+            // Register client initialization services
+            builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();
+            builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
+            
+            // Add client services
+            builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
+        }
         
         // Use the same shared document store as RavenDbDataSourceAttribute
         _documentStore = SharedDocumentStore.CreateStore("test-database-" + Guid.NewGuid().ToString("N"));
@@ -144,8 +151,6 @@ public class TestHostApplication : IDisposable
         // services.AddHostedService<ProjectionService>();
         // services.AddHostedService<EventBroadcastService>();
         
-        // Add client services
-        builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
         
         // Configure the web application
         builder.WebHost.UseUrls($"http://localhost:{_port}");
@@ -284,4 +289,19 @@ public class TestHostApplication : IDisposable
     }
 
     public string GetPortAsString() => _port.ToString();
+
+    public async Task StartServerAsync(CancellationToken cancellationToken)
+    {
+        if (_app == null)
+            throw new InvalidOperationException("Application is not initialized. Call the constructor first.");
+
+        // Start the application if not already started
+        if (!_app.Lifetime.ApplicationStarted.IsCancellationRequested && !_app.Lifetime.ApplicationStopping.IsCancellationRequested)
+        {
+            return; // Already started
+        }
+
+        // Ensure the application is started
+        await _app.StartAsync(cancellationToken);
+    }
 } 

@@ -19,7 +19,8 @@ public class MinimalHostLifecycleTest
     [Timeout(20_000)]
     public async Task MinimalHost_Handles_EmptyRequest(CancellationToken cancellationToken)
     {
-        var builder = new TestHostApplication();
+        // Create TestHostApplication without client services to avoid SignalR reconnection issues
+        var builder = new TestHostApplication(includeClientServices: false);
         await builder.App.StartAsync(cancellationToken);
         
         await Task.Delay(1000, cancellationToken);
@@ -33,5 +34,8 @@ public class MinimalHostLifecycleTest
         
         await builder.App.StopAsync(cancellationToken);
         await builder.App.DisposeAsync();
+        
+        // Dispose the TestHostApplication to clean up resources
+        builder.Dispose();
     }
 } 

@@ -5,22 +5,25 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 [TestHostApplication]
-public partial class DeltaAccumulationTest(TestHostApplication gameServer)
+public partial class DeltaAccumulationTest(TestHostApplication testHost)
 {
     [Test]
-    public async Task Should_Not_Accumulate_Deltas_Repeatedly()
+    [Timeout(60_000)] // Increased timeout for more complex interactions
+    public async Task Should_Not_Accumulate_Deltas_Repeatedly(CancellationToken cancellationToken)
     {
+        await testHost.StartServerAsync(cancellationToken);
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
 
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
         // Ensure the database is created
         using var scope = app.Services.CreateScope();
@@ -28,11 +31,11 @@ public partial class DeltaAccumulationTest(TestHostApplication gameServer)
         await dbContext.Database.EnsureCreatedAsync();
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
@@ -61,7 +64,7 @@ public partial class DeltaAccumulationTest(TestHostApplication gameServer)
 
         // 2. Mariell connects to SignalR and joins the session group
         var mariellHubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -83,7 +86,7 @@ public partial class DeltaAccumulationTest(TestHostApplication gameServer)
 
         // 3. Frank connects to SignalR and joins the same session group
         var frankHubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -27,7 +28,7 @@ public partial class GameServerIntegrationTests(TestHostApplication testHost, Ca
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // Get authentication token
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = "test-client", Secret = "test-secret" }, cancellationToken: cancellationToken);
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = "test-client", Secret = Constants.Secret }, cancellationToken: cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj!.access_token);

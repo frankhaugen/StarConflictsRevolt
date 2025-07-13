@@ -43,6 +43,13 @@ public class SignalRService : IAsyncDisposable
             })
             .Build();
         
+        cancellationToken.Register(async () =>
+        {
+            _logger.LogInformation("Cancellation requested, stopping SignalR service");
+            await _cts.CancelAsync();
+            await (_hubConnection?.StopAsync(cancellationToken) ?? Task.CompletedTask);
+        });
+        
         // Register message handlers
         _hubConnection.On<WorldDto>("FullWorld", worldDto =>
         {

@@ -1,16 +1,17 @@
 using System.Net.Http.Json;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 [TestHostApplication]
-public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
+public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
@@ -20,9 +21,9 @@ public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
     public async Task Create_SinglePlayer_Session_Succeeds()
     {
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -35,9 +36,9 @@ public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
     public async Task Create_Multiplayer_Session_Succeeds()
     {
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -81,9 +82,9 @@ public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
     public async Task Create_Session_With_Invalid_Type_Fails()
     {
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -97,9 +98,9 @@ public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
     public async Task Create_Session_Without_Type_Defaults_To_Multiplayer()
     {
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         
@@ -112,9 +113,9 @@ public partial class SessionTypeIntegrationTests(TestHostApplication gameServer)
     public async Task Create_Session_Without_Name_Fails()
     {
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         var token = await GetAuthTokenAsync(httpClient);
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         

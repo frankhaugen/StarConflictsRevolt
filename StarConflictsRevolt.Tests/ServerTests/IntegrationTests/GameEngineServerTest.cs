@@ -7,19 +7,24 @@ using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Net.Http.Json;
 using StarConflictsRevolt.Clients.Raylib.Services;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
 [TestHostApplication]
-public partial class GameEngineServerTest(TestHostApplication gameServer)
+public partial class GameEngineServerTest(TestHostApplication testHost)
 {
     [Test]
-    public async Task GameEngineServer_ShouldStartAndRespond()
+    [Timeout(30_000)]
+    public async Task GameEngineServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
+        // Start the GameServerTestHost which initializes the application
+        await testHost.StartServerAsync(cancellationToken);
+        
         // The application is already built and started by GameServerTestHost
-        var app = gameServer.App;
+        var app = testHost.App;
         
         // Fill the database with test data if necessary
         using var scope = app.Services.CreateScope();
@@ -28,11 +33,11 @@ public partial class GameEngineServerTest(TestHostApplication gameServer)
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
         
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{gameServer.Port}") };
+        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret });
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
@@ -43,7 +48,7 @@ public partial class GameEngineServerTest(TestHostApplication gameServer)
         // Listen to SignalR events and persist them in memory for assertions:
         var worldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl(gameServer.GetGameServerHubUrl())
+            .WithUrl(testHost.GetGameServerHubUrl())
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {

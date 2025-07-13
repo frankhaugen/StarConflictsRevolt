@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 
@@ -42,7 +43,7 @@ public partial class TwoPlayerIntegrationTest(TestHostApplication testHost, Canc
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
         await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Requesting token");
-        var tokenResponse = await WithTimeout(httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = "test-secret" }), "Token request");
+        var tokenResponse = await WithTimeout(httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, Secret = Constants.Secret }), "Token request");
         tokenResponse.EnsureSuccessStatusCode();
         await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Token response received");
         // For ReadFromJsonAsync and similar, ensure Task is passed to WithTimeout
