@@ -39,7 +39,7 @@ public static class SubstituteExtensions
         protected override object? Invoke(MethodInfo? target, object?[]? _)
         {
             if (target is null || _proxy is null) return null;
-            if (!_proxy.Calls.Any(c => c.Method == target))
+            if (_proxy.Calls.All(c => c.Method != target))
                 throw new Exception($"{target.Name} was not invoked.");
             return target.ReturnType.IsValueType ? Activator.CreateInstance(target.ReturnType) : null;
         }
