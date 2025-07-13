@@ -131,7 +131,8 @@ public class TestHostApplication : IDisposable
                     ValidateAudience = false,
                     ValidateLifetime = false,
                     RequireExpirationTime = false,
-                    ValidateIssuerSigningKey = false
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = StarConflictsRevolt.Server.WebApi.Security.JwtConfig.GetSymmetricSecurityKey()
                 };
             });
 
