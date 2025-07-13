@@ -46,23 +46,20 @@ public class TestHostApplication : IDisposable
         });
 
         // Register core services
-        var renderer = Substitute.For<IGameRenderer>();
-        renderer.When(gameRenderer => gameRenderer.RenderAsync(default, default)).Returns(
-            Task.CompletedTask);
         builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
         builder.Services.AddSingleton<IGameRenderer, RaylibRenderer>();
-        builder.Services.AddSingleton<IViewFactory, ViewFactory>();
+        builder.Services.AddSingleton<IViewFactory, TestViewFactory>(); // Use TestViewFactory for testing
         builder.Services.AddSingleton<RenderContext>();
         builder.Services.AddSingleton<GameCommandService>();
         builder.Services.AddSingleton<GameState>();
 
         // Register all views as IView implementations
-        builder.Services.AddSingleton<IView>((Substitute.For<IView>() as MenuView)!);
-        builder.Services.AddSingleton<IView, GalaxyView>();
-        builder.Services.AddSingleton<IView, TacticalBattleView>();
-        builder.Services.AddSingleton<IView, FleetFinderView>();
-        builder.Services.AddSingleton<IView, GameOptionsView>();
-        builder.Services.AddSingleton<IView, PlanetaryFinderView>();
+        builder.Services.AddSingleton<IView, TestMenuView>();
+        builder.Services.AddSingleton<IView, TestGalaxyView>();
+        builder.Services.AddSingleton<IView, TestTacticalBattleView>();
+        builder.Services.AddSingleton<IView, TestFleetFinderView>();
+        builder.Services.AddSingleton<IView, TestGameOptionsView>();
+        builder.Services.AddSingleton<IView, TestPlanetaryFinderView>();
 
         // Bind configuration
         builder.Services.Configure<GameClientConfiguration>(

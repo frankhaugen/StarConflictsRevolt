@@ -12,13 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ServiceCollectionExtensions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ServiceCollectionExtensions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestServiceRegistration.cs" beforeDir="false" />
-    </list>
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,7 +34,9 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/SourceGeneratedDocuments/D3631EA0F2BF9417EA0E09B6/TUnit.Core.SourceGenerator/TUnit.Core.SourceGenerator.CodeGenerators.TestsGenerator/ParallelSafetyTests-4e161ecad6ba4d519d4094b5ffbcdda9.Generated.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6da1eb24dd00463289098ee90af86cba26d000/3e/ecbc6a77/ServerLoadFailureException.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/TestingInfrastructure/MockLite/SubstituteExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
@@ -201,7 +197,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
-      <workItem from="1752401395411" duration="1962000" />
+      <workItem from="1752401395411" duration="3246000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -217,7 +213,42 @@
       <option name="presentableId" value="LOCAL−00002" />
       <updated>1752401454307</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL−00003" summary="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests">
+      <option name="closed" value="true" />
+      <created>1752407117627</created>
+      <option name="number" value="LOCAL−00003" />
+      <option name="presentableId" value="LOCAL−00003" />
+      <updated>1752407117627</updated>
+    </task>
+    <task id="LOCAL−00004" summary="Add Proxy and SubstituteExtensions for fluent mocking capabilities">
+      <option name="closed" value="true" />
+      <created>1752407145599</created>
+      <option name="number" value="LOCAL−00004" />
+      <option name="presentableId" value="LOCAL−00004" />
+      <updated>1752407145599</updated>
+    </task>
+    <task id="LOCAL−00005" summary="Update namespaces in MockLite files to reflect new testing infrastructure structure">
+      <option name="closed" value="true" />
+      <created>1752407162777</created>
+      <option name="number" value="LOCAL−00005" />
+      <option name="presentableId" value="LOCAL−00005" />
+      <updated>1752407162777</updated>
+    </task>
+    <task id="LOCAL−00006" summary="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions">
+      <option name="closed" value="true" />
+      <created>1752407194622</created>
+      <option name="number" value="LOCAL−00006" />
+      <option name="presentableId" value="LOCAL−00006" />
+      <updated>1752407194622</updated>
+    </task>
+    <task id="LOCAL−00007" summary="Add Proxy class and initial tests for Substitute mocking functionality">
+      <option name="closed" value="true" />
+      <created>1752407408291</created>
+      <option name="number" value="LOCAL−00007" />
+      <option name="presentableId" value="LOCAL−00007" />
+      <updated>1752407408291</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -229,7 +260,12 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration" />
     <MESSAGE value="Refactor workspace.xml to improve formatting and update environment variables for ASP.NET Core" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor workspace.xml to improve formatting and update environment variables for ASP.NET Core" />
+    <MESSAGE value="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests" />
+    <MESSAGE value="Add Proxy and SubstituteExtensions for fluent mocking capabilities" />
+    <MESSAGE value="Update namespaces in MockLite files to reflect new testing infrastructure structure" />
+    <MESSAGE value="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions" />
+    <MESSAGE value="Add Proxy class and initial tests for Substitute mocking functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Proxy class and initial tests for Substitute mocking functionality" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -2,7 +2,7 @@
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure.InfrastructureTests;
 
-public partial class TestMocking
+public class TestMocking
 {
     [Test]
     public async Task Substitute_CanCreateMock()
@@ -22,6 +22,16 @@ public partial class TestMocking
         var result = mock.Add(2, 3);
         
         await Assert.That(result).IsEqualTo(42);
+    }
+
+    [Test]
+    public async Task Substitute_BasicMockingWorks()
+    {
+        var mock = Substitute.For<ITestInterface>();
+        
+        // Test that the mock is created and returns default values
+        var result = mock.Add(5, 10);
+        await Assert.That(result).IsEqualTo(0); // Default for int
     }
 
     public interface ITestInterface

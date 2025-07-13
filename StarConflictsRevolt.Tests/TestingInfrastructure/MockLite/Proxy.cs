@@ -32,8 +32,8 @@ public class Proxy<T> : DispatchProxy where T : class
     public readonly struct RuleBuilder(MethodInfo method, Proxy<T>? proxy)
     {
         /// <summary>Returns a constant <paramref name="value"/> for the arranged call.</summary>
-        public void Returns(object? value)                     => proxy.AddRule(method, _ => value);
+        public void Returns(object? value)                     => proxy?.AddRule(method, _ => value);
         /// <summary>Returns a computed value for the arranged call.</summary>
-        public void Returns(Func<object?[], object?> factory) => proxy.AddRule(method, factory);
+        public void Returns(Func<object?[], object?> factory) => proxy?.AddRule(method, factory);
     }
 }

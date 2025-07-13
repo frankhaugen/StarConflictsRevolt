@@ -14,6 +14,10 @@ public static class SubstituteExtensions
     public static Proxy<T>.RuleBuilder When<T>(this T sub,
         Expression<Func<T, object?>> expr) where T : class => Build(sub, expr.Body);
 
+    /// <summary>Starts arrangement for a <paramref name="expr"/> with any return type.</summary>
+    public static Proxy<T>.RuleBuilder When<T, TResult>(this T sub,
+        Expression<Func<T, TResult>> expr) where T : class => Build(sub, expr.Body);
+
     /// <summary>Verifies that the specified call was received at least once.</summary>
     public static T Received<T>(this T sub) where T : class
     {
