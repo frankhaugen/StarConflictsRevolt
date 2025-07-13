@@ -7,24 +7,16 @@ namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class SessionTypeStressTests
 {
-    private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
-    {
-        var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
-        tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
-        return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
-    }
+    // Token handled automatically by client pipeline
 
     [Test]
-    public async Task Create_50_Sessions_Quickly_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_50_Sessions_Quickly_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         for (var i = 0; i < 50; i++)
         {
@@ -35,14 +27,13 @@ public class SessionTypeStressTests
     }
 
     [Test]
-    public async Task Create_And_Join_20_Sessions_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_And_Join_20_Sessions_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         for (var i = 0; i < 20; i++)
         {
@@ -54,14 +45,13 @@ public class SessionTypeStressTests
     }
 
     [Test]
-    public async Task Create_Sessions_With_Random_Types_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_Sessions_With_Random_Types_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var rand = new Random();
         for (var i = 0; i < 15; i++)
@@ -74,14 +64,13 @@ public class SessionTypeStressTests
     }
 
     [Test]
-    public async Task Create_Sessions_With_Long_Names_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_Sessions_With_Long_Names_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         for (var i = 0; i < 10; i++)
         {
@@ -92,14 +81,13 @@ public class SessionTypeStressTests
     }
 
     [Test]
-    public async Task Create_Sessions_With_Special_Chars_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_Sessions_With_Special_Chars_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         for (var i = 0; i < 10; i++)
         {

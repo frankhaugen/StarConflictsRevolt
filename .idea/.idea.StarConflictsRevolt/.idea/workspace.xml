@@ -12,9 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -218,6 +216,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
+      <workItem from="1752432073576" duration="847000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -338,7 +337,21 @@
       <option name="presentableId" value="LOCAL−00017" />
       <updated>1752430960947</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL−00018" summary="Refactor integration tests to use TestHostApplication with cancellation token and improve token response handling">
+      <option name="closed" value="true" />
+      <created>1752432338159</created>
+      <option name="number" value="LOCAL−00018" />
+      <option name="presentableId" value="LOCAL−00018" />
+      <updated>1752432338159</updated>
+    </task>
+    <task id="LOCAL−00019" summary="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum">
+      <option name="closed" value="true" />
+      <created>1752432932503</created>
+      <option name="number" value="LOCAL−00019" />
+      <option name="presentableId" value="LOCAL−00019" />
+      <updated>1752432932503</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -365,7 +378,9 @@
     <MESSAGE value="Refactor integration tests to use TokenRequest and update token response handling" />
     <MESSAGE value="Refactor health check integration test to include cancellation token" />
     <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor code to improve formatting and consistency across multiple files" />
+    <MESSAGE value="Refactor integration tests to use TestHostApplication with cancellation token and improve token response handling" />
+    <MESSAGE value="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

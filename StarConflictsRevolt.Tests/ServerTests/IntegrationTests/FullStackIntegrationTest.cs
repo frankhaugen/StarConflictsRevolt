@@ -20,10 +20,10 @@ public class FullStackIntegrationTest
     [Timeout(30_000)]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(false);
+        var testHost = new TestHostApplication(true);
 
         // Start the test host application
-        await testHost.StartServerAsync(cancellationToken);
+        await testHost.StartServerAsync(CancellationToken.None);
 
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
@@ -37,17 +37,7 @@ public class FullStackIntegrationTest
         await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
 
         // Create an HttpClient that can communicate with the test server
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-
-        // === AUTHENTICATION: Obtain JWT token ===
-        var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
-        tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
-        if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
-            throw new Exception("Failed to obtain JWT token for test user");
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj.access_token);
-        // === END AUTHENTICATION ===
+        var httpClient = testHost.GetHttpClient();
 
         // 1. Create a new session via API
         var sessionName = $"test-session-{Guid.NewGuid()}";

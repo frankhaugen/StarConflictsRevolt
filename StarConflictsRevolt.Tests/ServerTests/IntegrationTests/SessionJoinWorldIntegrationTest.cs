@@ -24,14 +24,7 @@ public class SessionJoinWorldIntegrationTest
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-
-        // Authenticate
-        var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken);
-        tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
+        var httpClient = testHost.GetHttpClient();
 
         // Create session
         var sessionName = $"test-session-{Guid.NewGuid()}";

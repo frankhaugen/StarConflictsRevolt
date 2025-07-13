@@ -18,7 +18,7 @@ public class GameServerIntegrationTests
         await testHost.StartServerAsync(cancellationToken);
 
         // Test that the server is running and can serve requests
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
+        var httpClient = testHost.GetHttpClient();
 
         // Test basic connectivity
         var response = await httpClient.GetAsync("/health", cancellationToken);
@@ -32,12 +32,6 @@ public class GameServerIntegrationTests
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
-
-        // Get authentication token
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest { ClientId = "test-client", ClientSecret = Constants.Secret }, cancellationToken);
-        tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
 
         // Create a session
         var sessionName = $"test-session-{Guid.NewGuid()}";

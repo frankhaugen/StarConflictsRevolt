@@ -8,24 +8,16 @@ namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class SessionTypeIntegrationTests
 {
-    private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
-    {
-        var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
-        tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
-        return tokenObj?.access_token ?? throw new Exception("Failed to obtain JWT token");
-    }
+    // Token acquisition now handled automatically by HttpClient pipeline
 
     [Test]
-    public async Task Create_SinglePlayer_Session_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_SinglePlayer_Session_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "sp-test-" + Guid.NewGuid(), SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -33,14 +25,13 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task Create_Multiplayer_Session_Succeeds()
+    [Timeout(30_000)]
+    public async Task Create_Multiplayer_Session_Succeeds(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "mp-test-" + Guid.NewGuid(), SessionType = "Multiplayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -48,7 +39,8 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task AI_Only_Runs_In_SinglePlayer_Session()
+    [Timeout(30_000)]
+    public async Task AI_Only_Runs_In_SinglePlayer_Session(CancellationToken cancellationToken)
     {
         // This test would check that AI commands are only generated in single player sessions.
         // For brevity, we simulate by checking the session type and expected AI behavior.
@@ -62,7 +54,8 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task Multiplayer_Session_Does_Not_Have_AI()
+    [Timeout(30_000)]
+    public async Task Multiplayer_Session_Does_Not_Have_AI(CancellationToken cancellationToken)
     {
         // Simulate multiplayer session and check that no AI is present.
         var sessionType = SessionType.Multiplayer;
@@ -71,7 +64,8 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task SinglePlayer_Session_Has_AI()
+    [Timeout(30_000)]
+    public async Task SinglePlayer_Session_Has_AI(CancellationToken cancellationToken)
     {
         var sessionType = SessionType.SinglePlayer;
         var aiPresent = sessionType == SessionType.SinglePlayer;
@@ -79,14 +73,13 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task Create_Session_With_Invalid_Type_Fails()
+    [Timeout(30_000)]
+    public async Task Create_Session_With_Invalid_Type_Fails(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "bad-type-test-" + Guid.NewGuid(), SessionType = "InvalidType" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -95,14 +88,13 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task Create_Session_Without_Type_Defaults_To_Multiplayer()
+    [Timeout(30_000)]
+    public async Task Create_Session_Without_Type_Defaults_To_Multiplayer(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "no-type-test-" + Guid.NewGuid() };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);
@@ -110,14 +102,13 @@ public class SessionTypeIntegrationTests
     }
 
     [Test]
-    public async Task Create_Session_Without_Name_Fails()
+    [Timeout(30_000)]
+    public async Task Create_Session_Without_Name_Fails(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);
         await testHost.StartServerAsync(CancellationToken.None);
 
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
-        var token = await GetAuthTokenAsync(httpClient);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionType = "SinglePlayer" };
         var resp = await httpClient.PostAsJsonAsync("/game/session", req);

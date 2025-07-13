@@ -41,20 +41,7 @@ public class TwoPlayerIntegrationTest
         // Create an HttpClient that can communicate with the test server
         var port = testHost.Port;
         await Context.Current.OutputWriter.WriteLineAsync($"[DIAG] Using port: {port}");
-        var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{port}") };
-
-        // === AUTHENTICATION: Obtain JWT token ===
-        var testClientId = $"test-client-{Guid.NewGuid()}";
-        await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Requesting token");
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken);
-        tokenResponse.EnsureSuccessStatusCode();
-        await Context.Current.OutputWriter.WriteLineAsync("[DIAG] Token response received");
-        // For ReadFromJsonAsync and similar, ensure Task is passed to WithTimeout
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
-        if (tokenObj == null || string.IsNullOrEmpty(tokenObj.AccessToken))
-            throw new Exception("Failed to obtain JWT token for test user");
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj.AccessToken);
-        // === END AUTHENTICATION ===
+        var httpClient = testHost.GetHttpClient();
 
         // Player IDs for the test
         var playerMariellId = Guid.NewGuid();
