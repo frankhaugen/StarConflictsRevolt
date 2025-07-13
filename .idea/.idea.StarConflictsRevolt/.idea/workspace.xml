@@ -12,13 +12,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Add SessionResponse model and enhance event processing with timeouts">
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Models/SessionResponse.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/MockEventStore.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/EventBroadcastService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/EventBroadcastService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameUpdateService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameUpdateService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/ProjectionService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/ProjectionService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/AuthenticationDebugTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/AuthenticationDebugTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -46,6 +61,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6da1eb24dd00463289098ee90af86cba26d000/3e/ecbc6a77/ServerLoadFailureException.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/14eac595c88dcb101dfbe5e5f9e2b9af5f2da7b9a3d7ab4a94797c76747d0dc/AccessTokenHttpMessageHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f16564c8c4b61e6ea398fe412680c6b795b266584ccf6a362aed712dc4d2b387/WebApplication.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" root0="SKIP_HIGHLIGHTING" />
@@ -210,7 +226,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="5145000" />
+      <workItem from="1752432073576" duration="6381000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -397,7 +413,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration" />
     <MESSAGE value="Refactor workspace.xml to improve formatting and update environment variables for ASP.NET Core" />
     <MESSAGE value="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests" />
     <MESSAGE value="Add Proxy and SubstituteExtensions for fluent mocking capabilities" />
@@ -422,7 +437,8 @@
     <MESSAGE value="Update workspace configuration to reflect recent test additions and modifications" />
     <MESSAGE value="Enhance hosted services isolation tests with in-memory database setup and mock event store" />
     <MESSAGE value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
-    <option name="LAST_COMMIT_MESSAGE" value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
+    <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add SessionResponse model and enhance event processing with timeouts" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
