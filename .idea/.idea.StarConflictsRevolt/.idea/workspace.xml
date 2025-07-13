@@ -12,29 +12,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Add SessionResponse model and enhance event processing with timeouts">
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Models/SessionResponse.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/MockEventStore.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/EventBroadcastService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/EventBroadcastService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameUpdateService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameUpdateService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/ProjectionService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/ProjectionService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/AuthenticationDebugTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/AuthenticationDebugTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/DeltaAccumulationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/FullStackIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeEdgeCaseTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeIntegrationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/SessionTypeStressTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,22 +60,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "RiderDotMemoryPageId",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Aspire Host.StarConflictsRevolt.Aspire.AppHost: http">
     <configuration name="StarConflictsRevolt.Aspire.AppHost: http" type="AspireHostConfiguration" factoryName="Aspire Host" activateToolWindowBeforeRun="false">
       <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/StarConflictsRevolt.Aspire.AppHost/StarConflictsRevolt.Aspire.AppHost.csproj" />
@@ -226,7 +205,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="6381000" />
+      <workItem from="1752432073576" duration="6856000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -403,17 +382,40 @@
       <option name="presentableId" value="LOCAL−00025" />
       <updated>1752438269643</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL−00026" summary="Add SessionResponse model and enhance event processing with timeouts">
+      <option name="closed" value="true" />
+      <created>1752445984412</created>
+      <option name="number" value="LOCAL−00026" />
+      <option name="presentableId" value="LOCAL−00026" />
+      <updated>1752445984412</updated>
+    </task>
+    <task id="LOCAL−00027" summary="Refactor workspace.xml to update session response model and enhance event processing">
+      <option name="closed" value="true" />
+      <created>1752445990164</created>
+      <option name="number" value="LOCAL−00027" />
+      <option name="presentableId" value="LOCAL−00027" />
+      <updated>1752445990164</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnitTestsCoverage.Settings">
+    <option name="coveragePercentColumnWidth" value="150" />
+    <option name="sortOrder" value="DESCENDING" />
+    <option name="sortedColumn" value="1" />
+    <option name="symbolColumnWidth" value="148" />
+    <coverage-tree-state>
+      <expand />
+      <select />
+    </coverage-tree-state>
+  </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor workspace.xml to improve formatting and update environment variables for ASP.NET Core" />
     <MESSAGE value="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests" />
     <MESSAGE value="Add Proxy and SubstituteExtensions for fluent mocking capabilities" />
     <MESSAGE value="Update namespaces in MockLite files to reflect new testing infrastructure structure" />
@@ -438,7 +440,8 @@
     <MESSAGE value="Enhance hosted services isolation tests with in-memory database setup and mock event store" />
     <MESSAGE value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
     <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add SessionResponse model and enhance event processing with timeouts" />
+    <MESSAGE value="Refactor workspace.xml to update session response model and enhance event processing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor workspace.xml to update session response model and enhance event processing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
