@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Http;
@@ -120,9 +121,9 @@ public class TestHostApplication : IDisposable
         // Add OpenAPI
         builder.Services.AddOpenApi();
 
-        // Add JWT authentication
-        builder.Services.AddAuthentication("Test")
-            .AddJwtBearer("Test", options =>
+        // Add JWT authentication matching standard "Bearer" scheme
+        builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
