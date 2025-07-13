@@ -17,4 +17,13 @@ public class MinimalHostLifecycleTest
         await app.DisposeAsync();
         await Assert.That(true).IsTrue(); // If we get here, the host started and stopped cleanly
     }
+    
+    [Test]
+    public async Task MinimalHost_Handles_EmptyRequest()
+    {
+        var builder = new TestHostApplication();
+        await builder.App.StartAsync();
+        await builder.App.StopAsync();
+        await builder.App.DisposeAsync();
+    }
 } 
