@@ -4,13 +4,15 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class WebApiServerTest(TestHostApplication testHost, CancellationToken cancellationToken)
+
+public partial class WebApiServerTest()
 {
     [Test]
     [Timeout(20_000)]
     public async Task WebApiServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+        
         // The application is already built and started by TestHostApplication
         var app = testHost.Server;
         

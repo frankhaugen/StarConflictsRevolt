@@ -6,13 +6,15 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class GameServerIntegrationTests(TestHostApplication testHost, CancellationToken cancellationToken)
+
+public partial class GameServerIntegrationTests()
 {
     [Test]
     [Timeout(20_000)]
     public async Task GameServer_CanStartAndServeRequests(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         // Test that the server is running and can serve requests
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         
@@ -25,6 +27,8 @@ public partial class GameServerIntegrationTests(TestHostApplication testHost, Ca
     [Timeout(20_000)]
     public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // Get authentication token
@@ -64,6 +68,8 @@ public partial class GameServerIntegrationTests(TestHostApplication testHost, Ca
     [Timeout(20_000)]
     public async Task GameServer_CanUseRavenDbForPersistence(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         using var session = testHost.DocumentStore.OpenAsyncSession();
         
         var testEntity = new TestEntity { Name = "Test", Value = 42 };

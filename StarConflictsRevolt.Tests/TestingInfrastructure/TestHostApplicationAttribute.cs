@@ -20,7 +20,7 @@ public sealed class TestHostApplicationAttribute : DependencyInjectionDataSource
     {
         var testHost = scope.ServiceProvider.GetRequiredService<TestHostApplication>();
         // Start the server when the test host is created
-        testHost.StartServerAsync(CancellationToken.None).GetAwaiter().GetResult();
+        // testHost.StartServerAsync(CancellationToken.None).GetAwaiter().GetResult();
         return testHost;
     }
 } 

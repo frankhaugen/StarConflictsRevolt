@@ -13,13 +13,15 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class GameEngineServerTest(TestHostApplication testHost)
+
+public partial class GameEngineServerTest()
 {
     [Test]
     [Timeout(30_000)]
     public async Task GameEngineServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         // Start the GameServerTestHost which initializes the application
         await testHost.StartServerAsync(cancellationToken);
         

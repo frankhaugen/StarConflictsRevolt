@@ -4,8 +4,8 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-[TestHostApplication]
-public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
+
+public partial class SessionTypeEdgeCaseTests()
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -20,6 +20,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Empty_Name_Fails(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -35,6 +37,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Null_Name_Fails(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -50,6 +54,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Null_Type_Defaults_To_Multiplayer(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -65,6 +71,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Whitespace_Type_Defaults_To_Multiplayer(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -80,6 +88,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Long_Name_Succeeds(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -95,6 +105,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
 [Timeout(20_000)]
     public async Task Create_Session_With_Special_Chars_Name_Succeeds(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -110,6 +122,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
     [Timeout(20_000)]
     public async Task Create_Many_Sessions_Succeeds(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
@@ -128,6 +142,8 @@ public partial class SessionTypeEdgeCaseTests(TestHostApplication testHost)
     [Timeout(20_000)]
     public async Task Create_Session_With_Empty_Type_Defaults_To_Multiplayer(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         
         var httpClient = testHost.Client;

@@ -11,13 +11,15 @@ using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class DeltaAccumulationTest(TestHostApplication testHost)
+
+public partial class DeltaAccumulationTest()
 {
     [Test]
     [Timeout(60_000)] // Increased timeout for more complex interactions
     public async Task Should_Not_Accumulate_Deltas_Repeatedly(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();

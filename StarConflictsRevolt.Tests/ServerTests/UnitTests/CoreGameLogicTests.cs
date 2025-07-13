@@ -12,8 +12,8 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-[TestHostApplication]
-public partial class CoreGameLogicTests(TestHostApplication testHost)
+
+public partial class CoreGameLogicTests()
 {
     private SessionAggregate CreateAggregate(Guid sessionId, World world)
     {

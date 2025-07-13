@@ -5,8 +5,8 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-[TestHostApplication]
-public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
+
+public partial class SessionTypeIntegrationTests()
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -20,6 +20,8 @@ public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
     [Test]
     public async Task Create_SinglePlayer_Session_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -35,6 +37,8 @@ public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Multiplayer_Session_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -81,6 +85,8 @@ public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Session_With_Invalid_Type_Fails()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -97,6 +103,8 @@ public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Session_Without_Type_Defaults_To_Multiplayer()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -112,6 +120,8 @@ public partial class SessionTypeIntegrationTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Session_Without_Name_Fails()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         

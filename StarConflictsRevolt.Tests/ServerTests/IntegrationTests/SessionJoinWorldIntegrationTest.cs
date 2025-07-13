@@ -9,13 +9,15 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class SessionJoinWorldIntegrationTest(TestHostApplication testHost)
+
+public partial class SessionJoinWorldIntegrationTest()
 {
     [Test]
     [Timeout(20_000)]
     public async Task SessionCreationAndJoin_SendsFullWorldToJoiningClient(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         await testHost.StartServerAsync(cancellationToken);
         // The application is already built and started by TestHostApplication
         var app = testHost.Server;

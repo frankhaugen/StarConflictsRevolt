@@ -12,13 +12,15 @@ using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
-[TestHostApplication]
-public partial class FullStackIntegrationTest(TestHostApplication testHost)
+
+public partial class FullStackIntegrationTest()
 {
     [Test]
     [Timeout(30_000)]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta(CancellationToken cancellationToken)
     {
+        var testHost = new TestHostApplication(false);
+
         // Start the test host application
         await testHost.StartServerAsync(cancellationToken);
         

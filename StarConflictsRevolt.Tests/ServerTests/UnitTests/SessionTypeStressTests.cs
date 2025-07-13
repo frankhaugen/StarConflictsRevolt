@@ -4,8 +4,8 @@ using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
-[TestHostApplication]
-public partial class SessionTypeStressTests(TestHostApplication testHost)
+
+public partial class SessionTypeStressTests()
 {
     private async Task<string> GetAuthTokenAsync(HttpClient httpClient)
     {
@@ -19,6 +19,8 @@ public partial class SessionTypeStressTests(TestHostApplication testHost)
     [Test]
     public async Task Create_50_Sessions_Quickly_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -37,6 +39,8 @@ public partial class SessionTypeStressTests(TestHostApplication testHost)
     [Test]
     public async Task Create_And_Join_20_Sessions_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -56,6 +60,8 @@ public partial class SessionTypeStressTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Sessions_With_Random_Types_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -76,6 +82,8 @@ public partial class SessionTypeStressTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Sessions_With_Long_Names_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
@@ -94,6 +102,8 @@ public partial class SessionTypeStressTests(TestHostApplication testHost)
     [Test]
     public async Task Create_Sessions_With_Special_Chars_Succeeds()
     {
+        var testHost = new TestHostApplication(false);
+
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
         
