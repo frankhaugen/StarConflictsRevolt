@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -32,10 +33,10 @@ public partial class GameServerIntegrationTests()
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
 
         // Get authentication token
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = "test-client", ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest() { ClientId = "test-client", ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
         var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj!.access_token);
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenObj!.AccessToken);
 
         // Create a session
         var sessionName = $"test-session-{Guid.NewGuid()}";
@@ -82,7 +83,6 @@ public partial class GameServerIntegrationTests()
         await Assert.That(loaded.Value).IsEqualTo(42);
     }
 
-    private record TokenResponse(string access_token, int expires_in, string token_type);
     private record SessionResponse(Guid SessionId);
 
     private class TestEntity
