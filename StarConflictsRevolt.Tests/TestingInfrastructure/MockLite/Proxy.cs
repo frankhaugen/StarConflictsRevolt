@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure.MockLite;
 
-public sealed class Proxy<T> : DispatchProxy where T : class
+public class Proxy<T> : DispatchProxy where T : class
 {
     private readonly ConcurrentDictionary<MethodInfo, Func<object?[], object?>> _rules = new();
     private readonly ConcurrentQueue<Invocation> _calls = new();
