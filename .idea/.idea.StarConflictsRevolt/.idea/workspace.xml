@@ -12,20 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestRenderer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientServiceHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientServiceHost.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameServerIntegrationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/ParallelSafetyTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/SessionJoinWorldIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TestLoggerProvider.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TwoPlayerIntegrationTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/WebApiServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/InfrastructureTests/MinimalHostLifecycleTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestApplicationHost.cs" afterDir="false" />
-    </list>
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -211,7 +198,7 @@
       <option name="presentableId" value="Default" />
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
-      <workItem from="1752401395411" duration="6017000" />
+      <workItem from="1752401395411" duration="7369000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -269,7 +256,14 @@
       <option name="presentableId" value="LOCAL−00008" />
       <updated>1752407906975</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL−00009" summary="Refactor namespaces and remove unused usings; add Client and TokenType classes">
+      <option name="closed" value="true" />
+      <created>1752411511589</created>
+      <option name="number" value="LOCAL−00009" />
+      <option name="presentableId" value="LOCAL−00009" />
+      <updated>1752411511589</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -287,7 +281,8 @@
     <MESSAGE value="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions" />
     <MESSAGE value="Add Proxy class and initial tests for Substitute mocking functionality" />
     <MESSAGE value="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views" />
+    <MESSAGE value="Refactor namespaces and remove unused usings; add Client and TokenType classes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor namespaces and remove unused usings; add Client and TokenType classes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
