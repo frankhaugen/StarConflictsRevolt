@@ -20,7 +20,7 @@ public partial class GameServerIntegrationTests()
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{testHost.Port}") };
         
         // Test basic connectivity
-        var response = await httpClient.GetAsync("/health");
+        var response = await httpClient.GetAsync("/health", cancellationToken);
         await Assert.That(response.IsSuccessStatusCode).IsTrue();
     }
 
