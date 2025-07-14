@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>

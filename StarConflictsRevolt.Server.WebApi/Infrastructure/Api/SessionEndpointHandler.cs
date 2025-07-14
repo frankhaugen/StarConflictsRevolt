@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
-using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Server.WebApi.Services;

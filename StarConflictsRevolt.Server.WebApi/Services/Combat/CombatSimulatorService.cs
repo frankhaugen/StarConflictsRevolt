@@ -1,6 +1,5 @@
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Models.Combat;
-using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Server.WebApi.Services.Combat;
 

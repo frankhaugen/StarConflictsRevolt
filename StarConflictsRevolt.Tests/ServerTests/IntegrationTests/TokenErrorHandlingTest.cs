@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 

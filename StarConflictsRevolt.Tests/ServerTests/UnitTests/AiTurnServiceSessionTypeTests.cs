@@ -1,6 +1,5 @@
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

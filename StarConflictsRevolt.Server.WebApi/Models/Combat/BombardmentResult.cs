@@ -1,5 +1,3 @@
-using StarConflictsRevolt.Server.WebApi.Models;
-
 namespace StarConflictsRevolt.Server.WebApi.Models.Combat;
 
 public class BombardmentResult
