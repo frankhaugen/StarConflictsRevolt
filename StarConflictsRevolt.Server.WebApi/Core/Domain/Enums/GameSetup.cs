@@ -1,12 +1,12 @@
-using StarConflictsRevolt.Server.WebApi.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Players;
 
-namespace StarConflictsRevolt.Server.WebApi.Models;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
 public class GameSetup
 {
     public string SessionName { get; set; } = string.Empty;
     public GameMode Mode { get; set; }
-    public VictoryCondition VictoryCondition { get; set; } = VictoryCondition.MilitaryVictory;
+    public Victory.VictoryCondition VictoryCondition { get; set; } = Victory.VictoryCondition.MilitaryVictory;
     public List<PlayerSetup> Players { get; set; } = new();
 
     // Galaxy configuration

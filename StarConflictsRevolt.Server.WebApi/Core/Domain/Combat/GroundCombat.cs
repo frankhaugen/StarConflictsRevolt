@@ -1,4 +1,8 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Models.Combat;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
+
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
 
 public class GroundCombat
 {

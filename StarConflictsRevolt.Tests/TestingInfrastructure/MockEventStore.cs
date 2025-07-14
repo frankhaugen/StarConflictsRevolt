@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 

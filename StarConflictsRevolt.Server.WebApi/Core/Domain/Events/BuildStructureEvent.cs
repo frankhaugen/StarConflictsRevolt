@@ -1,11 +1,13 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
 
-namespace StarConflictsRevolt.Server.WebApi.Eventing;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string StructureType) : IGameEvent
 {
-    public void ApplyTo(World world, ILogger logger)
+    public void ApplyTo(World.World world, ILogger logger)
     {
         // Find the planet and its containing system
         Planet? planet = null;

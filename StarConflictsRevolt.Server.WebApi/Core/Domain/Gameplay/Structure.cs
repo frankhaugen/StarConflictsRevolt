@@ -1,8 +1,8 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class Structure : GameObject
+public class Structure : Datastore.Entities.GameObject
 {
     public StructureVariant Variant { get; set; }
     public Guid? PlanetId { get; set; }

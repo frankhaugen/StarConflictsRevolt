@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class StarSystem : GameObject
+public class StarSystem : Datastore.Entities.GameObject
 {
     public string Name { get; set; }
     public IEnumerable<Planet> Planets { get; set; }

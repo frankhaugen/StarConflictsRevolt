@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Models.Combat;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
 
 public enum GroundActionType
 {

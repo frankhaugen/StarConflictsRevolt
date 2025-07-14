@@ -1,10 +1,16 @@
 using System.Numerics;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
+using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

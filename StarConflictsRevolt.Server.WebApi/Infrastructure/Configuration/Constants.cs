@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi;
+﻿namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
 public static class Constants
 {

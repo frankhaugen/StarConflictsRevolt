@@ -1,11 +1,12 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 
-namespace StarConflictsRevolt.Server.WebApi.Eventing;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Guid ToPlanetId) : IGameEvent
 {
-    public void ApplyTo(World world, ILogger logger)
+    public void ApplyTo(World.World world, ILogger logger)
     {
         // Find the fleet and validate the move
         Fleet? fleet = null;

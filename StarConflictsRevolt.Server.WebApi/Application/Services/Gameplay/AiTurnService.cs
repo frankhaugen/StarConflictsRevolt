@@ -1,6 +1,6 @@
-using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class AiTurnService : BackgroundService
 {

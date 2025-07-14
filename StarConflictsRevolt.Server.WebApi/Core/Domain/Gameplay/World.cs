@@ -1,6 +1,6 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class World : GameObject
+public class World : Datastore.Entities.GameObject
 {
     public Galaxy Galaxy { get; set; }
 }

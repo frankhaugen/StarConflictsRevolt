@@ -1,6 +1,8 @@
-﻿using StarConflictsRevolt.Server.WebApi.Services;
+﻿using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
 
-namespace StarConflictsRevolt.Server.WebApi.Models;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
 public class World
 {

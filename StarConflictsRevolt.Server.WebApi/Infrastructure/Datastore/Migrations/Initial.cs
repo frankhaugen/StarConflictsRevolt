@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Migrations;
+namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.Migrations;
 
 /// <inheritdoc />
 public partial class Initial : Migration

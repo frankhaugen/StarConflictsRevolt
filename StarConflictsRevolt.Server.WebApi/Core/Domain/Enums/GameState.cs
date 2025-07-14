@@ -1,7 +1,7 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Models;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
 public class GameState
 {
     public int CurrentTurn { get; set; }
-    public World World { get; set; } = new();
+    public World.World World { get; set; } = new();
 }

@@ -1,7 +1,7 @@
 using System.Collections;
-using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.SeedData;
+namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.SeedData;
 
 public class ShipCollection : IEnumerable<Ship>
 {

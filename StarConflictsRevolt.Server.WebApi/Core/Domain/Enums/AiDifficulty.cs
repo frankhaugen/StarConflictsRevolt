@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Server.WebApi.Enums;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
 public enum AiDifficulty
 {

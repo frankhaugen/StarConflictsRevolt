@@ -1,9 +1,10 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
+﻿using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class DefaultAiStrategy : BaseAiStrategy
 {

@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Models;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
 public abstract record GameObject
 {

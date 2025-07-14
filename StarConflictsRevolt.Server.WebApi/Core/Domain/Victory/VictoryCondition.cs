@@ -1,4 +1,7 @@
-namespace StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Players;
+
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Victory;
 
 public class VictoryCondition
 {

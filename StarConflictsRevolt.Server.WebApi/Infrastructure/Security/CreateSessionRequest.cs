@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Security;
+﻿namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
 public class CreateSessionRequest
 {

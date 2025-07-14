@@ -1,6 +1,8 @@
-﻿using StarConflictsRevolt.Server.WebApi.Enums;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using Planet = StarConflictsRevolt.Server.WebApi.Core.Domain.Planets.Planet;
 
-namespace StarConflictsRevolt.Server.WebApi.Models;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
 
 public record Structure(
     StructureVariant Variant,

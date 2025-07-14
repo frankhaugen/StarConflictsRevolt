@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
+﻿namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
 public enum AiStrategyPhase
 {

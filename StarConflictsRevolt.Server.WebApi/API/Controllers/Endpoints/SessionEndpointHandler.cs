@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Security;
-using StarConflictsRevolt.Server.WebApi.Services;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
-namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
+namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
 
 /// <summary>
 ///     Handles session management endpoints

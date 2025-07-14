@@ -3,10 +3,15 @@ using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Services;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

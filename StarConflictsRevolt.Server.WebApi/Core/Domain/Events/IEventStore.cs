@@ -1,4 +1,4 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Eventing;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public interface IEventStore : IAsyncDisposable
 {

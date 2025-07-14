@@ -1,10 +1,12 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 /// <summary>
 ///     Manages SessionAggregate instances and provides a DI-friendly interface.

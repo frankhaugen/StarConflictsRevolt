@@ -4,16 +4,16 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
-using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Eventing;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Security;
-using StarConflictsRevolt.Server.WebApi.Services;
-using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
-using StarConflictsRevolt.Server.WebApi.Services.Combat;
+using StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
-namespace StarConflictsRevolt.Server.WebApi.Helpers;
+namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
 public static class StartupHelper
 {

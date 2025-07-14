@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class EventBroadcastService : BackgroundService
 {

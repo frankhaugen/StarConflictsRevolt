@@ -1,10 +1,8 @@
-﻿using StarConflictsRevolt.Server.WebApi.Models;
-
-namespace StarConflictsRevolt.Server.WebApi.Eventing;
+﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public interface IGameEvent
 {
-    void ApplyTo(World world, ILogger logger);
+    void ApplyTo(World.World world, ILogger logger);
 }
 
 // --- Concrete Game Events ---

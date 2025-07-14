@@ -1,7 +1,7 @@
-﻿using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Models.Combat;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 
-namespace StarConflictsRevolt.Server.WebApi.Services.Combat;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 
 public interface IDeathStarRunSimulator
 {

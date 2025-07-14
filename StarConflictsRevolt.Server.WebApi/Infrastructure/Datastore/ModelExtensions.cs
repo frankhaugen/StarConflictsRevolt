@@ -1,11 +1,11 @@
-﻿using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
+namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 
 // Mostly mapping extensions for Models into Entities
 public static class ModelExtensions
 {
-    public static Fleet ToEntity(this Models.Fleet model)
+    public static Fleet ToEntity(this Core.Domain.Fleets.Fleet model)
     {
         return new Fleet
         {
@@ -15,7 +15,7 @@ public static class ModelExtensions
         };
     }
 
-    public static Ship ToEntity(this Models.Ship model)
+    public static Ship ToEntity(this Core.Domain.Fleets.Ship model)
     {
         return new Ship
         {
@@ -25,7 +25,7 @@ public static class ModelExtensions
         };
     }
 
-    public static Planet ToEntity(this Models.Planet model)
+    public static Planet ToEntity(this Core.Domain.Planets.Planet model)
     {
         // Only map persistent properties; Fleets and Structures are not persisted directly
         return new Planet
@@ -40,7 +40,7 @@ public static class ModelExtensions
         };
     }
 
-    public static StarSystem ToEntity(this Models.StarSystem model)
+    public static StarSystem ToEntity(this Core.Domain.Stars.StarSystem model)
     {
         return new StarSystem
         {
@@ -51,7 +51,7 @@ public static class ModelExtensions
         };
     }
 
-    public static Session ToEntity(this Models.Session model)
+    public static Session ToEntity(this Core.Domain.Sessions.Session model)
     {
         return new Session
         {

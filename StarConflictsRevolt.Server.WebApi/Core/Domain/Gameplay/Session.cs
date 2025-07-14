@@ -1,6 +1,7 @@
-﻿using StarConflictsRevolt.Server.WebApi.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
 public class Session : IGameObject
 {

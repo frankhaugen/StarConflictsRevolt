@@ -1,4 +1,4 @@
-﻿using StarConflictsRevolt.Server.WebApi.Eventing;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 

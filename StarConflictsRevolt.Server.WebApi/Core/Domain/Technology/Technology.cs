@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Server.WebApi.Models;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Technology;
 
 public class Technology
 {

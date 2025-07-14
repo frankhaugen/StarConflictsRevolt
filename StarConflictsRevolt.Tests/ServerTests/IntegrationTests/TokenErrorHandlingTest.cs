@@ -3,10 +3,11 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models.Authentication;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
 using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using Session = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Session;
+using Session = StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay.Session;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 

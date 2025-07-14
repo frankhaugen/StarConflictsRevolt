@@ -3,11 +3,12 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi.Datastore;
-using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
-using StarConflictsRevolt.Server.WebApi.Security;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
-namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
+namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
 
 /// <summary>
 ///     Handles authentication and token endpoints

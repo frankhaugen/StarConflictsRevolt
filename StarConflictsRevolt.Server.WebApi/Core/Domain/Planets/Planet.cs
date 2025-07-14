@@ -1,4 +1,8 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Models;
+﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using Fleet = StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets.Fleet;
+using Structure = StarConflictsRevolt.Server.WebApi.Core.Domain.Structures.Structure;
+
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 
 public record Planet(
     string Name,

@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
+namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
 
 /// <summary>
 ///     Handles health check and status endpoints

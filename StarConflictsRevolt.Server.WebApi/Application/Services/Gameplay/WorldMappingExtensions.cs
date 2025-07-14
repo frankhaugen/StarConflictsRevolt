@@ -1,7 +1,10 @@
 ﻿using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public static class WorldMappingExtensions
 {

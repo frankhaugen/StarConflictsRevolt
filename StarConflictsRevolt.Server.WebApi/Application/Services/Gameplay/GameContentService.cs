@@ -1,8 +1,13 @@
-using StarConflictsRevolt.Server.WebApi.Enums;
-using StarConflictsRevolt.Server.WebApi.Models;
-using VictoryCondition = StarConflictsRevolt.Server.WebApi.Models.VictoryCondition;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Resources;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Technology;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Victory;
+using VictoryCondition = StarConflictsRevolt.Server.WebApi.Core.Domain.Victory.VictoryCondition;
 
-namespace StarConflictsRevolt.Server.WebApi.Services;
+namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class GameContentService
 {

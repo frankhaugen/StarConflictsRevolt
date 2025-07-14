@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 
-namespace StarConflictsRevolt.Server.WebApi.Models;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
 
 public record StarSystem(
     Guid Id,

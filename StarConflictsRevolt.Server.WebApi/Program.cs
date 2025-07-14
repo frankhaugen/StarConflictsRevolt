@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using StarConflictsRevolt.Aspire.ServiceDefaults;
-using StarConflictsRevolt.Server.WebApi.Helpers;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
