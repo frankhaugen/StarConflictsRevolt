@@ -1,0 +1,9 @@
+﻿namespace StarConflictsRevolt.Server.WebApi.Models.Combat;
+
+public class CombatReward
+{
+    public RewardType Type { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int Value { get; set; }
+    public Guid? TargetId { get; set; }
+}

@@ -1,26 +1,5 @@
 namespace StarConflictsRevolt.Server.WebApi.Models;
 
-public enum AiDecisionType
-{
-    MoveFleet,
-    BuildStructure,
-    Attack,
-    Defend,
-    Expand,
-    Research,
-    Trade,
-    Diplomacy
-}
-
-public enum AiPriority
-{
-    Critical = 100,
-    High = 75,
-    Medium = 50,
-    Low = 25,
-    Minimal = 10
-}
-
 public class AiDecision
 {
     public Guid Id { get; set; } = Guid.NewGuid();

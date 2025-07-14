@@ -1,25 +1,5 @@
 namespace StarConflictsRevolt.Server.WebApi.Models;
 
-public enum AiGoalType
-{
-    Expand,
-    Defend,
-    Attack,
-    Build,
-    Research,
-    Trade,
-    Survive,
-    Dominate
-}
-
-public enum GoalTimeframe
-{
-    Immediate,   // This turn
-    ShortTerm,   // Next 5 turns
-    MediumTerm,  // Next 20 turns
-    LongTerm     // Next 100 turns
-}
-
 public class AiGoal
 {
     public Guid Id { get; set; } = Guid.NewGuid();

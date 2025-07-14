@@ -103,25 +103,4 @@ public class VictoryCondition
     };
 }
 
-public enum VictoryType
-{
-    Military,
-    Economic,
-    Technology,
-    Time,
-    Diplomatic
-}
-
 // Helper classes for victory condition checking
-public class PlayerState
-{
-    public Guid PlayerId { get; set; }
-    public int Credits { get; set; }
-    public List<string> ResearchedTechnologies { get; set; } = new();
-}
-
-public class GameState
-{
-    public int CurrentTurn { get; set; }
-    public World World { get; set; } = new();
-} 

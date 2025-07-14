@@ -12,14 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
-    </list>
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,6 +48,7 @@
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Models/Planet.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
@@ -228,7 +222,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="14628000" />
+      <workItem from="1752432073576" duration="14940000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -552,7 +546,21 @@
       <option name="presentableId" value="LOCAL−00046" />
       <updated>1752490242095</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL−00047" summary="Refactor integration tests to improve token handling and enhance service registrations">
+      <option name="closed" value="true" />
+      <created>1752491150934</created>
+      <option name="number" value="LOCAL−00047" />
+      <option name="presentableId" value="LOCAL−00047" />
+      <updated>1752491150934</updated>
+    </task>
+    <task id="LOCAL−00048" summary="Refactor API endpoint handling into a modular structure for improved organization and maintainability">
+      <option name="closed" value="true" />
+      <created>1752491803588</created>
+      <option name="number" value="LOCAL−00048" />
+      <option name="presentableId" value="LOCAL−00048" />
+      <updated>1752491803588</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -572,8 +580,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add isolation tests for hosted services and update database name validation" />
-    <MESSAGE value="Update workspace configuration to reflect recent test additions and modifications" />
     <MESSAGE value="Enhance hosted services isolation tests with in-memory database setup and mock event store" />
     <MESSAGE value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
     <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
@@ -597,7 +603,9 @@
     <MESSAGE value="Add victory conditions and technology system with resource management" />
     <MESSAGE value="Update workspace configuration to reflect recent changes in victory conditions and resource management" />
     <MESSAGE value="Add combat simulation framework with Death Star mechanics and combat services" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add combat simulation framework with Death Star mechanics and combat services" />
+    <MESSAGE value="Refactor integration tests to improve token handling and enhance service registrations" />
+    <MESSAGE value="Refactor API endpoint handling into a modular structure for improved organization and maintainability" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor API endpoint handling into a modular structure for improved organization and maintainability" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

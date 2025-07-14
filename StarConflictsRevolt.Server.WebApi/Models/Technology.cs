@@ -215,12 +215,3 @@ public class Technology
         Prerequisites = new List<string> { "Advanced Construction" }
     };
 }
-
-public enum TechnologyCategory
-{
-    Combat,
-    Defense,
-    Propulsion,
-    Economy,
-    Industry
-} 

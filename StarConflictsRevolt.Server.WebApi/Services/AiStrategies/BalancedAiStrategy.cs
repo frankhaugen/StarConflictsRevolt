@@ -522,12 +522,3 @@ public class BalancedAiStrategy : BaseAiStrategy
         return allPlanets[_random.Next(allPlanets.Count)];
     }
 }
-
-public enum AiStrategyPhase
-{
-    EarlyGame,
-    MidGame,
-    LateGame,
-    Defensive,
-    Aggressive
-} 
