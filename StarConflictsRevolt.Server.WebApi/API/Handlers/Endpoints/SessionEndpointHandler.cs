@@ -25,7 +25,20 @@ public static class SessionEndpointHandler
                     return;
                 }
 
-                await context.Response.WriteAsJsonAsync(world.ToDto(), context.RequestAborted);
+                // TODO: Replace with actual player ID extraction from auth context
+                Guid? playerId = null;
+                var user = context.User;
+                if (user.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type == "nameidentifier");
+                    if (idClaim != null && Guid.TryParse(idClaim.Value, out var parsedId))
+                        playerId = parsedId;
+                }
+                // For now, fallback to first player if not found
+                if (!playerId.HasValue && world.Players.Count > 0)
+                    playerId = world.Players[0].PlayerId;
+
+                await context.Response.WriteAsJsonAsync(world.ToDto(playerId), context.RequestAborted);
             })
             .WithName("GetGameState")
             .RequireAuthorization();
@@ -102,13 +115,14 @@ public static class SessionEndpointHandler
                 var sessions = await dbContext.Sessions
                     .Where(s => s.IsActive)
                     .OrderByDescending(s => s.Created)
-                    .Select(s => new
+                    .Select(s => new SessionDto()
                     {
-                        s.Id,
-                        s.SessionName,
-                        s.Created,
-                        s.SessionType,
-                        PlayerCount = 0 // TODO: Add player count tracking
+                        Id = s.Id,
+                        SessionName = s.SessionName,
+                        Created = s.Created,
+                        SessionType = s.SessionType.ToString(),
+                        Ended = s.Ended,
+                        IsActive = s.IsActive
                     })
                     .ToListAsync(context.RequestAborted);
 
@@ -130,13 +144,14 @@ public static class SessionEndpointHandler
                 var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
                 var session = await dbContext.Sessions
                     .Where(s => s.Id == sessionId && s.IsActive)
-                    .Select(s => new
+                    .Select(s => new SessionDto()
                     {
-                        s.Id,
-                        s.SessionName,
-                        s.Created,
-                        s.SessionType,
-                        PlayerCount = 0 // TODO: Add player count tracking
+                        Id = s.Id,
+                        SessionName = s.SessionName,
+                        Created = s.Created,
+                        SessionType = s.SessionType.ToString(),
+                        Ended = s.Ended,
+                        IsActive = s.IsActive
                     })
                     .FirstOrDefaultAsync(context.RequestAborted);
 

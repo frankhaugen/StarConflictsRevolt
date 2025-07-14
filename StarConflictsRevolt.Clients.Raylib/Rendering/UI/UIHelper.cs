@@ -180,6 +180,33 @@ public static class UIHelper
         }
     }
 
+    public static void DrawResourceBar(int x, int y, int width, int height, GameStateInfoDto? playerState)
+    {
+        DrawPanel(x, y, width, height, Colors.Panel, Colors.Primary);
+        var padding = 16;
+        var iconSize = 24;
+        var fontSize = FontSizes.Medium;
+        int currentX = x + padding;
+        int currentY = y + (height - iconSize) / 2;
+
+        // Credits
+        Graphics.DrawText("⦿", currentX, currentY, iconSize, Colors.Warning); // Placeholder icon
+        currentX += iconSize + 8;
+        Graphics.DrawText($"Credits: {playerState?.Credits ?? 0}", currentX, currentY, fontSize, Colors.Light);
+        currentX += 120;
+
+        // Materials
+        Graphics.DrawText("■", currentX, currentY, iconSize, Colors.Success); // Placeholder icon
+        currentX += iconSize + 8;
+        Graphics.DrawText($"Materials: {playerState?.Materials ?? 0}", currentX, currentY, fontSize, Colors.Light);
+        currentX += 140;
+
+        // Fuel
+        Graphics.DrawText("▲", currentX, currentY, iconSize, Colors.Accent); // Placeholder icon
+        currentX += iconSize + 8;
+        Graphics.DrawText($"Fuel: {playerState?.Fuel ?? 0}", currentX, currentY, fontSize, Colors.Light);
+    }
+
     public static class Colors
     {
         public static Color Primary = new(52, 152, 219, 255);
@@ -191,6 +218,7 @@ public static class UIHelper
         public static Color Light = new(236, 240, 241, 255);
         public static Color Background = new(26, 26, 26, 255);
         public static Color Panel = new(52, 73, 94, 255);
+        public static Color Accent = new(255, 195, 0, 255); // Sci-fi yellow/orange
     }
 
     public static class FontSizes

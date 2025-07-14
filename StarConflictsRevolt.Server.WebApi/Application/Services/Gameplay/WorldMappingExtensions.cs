@@ -8,9 +8,21 @@ namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public static class WorldMappingExtensions
 {
-    public static WorldDto ToDto(this World world)
+    public static WorldDto ToDto(this World world, Guid? playerId = null)
     {
-        return new WorldDto(world.Id, world.Galaxy.ToDto());
+        GameStateInfoDto? playerStateDto = null;
+        if (playerId.HasValue && world.PlayerStates.TryGetValue(playerId.Value, out var playerState))
+        {
+            playerStateDto = new GameStateInfoDto
+            {
+                PlayerId = playerState.PlayerId,
+                PlayerName = world.Players.FirstOrDefault(p => p.PlayerId == playerState.PlayerId)?.Name ?? "Unknown",
+                Credits = playerState.Credits,
+                Materials = playerState.Materials,
+                Fuel = playerState.Fuel
+            };
+        }
+        return new WorldDto(world.Id, world.Galaxy.ToDto(), playerStateDto);
     }
 
     public static GalaxyDto ToDto(this Galaxy galaxy)

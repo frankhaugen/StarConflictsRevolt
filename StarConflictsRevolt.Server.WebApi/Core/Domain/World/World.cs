@@ -29,6 +29,7 @@ public class World
     public Guid Id { get; set; }
     public Galaxy Galaxy { get; set; }
     public List<PlayerController> Players { get; set; }
+    public Dictionary<Guid, Players.PlayerState> PlayerStates { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime? LastUpdated { get; set; }
     public bool IsActive { get; set; }

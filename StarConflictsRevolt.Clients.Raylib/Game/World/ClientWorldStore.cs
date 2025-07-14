@@ -1,15 +1,24 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Raylib.Core;
 
 namespace StarConflictsRevolt.Clients.Raylib.Game.World;
 
-public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldStore
+public class ClientWorldStore : IClientWorldStore
 {
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    private readonly RenderContext _renderContext;
+    private readonly ILogger<ClientWorldStore> logger;
+    public ClientWorldStore(ILogger<ClientWorldStore> logger, RenderContext renderContext)
+    {
+        this.logger = logger;
+        _renderContext = renderContext;
+    }
 
     private readonly List<WorldDto?> _history = new();
     private WorldDto? _current;
@@ -52,6 +61,9 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
                 StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
             }
         };
+
+        // Update player state in GameState if available
+        _renderContext.GameState.PlayerState = world.PlayerState;
 
         logger.LogInformation("World applied successfully. Current world: {WorldId}, StarSystems: {StarSystemCount}",
             _current.Id, _current.Galaxy?.StarSystems?.Count() ?? 0);

@@ -31,6 +31,9 @@ public class GalaxyView : IView
     {
         Graphics.ClearBackground(UIHelper.Colors.Background);
 
+        // Draw resource bar (HUD)
+        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, _renderContext.GameState.PlayerState);
+
         var currentWorld = _renderContext.World;
         _logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
             currentWorld?.Id, currentWorld?.Galaxy != null, currentWorld?.Galaxy?.StarSystems?.Count() ?? 0);

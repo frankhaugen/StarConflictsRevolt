@@ -30,6 +30,7 @@ public class GameState
 
     // Game data
     public WorldDto? World { get; set; }
+    public GameStateInfoDto? PlayerState { get; set; }
 
     public bool HasExpiredFeedback => FeedbackExpiry.HasValue && DateTime.UtcNow > FeedbackExpiry.Value;
 
