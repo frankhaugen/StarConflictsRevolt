@@ -43,27 +43,6 @@ public class AiTurnService : BackgroundService
     {
         _logger.LogInformation("AiTurnService starting...");
         
-        // Start the tick processing loop
-        var tickProcessingTask = ProcessTicksAsync(stoppingToken);
-        
-        try
-        {
-            // Wait for cancellation
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-            _logger.LogInformation("AiTurnService cancellation requested.");
-        }
-        finally
-        {
-            _logger.LogInformation("AiTurnService exiting.");
-            await tickProcessingTask;
-        }
-    }
-
-    private async Task ProcessTicksAsync(CancellationToken stoppingToken)
-    {
         while (await _tickChannelReader.WaitToReadAsync(stoppingToken))
         {
             try
@@ -77,7 +56,7 @@ public class AiTurnService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing tick");
+                _logger.LogError(ex, "Error processing tick: {Message}", ex.Message);
             }
         }
     }

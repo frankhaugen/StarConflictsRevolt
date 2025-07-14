@@ -80,7 +80,7 @@ public class GameTickServiceTest
                 ticks1.Add(tick);
                 if (ticks1.Count >= 5) break;
             }
-        });
+        }, cancellationToken);
 
         var task2 = Task.Run(async () =>
         {
@@ -90,10 +90,12 @@ public class GameTickServiceTest
                 ticks2.Add(tick);
                 if (ticks2.Count >= 5) break;
             }
-        });
+        }, cancellationToken);
+        
+        await Task.Delay(1000, cancellationToken); // Allow some time for ticks to be published
 
         // Act: Wait for both subscribers to receive ticks
-        await Task.WhenAll(task1, task2).WaitAsync(TimeSpan.FromSeconds(3));
+        await Task.WhenAll(task1, task2).WaitAsync(TimeSpan.FromSeconds(3), cancellationToken);
 
         // Assert: Both subscribers should receive the same ticks
         await Assert.That(ticks1.Count).IsEqualTo(5);
@@ -128,7 +130,7 @@ public class GameTickServiceTest
         });
 
         // Act: Wait for ticks
-        await tickTask.WaitAsync(TimeSpan.FromSeconds(2));
+        await tickTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
 
         // Assert: Should have received enough ticks
         await Assert.That(tickTimestamps.Count).IsGreaterThanOrEqualTo(11);

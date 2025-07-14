@@ -61,13 +61,8 @@ public static class StartupHelper
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
 
-        // Register CommandQueue with factory to handle circular dependency
-        builder.Services.AddSingleton<CommandQueue>(serviceProvider =>
-        {
-            var logger = serviceProvider.GetRequiredService<ILogger<CommandQueue>>();
-            var gameUpdateService = serviceProvider.GetService<GameUpdateService>();
-            return new CommandQueue(logger, gameUpdateService);
-        });
+        // Register CommandQueue
+        builder.Services.AddSingleton<CommandQueue>();
 
         // Register hosted services
         builder.Services.AddHostedService<GameTickService>();

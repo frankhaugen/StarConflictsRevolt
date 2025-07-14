@@ -7,12 +7,10 @@ public class CommandQueue
 {
     private readonly ILogger<CommandQueue> _logger;
     private readonly ConcurrentDictionary<GameSessionId, ConcurrentQueue<GameCommandMessage>> _queues = new();
-    private readonly GameUpdateService? _gameUpdateService;
 
-    public CommandQueue(ILogger<CommandQueue> logger, GameUpdateService? gameUpdateService = null)
+    public CommandQueue(ILogger<CommandQueue> logger)
     {
         _logger = logger;
-        _gameUpdateService = gameUpdateService;
     }
 
     public void Enqueue(GameSessionId sessionId, IGameEvent command)
@@ -26,9 +24,6 @@ public class CommandQueue
         var queue = _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<GameCommandMessage>());
         queue.Enqueue(commandMessage);
         _logger.LogInformation("Enqueued command {CommandType} for session {SessionId}", command?.GetType().Name, sessionId);
-        
-        // Notify GameUpdateService that this session has commands to process
-        _gameUpdateService?.NotifySessionHasCommands(sessionId);
     }
 
     public void Enqueue(Guid sessionId, IGameEvent command)
