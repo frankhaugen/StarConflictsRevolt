@@ -37,6 +37,9 @@ public static class ServiceCollectionExtensions
 
         // Register core services
         services.AddSingleton<IClientWorldStore, ClientWorldStore>();
+        services.AddSingleton<IUIRenderer, RaylibUIRenderer>();
+        services.AddSingleton<IInputState, InputState>();
+        services.AddSingleton<UIManager>();
         services.AddSingleton<IGameRenderer, RaylibRenderer>();
         services.AddSingleton<IViewFactory, ViewFactory>();
         services.AddSingleton<RenderContext>();
