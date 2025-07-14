@@ -169,11 +169,11 @@ public static class AuthEndpointHandler
 
             // Return JSON payload consistent with OAuth conventions and test expectations
             await context.Response.WriteAsJsonAsync(
-                new
+                new TokenResponse()
                 {
-                    access_token = tokenString,
-                    token_type = "Bearer",
-                    expires_in = 3600
+                    AccessToken = tokenString,
+                    TokenType = TokenType.Bearer,
+                    ExpiresAt = now.AddHours(1)
                 },
                 context.RequestAborted);
         }).AllowAnonymous();

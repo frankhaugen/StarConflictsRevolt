@@ -14,6 +14,8 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.Channels.DependencyInjection;
 using Frank.PulseFlow;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
@@ -33,6 +35,7 @@ public static class StartupHelper
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
+        builder.Services.AddSingleton<GameUpdateService>();
         
         // Register AI memory bank
         builder.Services.AddSingleton<AiMemoryBank>();
@@ -46,6 +49,7 @@ public static class StartupHelper
 
         // Register default AI strategy
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
+        builder.Services.AddSingleton<AiTurnService>();
         builder.Services.AddScoped<GameSetupService>();
         builder.Services.AddScoped<GameContentService>();
 
@@ -54,6 +58,7 @@ public static class StartupHelper
         builder.Services.AddScoped<IFleetCombatSimulator, FleetCombatSimulator>();
         builder.Services.AddScoped<IPlanetaryCombatSimulator, PlanetaryCombatSimulator>();
         builder.Services.AddScoped<IDeathStarRunSimulator, DeathStarRunSimulator>();
+        builder.Services.AddScoped<IMissionSimulator, MissionSimulator>();
         builder.Services.AddScoped<ITargetSelector, TargetSelector>();
         builder.Services.AddScoped<IAttackResolver, AttackResolver>();
         builder.Services.AddScoped<ICombatEndChecker, CombatEndChecker>();
@@ -187,5 +192,50 @@ public static class StartupHelper
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
+    }
+}
+
+public class MissionSimulator : IMissionSimulator
+{
+    /// <inheritdoc />
+    public CombatResult SimulateMission(Mission mission, Character agent, Planet target)
+    {
+        return null;
+    }
+
+    /// <inheritdoc />
+    public double CalculateMissionDifficulty(Mission mission, Planet target, Character agent)
+    {
+        return 0;
+    }
+
+    /// <inheritdoc />
+    public double CalculateSkillBonus(Character agent, MissionType missionType)
+    {
+        return 0;
+    }
+
+    /// <inheritdoc />
+    public double CalculateEnvironmentalModifier(Planet target)
+    {
+        return 0;
+    }
+
+    /// <inheritdoc />
+    public double CalculateSuccessChance(int difficulty, double skillBonus, double environmentalModifier)
+    {
+        return 0;
+    }
+
+    /// <inheritdoc />
+    public List<MissionReward> CalculateRewards(Mission mission, bool success, Character agent)
+    {
+        return null;
+    }
+
+    /// <inheritdoc />
+    public List<MissionConsequence> ApplyMissionConsequences(Mission mission, bool success, Planet target)
+    {
+        return null;
     }
 }

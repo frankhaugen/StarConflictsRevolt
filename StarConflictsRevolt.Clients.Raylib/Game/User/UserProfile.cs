@@ -1,5 +1,6 @@
 ﻿using System.DirectoryServices.AccountManagement;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Principal;
 
 namespace StarConflictsRevolt.Clients.Raylib.Game.User;
@@ -13,8 +14,71 @@ public record UserProfile
     // Helper method to get Windows user profile
     public static UserProfile GetUserProfile()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return GetWindowsUserProfile();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return GetLinuxUserProfile();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            // Implement macOS user profile retrieval if needed
+            return new UserProfile
+            {
+                UserId = Guid.Empty.ToString(),
+                DisplayName = "macOS User",
+                UserName = Environment.UserName
+            };
+        }
+
+        // Fallback for unsupported platforms
+        return new UserProfile
+        {
+            UserId = Guid.Empty.ToString(),
+            DisplayName = "Unknown User",
+            UserName = "Unknown"
+        };
+    }
+
+    [SupportedOSPlatform("linux")]
+    private static UserProfile GetLinuxUserProfile()
+    {
         try
         {
+            // Get the current Linux user
+            var name = Environment.UserName;
+            if (string.IsNullOrEmpty(name))
+            {
+                name = "Unknown User";
+            }
+            var userId = Environment.GetEnvironmentVariable("USER") ?? name;
+            var displayName = name; // Fallback to username if no display name is available
+
+            return new UserProfile
+            {
+                UserId = userId,
+                DisplayName = displayName,
+                UserName = name
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to get Linux user: {ex.Message}");
+            return new UserProfile
+            {
+                UserId = Guid.Empty.ToString(),
+                DisplayName = "Unknown User",
+                UserName = "Unknown"
+            };
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static UserProfile GetWindowsUserProfile()
+    {
+        try
+        {
+            // Get the current Windows identity
             var identity = WindowsIdentity.GetCurrent();
             var name = identity?.Name ?? "Unknown User";
 
