@@ -24,8 +24,8 @@ public static class StartupHelper
         // Set minimum log level to Debug for all loggers
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
-        // Add Frank.Channels.DependencyInjection for GameTick channel
-        builder.Services.AddChannel<GameTickMessage>();
+        // Add Frank.PulseFlow for GameTick pulse
+        builder.Services.AddPulse<GameTickMessage>();
         
         // Add core services
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();

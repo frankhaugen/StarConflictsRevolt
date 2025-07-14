@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using Frank.PulseFlow;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -13,7 +14,7 @@ public class AiTurnService : BackgroundService
     private readonly IEventStore _eventStore;
     private readonly ILogger<AiTurnService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-    private readonly ChannelReader<GameTickMessage> _tickChannelReader;
+    private readonly IPulse<GameTickMessage> _pulse;
     private readonly Dictionary<GameSessionId, AiSessionState> _sessionStates = new();
     private readonly object _sessionStatesLock = new();
 
@@ -29,25 +30,25 @@ public class AiTurnService : BackgroundService
         SessionAggregateManager aggregateManager,
         CommandQueue commandQueue,
         IAiStrategy aiStrategy,
-        ChannelReader<GameTickMessage> tickChannelReader)
+        IPulse<GameTickMessage> pulse)
     {
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
         _aiStrategy = aiStrategy;
-        _tickChannelReader = tickChannelReader;
+        _pulse = pulse;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("AiTurnService starting...");
         
-        while (await _tickChannelReader.WaitToReadAsync(stoppingToken))
+        var subscription = _pulse.Subscribe();
+        await foreach (var tick in subscription.WithCancellation(stoppingToken))
         {
             try
             {
-                var tick = await _tickChannelReader.ReadAsync(stoppingToken);
                 await ProcessTickAsync(tick, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

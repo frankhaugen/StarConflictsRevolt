@@ -1,19 +1,19 @@
-using System.Threading.Channels;
+using Frank.PulseFlow;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class GameTickService : BackgroundService
 {
     private readonly ILogger<GameTickService> _logger;
-    private readonly ChannelWriter<GameTickMessage> _tickChannelWriter;
+    private readonly IPulse<GameTickMessage> _pulse;
     
     // Game timing configuration
     private const int TICKS_PER_SECOND = 10; // 10 ticks per second = 100ms per tick
 
-    public GameTickService(ILogger<GameTickService> logger, ChannelWriter<GameTickMessage> tickChannelWriter)
+    public GameTickService(ILogger<GameTickService> logger, IPulse<GameTickMessage> pulse)
     {
         _logger = logger;
-        _tickChannelWriter = tickChannelWriter;
+        _pulse = pulse;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -72,7 +72,7 @@ public class GameTickService : BackgroundService
                 Timestamp = new GameTimestamp(DateTime.UtcNow)
             };
 
-            await _tickChannelWriter.WriteAsync(tick, stoppingToken);
+            await _pulse.Publish(tick);
             
             _logger.LogDebug("Published tick {TickNumber}", tickNumber);
         }
@@ -82,26 +82,19 @@ public class GameTickService : BackgroundService
         }
     }
 
-    public ChannelReader<GameTickMessage> GetTickReader()
-    {
-        // Get the channel reader from the DI container
-        // This will be provided by Frank.Channels.DependencyInjection
-        throw new NotImplementedException("Use ChannelReader<GameTickMessage> from DI container instead of this method");
-    }
-
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("GameTickService stopping...");
         
         // Complete the channel writer
-        _tickChannelWriter.Complete();
+        // _pulse.Complete(); // Removed as per edit hint
         
         await base.StopAsync(cancellationToken);
     }
 
     public override void Dispose()
     {
-        _tickChannelWriter?.Complete();
+        // _pulse?.Complete(); // Removed as per edit hint
         base.Dispose();
     }
 } 
