@@ -12,7 +12,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Add victory conditions and technology system with resource management">
+      <change afterPath="$PROJECT_DIR$/DesignDocs/CombatSystem.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DesignDocs/MissionSystem.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/ResourceSystem.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/Technology.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/VictoryCondition.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/GameContentTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignDocs/TODOs.md" beforeDir="false" afterPath="$PROJECT_DIR$/DesignDocs/TODOs.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/GameSetup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/GameSetup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -50,6 +61,7 @@
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Models/Planet.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/appsettings.Development.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" root0="SKIP_HIGHLIGHTING" />
@@ -218,7 +230,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="13363000" />
+      <workItem from="1752432073576" duration="13613000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -541,7 +553,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum" />
     <MESSAGE value="Refactor integration tests to utilize TestHostApplication for improved HTTP client handling and remove manual token acquisition" />
     <MESSAGE value="Add integration tests for authentication and HTTP client configuration" />
     <MESSAGE value="Add isolation tests for hosted services and update database name validation" />
@@ -566,7 +577,8 @@
     <MESSAGE value="Add starting structure templates and implement balanced starting positions for players" />
     <MESSAGE value="Enhance error handling and logging in token management and session creation" />
     <MESSAGE value="Add AI strategies and memory management for enhanced decision-making" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add AI strategies and memory management for enhanced decision-making" />
+    <MESSAGE value="Add victory conditions and technology system with resource management" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add victory conditions and technology system with resource management" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
