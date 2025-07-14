@@ -1,4 +1,3 @@
-using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,7 +67,6 @@ public static class Extensions
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
-                    .AddSignalRInstrumentation()
                     .AddHttpClientInstrumentation();
             });
 
