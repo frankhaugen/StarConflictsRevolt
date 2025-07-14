@@ -1,4 +1,6 @@
+using System.Threading.Channels;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -11,95 +13,106 @@ public class AiTurnService : BackgroundService
     private readonly IEventStore _eventStore;
     private readonly ILogger<AiTurnService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
+    private readonly ChannelReader<GameTick> _tickChannelReader;
+    private readonly Dictionary<Guid, AiSessionState> _sessionStates = new();
+    private readonly object _sessionStatesLock = new();
+
+    // AI action rate limits based on difficulty
+    private const int AI_ACTIONS_PER_SECOND_EASY = 1;
+    private const int AI_ACTIONS_PER_SECOND_NORMAL = 2;
+    private const int AI_ACTIONS_PER_SECOND_HARD = 3;
+    private const int AI_ACTIONS_PER_SECOND_EXPERT = 5;
 
     public AiTurnService(
         ILogger<AiTurnService> logger,
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
         CommandQueue<IGameEvent> commandQueue,
-        IAiStrategy aiStrategy)
+        IAiStrategy aiStrategy,
+        ChannelReader<GameTick> tickChannelReader)
     {
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
         _aiStrategy = aiStrategy;
+        _tickChannelReader = tickChannelReader;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("AiTurnService starting...");
+        
+        // Start the tick processing loop
+        var tickProcessingTask = ProcessTicksAsync(stoppingToken);
+        
         try
         {
-            while (!stoppingToken.IsCancellationRequested)
-                try
-                {
-                    await ProcessAiTurnsWithTimeoutAsync(stoppingToken);
-                    await Task.Delay(5000, stoppingToken); // AI turns every 5 seconds
-                }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                {
-                    _logger.LogInformation("AiTurnService cancellation requested.");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in AiTurnService main loop");
-                    await Task.Delay(5000, stoppingToken);
-                }
+            // Wait for cancellation
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("AiTurnService cancellation requested.");
         }
         finally
         {
             _logger.LogInformation("AiTurnService exiting.");
+            await tickProcessingTask;
         }
     }
 
-    private async Task ProcessAiTurnsWithTimeoutAsync(CancellationToken stoppingToken)
+    private async Task ProcessTicksAsync(CancellationToken stoppingToken)
     {
-        // Create a timeout for this processing cycle
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(30)); // 30-second timeout per cycle
-
-        try
+        while (await _tickChannelReader.WaitToReadAsync(stoppingToken))
         {
-            await _operationSemaphore.WaitAsync(timeoutCts.Token);
             try
             {
-                var operationTask = ProcessAiTurnsAsync(timeoutCts.Token);
-                _activeOperations.Add(operationTask);
-
-                await operationTask;
-
-                _activeOperations.Remove(operationTask);
+                var tick = await _tickChannelReader.ReadAsync(stoppingToken);
+                await ProcessTickAsync(tick, stoppingToken);
             }
-            finally
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                _operationSemaphore.Release();
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing tick");
             }
         }
-        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
+    }
+
+    private async Task ProcessTickAsync(GameTick tick, CancellationToken stoppingToken)
+    {
+        var sessions = _aggregateManager.GetAllAggregates();
+        
+        foreach (var session in sessions)
         {
-            _logger.LogWarning("AI turn processing cycle timed out");
+            if (stoppingToken.IsCancellationRequested) break;
+            
+            try
+            {
+                await ProcessSessionAiTurnAsync(session.SessionId, tick, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AI turn for session {SessionId} on tick {TickNumber}", 
+                    session.SessionId, tick.TickNumber);
+            }
         }
     }
 
-    private async Task ProcessAiTurnsAsync(CancellationToken cancellationToken)
+    private async Task ProcessSessionAiTurnAsync(Guid sessionId, GameTick tick, CancellationToken stoppingToken)
     {
-        var aggregates = _aggregateManager.GetAllAggregates();
-        _logger.LogDebug("Processing AI turns for {AggregateCount} aggregates", aggregates.Count());
-
-        foreach (var sessionAggregate in aggregates)
+        var sessionState = GetOrCreateSessionState(sessionId);
+        var sessionAggregate = _aggregateManager.GetAggregate(sessionId);
+        
+        if (sessionAggregate == null)
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
-
-            await ProcessAiTurnForSessionAsync(sessionAggregate, cancellationToken);
+            _logger.LogWarning("Session aggregate not found for AI turn {SessionId}", sessionId);
+            return;
         }
-    }
 
-    private async Task ProcessAiTurnForSessionAsync(SessionAggregate sessionAggregate, CancellationToken cancellationToken)
-    {
-        var sessionId = sessionAggregate.SessionId;
         var world = sessionAggregate.World;
 
         // Only process AI turns for AI players (those with AiStrategy)
@@ -107,22 +120,62 @@ public class AiTurnService : BackgroundService
 
         if (!aiPlayers.Any())
         {
-            _logger.LogDebug("No AI players in session {SessionId}, skipping AI turn", sessionId);
             return;
         }
 
-        _logger.LogDebug("Processing AI turn for {AiPlayerCount} AI players in session {SessionId}", aiPlayers.Count, sessionId);
+        // Check if we should process AI actions based on difficulty and rate limiting
+        if (!ShouldProcessAiActions(sessionState, tick.TickNumber))
+        {
+            return;
+        }
+
+        _logger.LogDebug("Processing AI turn for {AiPlayerCount} AI players in session {SessionId} on tick {TickNumber}", 
+            aiPlayers.Count, sessionId, tick.TickNumber);
 
         foreach (var aiPlayer in aiPlayers)
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
+            if (stoppingToken.IsCancellationRequested) break;
 
-            await ProcessAiPlayerTurnAsync(sessionAggregate, aiPlayer, cancellationToken);
+            await ProcessAiPlayerTurnAsync(sessionAggregate, aiPlayer, stoppingToken);
         }
+
+        // Update session state
+        sessionState.LastAiTick = tick.TickNumber;
+        sessionState.LastAiActionTime = tick.Timestamp;
     }
 
-    private async Task ProcessAiPlayerTurnAsync(SessionAggregate sessionAggregate, PlayerController aiPlayer, CancellationToken cancellationToken)
+    private bool ShouldProcessAiActions(AiSessionState sessionState, long tickNumber)
+    {
+        var aiDifficulty = sessionState.AiDifficulty;
+        var actionsPerSecond = GetAiActionsPerSecond(aiDifficulty);
+        var ticksPerAction = 10 / actionsPerSecond; // 10 ticks per second
+        
+        // Ensure minimum interval between AI actions
+        if (tickNumber - sessionState.LastAiTick < ticksPerAction)
+        {
+            return false;
+        }
+
+        // Add some randomization to make AI behavior less predictable
+        var random = new Random((int)(tickNumber + sessionState.SessionId.GetHashCode()));
+        var randomFactor = random.NextDouble() * 0.5 + 0.75; // 0.75 to 1.25 multiplier
+        
+        return random.NextDouble() < (1.0 / ticksPerAction) * randomFactor;
+    }
+
+    private int GetAiActionsPerSecond(AiDifficulty difficulty)
+    {
+        return difficulty switch
+        {
+            AiDifficulty.Easy => AI_ACTIONS_PER_SECOND_EASY,
+            AiDifficulty.Normal => AI_ACTIONS_PER_SECOND_NORMAL,
+            AiDifficulty.Hard => AI_ACTIONS_PER_SECOND_HARD,
+            AiDifficulty.Expert => AI_ACTIONS_PER_SECOND_EXPERT,
+            _ => AI_ACTIONS_PER_SECOND_NORMAL
+        };
+    }
+
+    private async Task ProcessAiPlayerTurnAsync(SessionAggregate sessionAggregate, PlayerController aiPlayer, CancellationToken stoppingToken)
     {
         var sessionId = sessionAggregate.SessionId;
         var playerId = aiPlayer.PlayerId;
@@ -141,8 +194,7 @@ public class AiTurnService : BackgroundService
 
                 foreach (var command in commands)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                        break;
+                    if (stoppingToken.IsCancellationRequested) break;
 
                     _commandQueue.Enqueue(sessionId, command);
                     _logger.LogDebug("Queued AI command {CommandType} for player {PlayerId} in session {SessionId}",
@@ -154,7 +206,7 @@ public class AiTurnService : BackgroundService
                 _logger.LogDebug("AI player {PlayerId} generated no commands in session {SessionId}", playerId, sessionId);
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             _logger.LogWarning("AI turn processing cancelled for player {PlayerId} in session {SessionId}", playerId, sessionId);
             throw;
@@ -163,6 +215,63 @@ public class AiTurnService : BackgroundService
         {
             _logger.LogError(ex, "Error processing AI turn for player {PlayerId} in session {SessionId}", playerId, sessionId);
             // Don't throw - continue with other AI players
+        }
+    }
+
+    public void RegisterSession(Guid sessionId, AiDifficulty aiDifficulty = AiDifficulty.Normal)
+    {
+        lock (_sessionStatesLock)
+        {
+            _sessionStates[sessionId] = new AiSessionState
+            {
+                SessionId = sessionId,
+                AiDifficulty = aiDifficulty,
+                LastAiTick = 0,
+                LastAiActionTime = DateTime.UtcNow
+            };
+        }
+        
+        _logger.LogInformation("Registered AI session {SessionId} with difficulty {AiDifficulty}", sessionId, aiDifficulty);
+    }
+
+    public void UnregisterSession(Guid sessionId)
+    {
+        lock (_sessionStatesLock)
+        {
+            _sessionStates.Remove(sessionId);
+        }
+        
+        _logger.LogInformation("Unregistered AI session {SessionId}", sessionId);
+    }
+
+    public void UpdateAiDifficulty(Guid sessionId, AiDifficulty newDifficulty)
+    {
+        lock (_sessionStatesLock)
+        {
+            if (_sessionStates.TryGetValue(sessionId, out var state))
+            {
+                state.AiDifficulty = newDifficulty;
+                _logger.LogInformation("Updated AI difficulty for session {SessionId} to {AiDifficulty}", sessionId, newDifficulty);
+            }
+        }
+    }
+
+    private AiSessionState GetOrCreateSessionState(Guid sessionId)
+    {
+        lock (_sessionStatesLock)
+        {
+            if (!_sessionStates.TryGetValue(sessionId, out var state))
+            {
+                state = new AiSessionState
+                {
+                    SessionId = sessionId,
+                    AiDifficulty = AiDifficulty.Normal,
+                    LastAiTick = 0,
+                    LastAiActionTime = DateTime.UtcNow
+                };
+                _sessionStates[sessionId] = state;
+            }
+            return state;
         }
     }
 
@@ -193,4 +302,12 @@ public class AiTurnService : BackgroundService
         _operationSemaphore?.Dispose();
         base.Dispose();
     }
+}
+
+public class AiSessionState
+{
+    public Guid SessionId { get; set; }
+    public AiDifficulty AiDifficulty { get; set; }
+    public long LastAiTick { get; set; }
+    public DateTime LastAiActionTime { get; set; }
 }

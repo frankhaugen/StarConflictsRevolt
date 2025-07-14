@@ -12,6 +12,7 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
+using Frank.Channels.DependencyInjection;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
@@ -22,11 +23,15 @@ public static class StartupHelper
     {
         // Set minimum log level to Debug for all loggers
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
+        
+        // Add Frank.Channels.DependencyInjection for GameTick channel
+        builder.Services.AddChannel<GameTick>();
+        
         // Add core services
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
-        builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
+        
         // Register AI memory bank
         builder.Services.AddSingleton<AiMemoryBank>();
 
@@ -56,6 +61,16 @@ public static class StartupHelper
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
 
+        // Register CommandQueue with factory to handle circular dependency
+        builder.Services.AddSingleton<CommandQueue<IGameEvent>>(serviceProvider =>
+        {
+            var logger = serviceProvider.GetRequiredService<ILogger<CommandQueue<IGameEvent>>>();
+            var gameUpdateService = serviceProvider.GetService<GameUpdateService>();
+            return new CommandQueue<IGameEvent>(logger, gameUpdateService);
+        });
+
+        // Register hosted services
+        builder.Services.AddHostedService<GameTickService>();
         builder.Services.AddHostedService<GameUpdateService>();
         builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
@@ -67,6 +82,7 @@ public static class StartupHelper
             config.EnableDetailedErrors = true;
             config.MaximumReceiveMessageSize = 1024 * 1024; // 1 MB
         });
+        
         // Add CORS
         builder.Services.AddCors(options =>
         {
@@ -77,6 +93,7 @@ public static class StartupHelper
                     .AllowAnyHeader();
             });
         });
+        
         // Add OpenAPI
         builder.Services.AddOpenApi();
 
@@ -94,6 +111,7 @@ public static class StartupHelper
                     IssuerSigningKey = JwtConfig.GetSymmetricSecurityKey()
                 };
             });
+            
         // Add API versioning
         builder.Services.AddApiVersioning(options =>
         {

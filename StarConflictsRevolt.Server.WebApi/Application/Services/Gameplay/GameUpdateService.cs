@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Threading.Channels;
+using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
@@ -12,6 +13,7 @@ public class GameUpdateService : BackgroundService
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
+    private readonly Channel<Guid> _sessionNotificationChannel;
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext,
@@ -25,82 +27,67 @@ public class GameUpdateService : BackgroundService
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
+        _sessionNotificationChannel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = false
+        });
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("GameUpdateService starting...");
+        
+        // Start the session processing loop
+        var sessionProcessingTask = ProcessSessionsAsync(stoppingToken);
+        
         try
         {
-            while (!stoppingToken.IsCancellationRequested)
-                try
-                {
-                    await ProcessAggregatesWithTimeoutAsync(stoppingToken);
-                    await Task.Delay(1000, stoppingToken);
-                }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                {
-                    _logger.LogInformation("GameUpdateService cancellation requested.");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in GameUpdateService main loop");
-                    await Task.Delay(1000, stoppingToken);
-                }
+            // Wait for cancellation
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("GameUpdateService cancellation requested.");
         }
         finally
         {
             _logger.LogInformation("GameUpdateService exiting.");
+            await sessionProcessingTask;
         }
     }
 
-    private async Task ProcessAggregatesWithTimeoutAsync(CancellationToken stoppingToken)
+    private async Task ProcessSessionsAsync(CancellationToken stoppingToken)
     {
-        // Create a timeout for this processing cycle
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(30)); // 30-second timeout per cycle
-
-        try
+        var reader = _sessionNotificationChannel.Reader;
+        
+        while (await reader.WaitToReadAsync(stoppingToken))
         {
-            await _operationSemaphore.WaitAsync(timeoutCts.Token);
             try
             {
-                var operationTask = ProcessAggregatesAsync(timeoutCts.Token);
-                _activeOperations.Add(operationTask);
-
-                await operationTask;
-
-                _activeOperations.Remove(operationTask);
+                var sessionId = await reader.ReadAsync(stoppingToken);
+                await ProcessSessionAggregateAsync(sessionId, stoppingToken);
             }
-            finally
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                _operationSemaphore.Release();
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing session notification");
             }
         }
-        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
-        {
-            _logger.LogWarning("Aggregate processing cycle timed out");
-        }
     }
 
-    private async Task ProcessAggregatesAsync(CancellationToken cancellationToken)
+    private async Task ProcessSessionAggregateAsync(Guid sessionId, CancellationToken cancellationToken)
     {
-        var aggregates = _aggregateManager.GetAllAggregates();
-        _logger.LogDebug("Processing {AggregateCount} aggregates", aggregates.Count());
-
-        foreach (var sessionAggregate in aggregates)
+        var sessionAggregate = _aggregateManager.GetAggregate(sessionId);
+        if (sessionAggregate == null)
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
-
-            await ProcessSessionAggregateAsync(sessionAggregate, cancellationToken);
+            _logger.LogWarning("Session aggregate not found for {SessionId}", sessionId);
+            return;
         }
-    }
 
-    private async Task ProcessSessionAggregateAsync(SessionAggregate sessionAggregate, CancellationToken cancellationToken)
-    {
-        var sessionId = sessionAggregate.SessionId;
         _logger.LogDebug("Processing session {SessionId}", sessionId);
 
         var commandsProcessed = 0;
@@ -120,6 +107,18 @@ public class GameUpdateService : BackgroundService
 
         // Handle snapshots
         await HandleSnapshotAsync(sessionAggregate, cancellationToken);
+    }
+
+    public void NotifySessionHasCommands(Guid sessionId)
+    {
+        try
+        {
+            _sessionNotificationChannel.Writer.TryWrite(sessionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to notify session {SessionId} has commands", sessionId);
+        }
     }
 
     private async Task ProcessCommandAsync(SessionAggregate sessionAggregate, IGameEvent command, CancellationToken cancellationToken)
@@ -223,6 +222,9 @@ public class GameUpdateService : BackgroundService
     {
         _logger.LogInformation("GameUpdateService stopping...");
 
+        // Complete the channel writer
+        _sessionNotificationChannel.Writer.Complete();
+
         // Wait for active operations to complete with timeout
         if (_activeOperations.Count > 0)
             try
@@ -244,6 +246,7 @@ public class GameUpdateService : BackgroundService
     public override void Dispose()
     {
         _operationSemaphore?.Dispose();
+        _sessionNotificationChannel?.Writer?.Complete();
         base.Dispose();
     }
 }
