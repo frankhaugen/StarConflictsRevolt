@@ -9,6 +9,7 @@ using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
+using StarConflictsRevolt.Server.WebApi.Services.Combat;
 using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
@@ -39,6 +40,14 @@ public static class StartupHelper
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddScoped<GameSetupService>();
         builder.Services.AddScoped<GameContentService>();
+
+        // Register combat services
+        builder.Services.AddScoped<ICombatSimulator, CombatSimulatorService>();
+        builder.Services.AddScoped<IFleetCombatSimulator, FleetCombatSimulator>();
+        builder.Services.AddScoped<ITargetSelector, TargetSelector>();
+        builder.Services.AddScoped<IAttackResolver, AttackResolver>();
+        builder.Services.AddScoped<ICombatEndChecker, CombatEndChecker>();
+        builder.Services.AddScoped<ICombatResultCalculator, CombatResultCalculator>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
