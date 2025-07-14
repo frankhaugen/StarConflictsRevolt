@@ -29,7 +29,6 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
     private readonly GameCommandService _commandService = commandService;
     private List<SessionInfo>? _availableSessions;
     private int _menuState; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select, 5: session list
-    private string _playerName = "";
     private int _selectedSessionIndex;
     private string _selectedSessionType = "Multiplayer";
     private int _selectedView;
@@ -65,7 +64,7 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
             DrawSessionList();
 
         // Draw status bar
-        var playerName = renderContext.GameState.PlayerName ?? "Not set";
+        var playerName = renderContext.UserProfile?.DisplayName ?? renderContext.GameState.PlayerName ?? "Not set";
         var sessionName = renderContext.GameState.Session?.SessionName ?? "None";
         var sessionType = renderContext.GameState.Session?.SessionType ?? "None";
         UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName} ({sessionType}) | ESC/Backspace: Menu");
@@ -223,10 +222,8 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
         UIHelper.DrawText("Enter Player Details", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
 
         UIHelper.DrawText("Player Name:", centerX - 100, startY + 50, UIHelper.FontSizes.Medium, Color.White);
-        _playerName = UIHelper.DrawTextInput(_playerName, centerX - 100, startY + 80, 200, 30, "Enter player name");
-
         if (UIHelper.DrawButton("Join Session", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
-            if (!string.IsNullOrWhiteSpace(_playerName))
+            if (!string.IsNullOrWhiteSpace(_sessionId))
                 _ = JoinSession();
 
         if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary)) _menuState = 3;
@@ -279,6 +276,7 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
 
     private async Task JoinSession()
     {
+        var playerName = renderContext.UserProfile?.DisplayName ?? renderContext.GameState.PlayerName ?? "Not set";
         Console.WriteLine($"JoinSession called with _sessionId: '{_sessionId}'");
 
         if (Guid.TryParse(_sessionId, out var sessionGuid))
@@ -286,10 +284,10 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
             Console.WriteLine($"Successfully parsed session GUID: {sessionGuid}");
             try
             {
-                renderContext.GameState.SetFeedback($"Joining session {sessionGuid} as {_playerName}...", TimeSpan.FromSeconds(2));
+                renderContext.GameState.SetFeedback($"Joining session {sessionGuid} as {playerName}...", TimeSpan.FromSeconds(2));
 
                 // First join the session via HTTP
-                var sessionResponse = await httpApiClient.JoinSessionAsync(sessionGuid, _playerName);
+                var sessionResponse = await httpApiClient.JoinSessionAsync(sessionGuid, playerName);
 
                 if (sessionResponse != null)
                 {
@@ -303,7 +301,6 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
                         IsActive = true,
                         SessionType = _selectedSessionType
                     };
-                    renderContext.GameState.PlayerName = _playerName;
                     renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
 
                     // Apply the world data from the join response
@@ -313,7 +310,7 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
                     await signalRService.JoinSessionAsync(sessionGuid);
 
                     renderContext.GameState.NavigateTo(GameView.Galaxy);
-                    renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
+                    renderContext.GameState.SetFeedback($"Joined session as {playerName}", TimeSpan.FromSeconds(3));
                 }
                 else
                 {

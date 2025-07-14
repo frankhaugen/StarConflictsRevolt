@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Raylib.Game.User;
 using StarConflictsRevolt.Clients.Raylib.Game.World;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -61,4 +62,5 @@ public class RenderContext
     }
 
     public UIManager UIManager => _uiManager;
+    public UserProfile UserProfile { get; set; }
 }
