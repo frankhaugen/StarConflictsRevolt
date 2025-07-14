@@ -45,6 +45,8 @@ public static class StartupHelper
         // Register combat services
         builder.Services.AddScoped<ICombatSimulator, CombatSimulatorService>();
         builder.Services.AddScoped<IFleetCombatSimulator, FleetCombatSimulator>();
+        builder.Services.AddScoped<IPlanetaryCombatSimulator, PlanetaryCombatSimulator>();
+        builder.Services.AddScoped<IDeathStarRunSimulator, DeathStarRunSimulator>();
         builder.Services.AddScoped<ITargetSelector, TargetSelector>();
         builder.Services.AddScoped<IAttackResolver, AttackResolver>();
         builder.Services.AddScoped<ICombatEndChecker, CombatEndChecker>();
