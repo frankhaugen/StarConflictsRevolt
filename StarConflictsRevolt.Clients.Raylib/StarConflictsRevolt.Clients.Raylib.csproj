@@ -22,4 +22,11 @@
         <ProjectReference Include="..\StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj"/>
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Http\StarConflictsRevolt.Clients.Http.csproj"/>
     </ItemGroup>
+    
+    <ItemGroup>
+        <None Update="Assets\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
 </Project>

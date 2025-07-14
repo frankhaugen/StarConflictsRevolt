@@ -77,18 +77,18 @@ public class TacticalBattleView : IView
     {
         // Draw friendly fleet
         Graphics.DrawCircle(150, 280, 20, Color.Blue);
-        Graphics.DrawText("Fleet Alpha", 120, 310, 12, Color.White);
-        Graphics.DrawText("5 Ships", 120, 325, 10, Color.LightGray);
+        UIHelper.DrawText("Fleet Alpha", 120, 310, 12, Color.White);
+        UIHelper.DrawText("5 Ships", 120, 325, 10, Color.LightGray);
 
         // Draw enemy fleet
         Graphics.DrawCircle(350, 280, 20, Color.Red);
-        Graphics.DrawText("Enemy Fleet", 320, 310, 12, Color.White);
-        Graphics.DrawText("3 Ships", 320, 325, 10, Color.LightGray);
+        UIHelper.DrawText("Enemy Fleet", 320, 310, 12, Color.White);
+        UIHelper.DrawText("3 Ships", 320, 325, 10, Color.LightGray);
 
         // Draw neutral fleet
         Graphics.DrawCircle(550, 280, 20, Color.Green);
-        Graphics.DrawText("Neutral Fleet", 520, 310, 12, Color.White);
-        Graphics.DrawText("2 Ships", 520, 325, 10, Color.LightGray);
+        UIHelper.DrawText("Neutral Fleet", 520, 310, 12, Color.White);
+        UIHelper.DrawText("2 Ships", 520, 325, 10, Color.LightGray);
 
         // Draw battle lines
         Graphics.DrawLine(170, 280, 330, 280, Color.Yellow);

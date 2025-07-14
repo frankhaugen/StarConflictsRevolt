@@ -1,7 +1,10 @@
 using System.Numerics;
+using Raylib_CSharp;
 using Raylib_CSharp.Colors;
 using Raylib_CSharp.Camera.Cam2D;
 using Raylib_CSharp.Interact;
+using Raylib_CSharp.Rendering;
+using Raylib_CSharp.Windowing;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -18,8 +21,8 @@ public class UIManager
     
     // High resolution support
     public float DpiScale { get; private set; } = 1.0f;
-    public int BaseWidth { get; private set; } = 1920;
-    public int BaseHeight { get; private set; } = 1080;
+    public int BaseWidth { get; private set; } = 1920; // Default base width for 1080p
+    public int BaseHeight { get; private set; } = 1080; // Default base height for 1080p
     
     // Enhanced camera system
     private Camera2D _camera;
@@ -90,8 +93,20 @@ public class UIManager
         }
         
         // Update base dimensions
-        BaseWidth = (int)(screenWidth / DpiScale);
-        BaseHeight = (int)(screenHeight / DpiScale);
+        // BaseWidth = (int)(screenWidth / DpiScale);
+        // BaseHeight = (int)(screenHeight / DpiScale);
+        
+        // Adjust camera offset based on DPI scale
+        _camera.Offset = new Vector2(BaseWidth / 2f, BaseHeight / 2f) * DpiScale;
+        _camera.Zoom = DpiScale; // Set initial zoom based on DPI scale
+        CameraTarget = _camera.Target * DpiScale; // Center camera target based on DPI scale
+
+        var scaleDpi = Window.GetScaleDPI();
+        
+        // Set DPI scale in renderer
+        
+        
+        // _renderer.SetDpiScale(DpiScale);
     }
     
     public void RegisterView(IView view)

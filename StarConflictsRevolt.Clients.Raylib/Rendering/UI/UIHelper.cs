@@ -1,4 +1,6 @@
+using System.Numerics;
 using Raylib_CSharp.Colors;
+using Raylib_CSharp.Fonts;
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
@@ -8,6 +10,8 @@ namespace StarConflictsRevolt.Clients.Raylib.Rendering.UI;
 
 public static class UIHelper
 {
+    private static readonly Font _uiFont = FontHelper.Spaceman;
+    
     public static void DrawPanel(int x, int y, int width, int height, Color? backgroundColor = null, Color? borderColor = null)
     {
         var bg = backgroundColor ?? Colors.Panel;
@@ -22,8 +26,15 @@ public static class UIHelper
         // Prevent crashes from null or empty text
         if (string.IsNullOrEmpty(text)) return;
 
-        // TODO: Implement proper text centering when MeasureText is available
-        Graphics.DrawText(text, x, y, fontSize, color);
+        try
+        {
+            Graphics.DrawTextEx(_uiFont, text, new Vector2(x, y), fontSize, 1f, color);
+        }
+        catch (Exception e)
+        {
+            // Log the error but don't crash the application
+            Console.Error.WriteLine($"Error drawing text '{text}' at ({x}, {y}): {e.Message}");
+        }
     }
 
     public static bool DrawButton(string text, int x, int y, int width, int height, Color? backgroundColor = null, Color? textColor = null)
@@ -45,7 +56,7 @@ public static class UIHelper
         {
             var textX = x + 10; // Simple left alignment for now
             var textY = y + (height - FontSizes.Medium) / 2;
-            Graphics.DrawText(text, textX, textY, FontSizes.Medium, textCol);
+            DrawText(text, textX, textY, FontSizes.Medium, textCol);
         }
 
         return isPressed;
@@ -77,7 +88,7 @@ public static class UIHelper
         // Draw text or placeholder
         var displayText = string.IsNullOrEmpty(currentText) ? placeholder : currentText;
         var textColor = string.IsNullOrEmpty(currentText) ? Color.Gray : Color.Black;
-        if (!string.IsNullOrEmpty(displayText)) Graphics.DrawText(displayText, x + 5, y + (height - FontSizes.Medium) / 2, FontSizes.Medium, textColor);
+        if (!string.IsNullOrEmpty(displayText)) UIHelper.DrawText(displayText, x + 5, y + (height - FontSizes.Medium) / 2, FontSizes.Medium, textColor);
 
         // Draw cursor if focused
         if (isFocused && DateTime.UtcNow.Millisecond / 500 % 2 == 0)
@@ -130,7 +141,7 @@ public static class UIHelper
 
         Graphics.DrawRectangle(0, y, screenWidth, height, bg);
         Graphics.DrawRectangleLines(0, y, screenWidth, height, Colors.Light);
-        if (!string.IsNullOrEmpty(status)) Graphics.DrawText(status, 10, y + 5, FontSizes.Small, Color.White);
+        if (!string.IsNullOrEmpty(status)) UIHelper.DrawText(status, 10, y + 5, FontSizes.Small, Color.White);
     }
 
     public static void DrawInfoPanel(int x, int y, int width, int height, string title, List<(string Label, string Value)> info)
@@ -138,14 +149,14 @@ public static class UIHelper
         DrawPanel(x, y, width, height);
 
         // Draw title
-        if (!string.IsNullOrEmpty(title)) Graphics.DrawText(title, x + 10, y + 10, FontSizes.Large, Color.White);
+        if (!string.IsNullOrEmpty(title)) DrawText(title, x + 10, y + 10, FontSizes.Large, Color.White);
 
         // Draw info items
         var infoY = y + 40;
         foreach (var (label, value) in info)
         {
             var infoText = $"{label}: {value}";
-            if (!string.IsNullOrEmpty(infoText)) Graphics.DrawText(infoText, x + 10, infoY, FontSizes.Small, Color.White);
+            if (!string.IsNullOrEmpty(infoText)) DrawText(infoText, x + 10, infoY, FontSizes.Small, Color.White);
             infoY += 20;
         }
     }
@@ -216,7 +227,7 @@ public static class UIHelper
         Graphics.DrawRectangle(x, y, width, height, SciFiColors.HUDSeperator);
         int filled = (int)(width * (Math.Min(value, max) / (float)max));
         Graphics.DrawRectangle(x, y, filled, height, color);
-        Graphics.DrawText($"{label}: {value}", x + 8, y + 2, FontSizes.Small, SciFiColors.HUDText);
+        DrawText($"{label}: {value}", x + 8, y + 2, FontSizes.Small, SciFiColors.HUDText);
     }
 
     public static void DrawResourceBar(int x, int y, int width, int height, GameStateInfoDto? playerState)
@@ -232,7 +243,7 @@ public static class UIHelper
         // Draw minimap background
         Graphics.DrawRectangle(x, y, width, height, SciFiColors.MinimapBackground);
         Graphics.DrawRectangleLines(x, y, width, height, SciFiColors.MinimapGrid);
-        Graphics.DrawText("Minimap", x + 5, y + 5, FontSizes.Small, SciFiColors.HUDText);
+        DrawText("Minimap", x + 5, y + 5, FontSizes.Small, SciFiColors.HUDText);
         if (world?.Galaxy?.StarSystems == null) return;
         var systems = world.Galaxy.StarSystems.ToList();
         if (systems.Count == 0) return;
@@ -250,4 +261,77 @@ public static class UIHelper
             Graphics.DrawCircle(mapX, mapY, 2, SciFiColors.Star);
         }
     }
+
+    /// <summary>
+    /// Draws a sci-fi style border around a rectangle.
+    /// </summary>
+    public static void DrawSciFiBorder(int x, int y, int width, int height, Color borderColor, int thickness = 2)
+    {
+        // Draw main rectangle
+        Graphics.DrawRectangleLines(x, y, width, height, borderColor);
+        // Draw angular corners
+        int cornerLen = 24;
+        // Top-left
+        Graphics.DrawLine(x, y, x + cornerLen, y, borderColor);
+        Graphics.DrawLine(x, y, x, y + cornerLen, borderColor);
+        // Top-right
+        Graphics.DrawLine(x + width, y, x + width - cornerLen, y, borderColor);
+        Graphics.DrawLine(x + width, y, x + width, y + cornerLen, borderColor);
+        // Bottom-left
+        Graphics.DrawLine(x, y + height, x + cornerLen, y + height, borderColor);
+        Graphics.DrawLine(x, y + height, x, y + height - cornerLen, borderColor);
+        // Bottom-right
+        Graphics.DrawLine(x + width, y + height, x + width - cornerLen, y + height, borderColor);
+        Graphics.DrawLine(x + width, y + height, x + width, y + height - cornerLen, borderColor);
+    }
+
+    /// <summary>
+    /// Draws a sci-fi style circular widget (e.g., for HUD indicators).
+    /// </summary>
+    public static void DrawSciFiCircle(int centerX, int centerY, int radius, Color borderColor, float percent = 1.0f, Color? fillColor = null)
+    {
+        // Draw outer circle
+        Graphics.DrawCircleLines(centerX, centerY, radius, borderColor);
+        // Draw progress arc if percent < 1
+        if (percent < 1.0f)
+        {
+            int segments = 64;
+            int filledSegments = (int)(segments * percent);
+            for (int i = 0; i < filledSegments; i++)
+            {
+                float angle1 = (float)(2 * Math.PI * i / segments);
+                float angle2 = (float)(2 * Math.PI * (i + 1) / segments);
+                int x1 = centerX + (int)(radius * Math.Cos(angle1));
+                int y1 = centerY + (int)(radius * Math.Sin(angle1));
+                int x2 = centerX + (int)(radius * Math.Cos(angle2));
+                int y2 = centerY + (int)(radius * Math.Sin(angle2));
+                Graphics.DrawLine(x1, y1, x2, y2, fillColor ?? borderColor);
+            }
+        }
+        // Draw inner details (tick marks)
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = (float)(2 * Math.PI * i / 8);
+            int x1 = centerX + (int)((radius - 4) * Math.Cos(angle));
+            int y1 = centerY + (int)((radius - 4) * Math.Sin(angle));
+            int x2 = centerX + (int)((radius - 12) * Math.Cos(angle));
+            int y2 = centerY + (int)((radius - 12) * Math.Sin(angle));
+            Graphics.DrawLine(x1, y1, x2, y2, borderColor);
+        }
+    }
+}
+
+public static class FontHelper
+{
+    private const int FNT = 48; // Default font size, can be adjusted as needed
+    private const string FontPath = "Assets/Fonts/";
+    
+    private static string GetPath(string fileName) => Path.Combine(FontPath, fileName);
+
+    
+    public static Font Galaxy { get; private set; } = Font.LoadEx(GetPath("Galaxy.ttf"), FNT, ReadOnlySpan<int>.Empty);
+    
+    public static Font Spaceman { get; private set; } = Font.LoadEx(GetPath("Spaceman.ttf"), FNT, ReadOnlySpan<int>.Empty);
+    
+    public static Font NeuropolX { get; private set; } = Font.LoadEx(GetPath("NeuropolX.otf"), FNT, ReadOnlySpan<int>.Empty);
 }

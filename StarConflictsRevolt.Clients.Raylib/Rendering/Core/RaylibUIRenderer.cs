@@ -29,7 +29,7 @@ public class RaylibUIRenderer : IUIRenderer
     
     public void DrawText(string text, int x, int y, int fontSize, Color color)
     {
-        Graphics.DrawText(text, x, y, fontSize, color);
+        UIHelper.DrawText(text, x, y, fontSize, color);
     }
     
     public void DrawText(string text, int x, int y, int fontSize, Color color, bool centered)
@@ -103,7 +103,7 @@ public class RaylibUIRenderer : IUIRenderer
         {
             var textX = x + 10; // Simple left alignment for now
             var textY = y + (height - UIHelper.FontSizes.Medium) / 2;
-            Graphics.DrawText(text, textX, textY, UIHelper.FontSizes.Medium, textCol);
+            DrawText(text, textX, textY, UIHelper.FontSizes.Medium, textCol);
         }
         
         return isPressed;
@@ -135,7 +135,7 @@ public class RaylibUIRenderer : IUIRenderer
         // Draw text or placeholder
         var displayText = string.IsNullOrEmpty(currentText) ? placeholder : currentText;
         var textColor = string.IsNullOrEmpty(currentText) ? Color.Gray : Color.Black;
-        if (!string.IsNullOrEmpty(displayText)) Graphics.DrawText(displayText, x + 5, y + (height - UIHelper.FontSizes.Medium) / 2, UIHelper.FontSizes.Medium, textColor);
+        if (!string.IsNullOrEmpty(displayText)) UIHelper.DrawText(displayText, x + 5, y + (height - UIHelper.FontSizes.Medium) / 2, UIHelper.FontSizes.Medium, textColor);
         
         // Draw cursor if focused
         if (isFocused && DateTime.UtcNow.Millisecond / 500 % 2 == 0)
@@ -155,6 +155,6 @@ public class RaylibUIRenderer : IUIRenderer
         
         Graphics.DrawRectangle(0, y, screenWidth, height, bg);
         Graphics.DrawRectangleLines(0, y, screenWidth, height, UIHelper.Colors.Light);
-        if (!string.IsNullOrEmpty(status)) Graphics.DrawText(status, 10, y + 5, UIHelper.FontSizes.Small, Color.White);
+        if (!string.IsNullOrEmpty(status)) UIHelper.DrawText(status, 10, y + 5, UIHelper.FontSizes.Small, Color.White);
     }
 } 

@@ -62,7 +62,7 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
         {
             // Draw system
             Graphics.DrawCircle((int)system.Coordinates.X, (int)system.Coordinates.Y, 16, Color.Yellow);
-            Graphics.DrawText(system.Name, (int)(system.Coordinates.X + 18), (int)(system.Coordinates.Y - 8), 12, Color.White);
+            UIHelper.DrawText(system.Name, (int)(system.Coordinates.X + 18), (int)(system.Coordinates.Y - 8), 12, Color.White);
 
             // Draw planets around the system
             if (system.Planets != null)
@@ -78,7 +78,7 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
                     // Highlight selected planet
                     var planetColor = renderContext.GameState.SelectedObject?.Id == planet.Id ? Color.Red : Color.Blue;
                     Graphics.DrawCircle(px, py, 6, planetColor);
-                    Graphics.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
+                    UIHelper.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
                     i++;
                 }
             }

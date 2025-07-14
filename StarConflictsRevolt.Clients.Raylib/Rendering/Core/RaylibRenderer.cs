@@ -7,6 +7,7 @@ using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
+using StarConflictsRevolt.Clients.Raylib.Rendering.UI;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -49,7 +50,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     private void RenderLoop()
     {
         _logger.LogInformation("Initializing Raylib window");
-        Window.Init(1200, 800, "Star Conflicts Revolt");
+        Window.Init(_renderContext.UIManager.BaseWidth, _renderContext.UIManager.BaseHeight, "Star Conflicts Revolt");
         Time.SetTargetFPS(60);
 
         _logger.LogInformation("Setting up camera");
@@ -57,7 +58,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
 
         _logger.LogInformation("Generating background stars");
         var random = new Random();
-        for (var i = 0; i < 100; i++) _backgroundStars.Add(new Vector2(random.Next(0, 1200), random.Next(0, 800)));
+        for (var i = 0; i < 100; i++) _backgroundStars.Add(new Vector2(random.Next(0, Window.GetRenderWidth()), random.Next(0, Window.GetRenderHeight())));
 
         _logger.LogInformation("Starting render loop");
 
@@ -81,7 +82,7 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
             else
             {
                 _logger.LogWarning("No view found for current view type: {ViewType}", _renderContext.CurrentView);
-                Graphics.DrawText($"View not found: {_renderContext.CurrentView}", 10, 10, 20, Color.White);
+                UIHelper.DrawText($"View not found: {_renderContext.CurrentView}", 10, 10, 20, Color.White);
             }
 
             Graphics.EndMode2D();
@@ -122,10 +123,10 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
     private void DrawUI()
     {
         // Draw UI elements in screen space
-        Graphics.DrawText($"FPS: {Time.GetFPS()}", 10, 10, 20, Color.White);
-        Graphics.DrawText($"View: {_renderContext.CurrentView}", 10, 35, 20, Color.White);
+        UIHelper.DrawText($"FPS: {Time.GetFPS()}", 10, 10, 20, Color.White);
+        UIHelper.DrawText($"View: {_renderContext.CurrentView}", 10, 35, 20, Color.White);
 
-        if (_renderContext.GameState.FeedbackMessage != null) Graphics.DrawText(_renderContext.GameState.FeedbackMessage, 10, 60, 20, Color.Yellow);
+        if (_renderContext.GameState.FeedbackMessage != null) UIHelper.DrawText(_renderContext.GameState.FeedbackMessage, 10, 60, 20, Color.Yellow);
     }
 
     private void DrawStar(StarSystemDto system)
@@ -133,6 +134,6 @@ public class RaylibRenderer : IGameRenderer, IAsyncDisposable
         // Simple coordinate conversion for now
         var screenPos = system.Coordinates;
         Graphics.DrawCircle((int)screenPos.X, (int)screenPos.Y, 5, Color.Yellow);
-        Graphics.DrawText(system.Name, (int)screenPos.X + 10, (int)screenPos.Y - 10, 12, Color.White);
+        UIHelper.DrawText(system.Name, (int)screenPos.X + 10, (int)screenPos.Y - 10, 12, Color.White);
     }
 }

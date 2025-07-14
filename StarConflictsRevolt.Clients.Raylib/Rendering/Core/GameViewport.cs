@@ -1,5 +1,6 @@
 using System.Numerics;
 using Raylib_CSharp.Camera.Cam2D;
+using Raylib_CSharp.Colors;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -137,5 +138,30 @@ public class GameViewport
         _cameraTarget += offset / _camera.Zoom;
         
         UpdateCamera();
+    }
+
+    /// <summary>
+    /// Calculates a centered 16:9 viewport rectangle that fits within the given window size.
+    /// </summary>
+    public static Rectangle CalculateCenteredViewport(int windowWidth, int windowHeight, float aspectRatio = 16f / 9f)
+    {
+        float targetWidth = windowWidth;
+        float targetHeight = targetWidth / aspectRatio;
+        if (targetHeight > windowHeight)
+        {
+            targetHeight = windowHeight;
+            targetWidth = targetHeight * aspectRatio;
+        }
+        float x = (windowWidth - targetWidth) / 2f;
+        float y = (windowHeight - targetHeight) / 2f;
+        return new Rectangle(x, y, targetWidth, targetHeight);
+    }
+
+    /// <summary>
+    /// Draws a sci-fi border around the viewport area.
+    /// </summary>
+    public void DrawBorder(Color borderColor)
+    {
+        UI.UIHelper.DrawSciFiBorder((int)_bounds.X, (int)_bounds.Y, (int)_bounds.Width, (int)_bounds.Height, borderColor);
     }
 } 
