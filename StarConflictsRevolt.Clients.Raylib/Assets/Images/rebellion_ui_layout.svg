@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1920 1080"
+     width="100%" height="100%"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="Segoe UI, Arial, sans-serif">
+
+  <rect width="100%" height="100%" fill="#0a0d16"/>
+
+  <!-- GRID (optional, toggle display via CSS) -->
+  <g id="grid" stroke="#ffffff0d" stroke-width="1">
+    <path d="M0 540 h1920"/>
+    <path d="M960 0 v1080"/>
+  </g>
+
+  <!-- LEFT TOOLBAR -->
+  <g id="toolbar" transform="translate(0,0)">
+      <rect width="64" height="100%" fill="#111722"/>
+      <!-- buttons -->
+      <g fill="#00bfff">
+        <rect x="12" y="24"  width="40" height="40" rx="6"/>
+        <rect x="12" y="88"  width="40" height="40" rx="6"/>
+        <rect x="12" y="152" width="40" height="40" rx="6"/>
+        <rect x="12" y="216" width="40" height="40" rx="6"/>
+      </g>
+  </g>
+
+  <!-- TOP STATUS BAR -->
+  <g id="statusBar">
+      <rect x="64" y="0" width="1856" height="48" fill="#111722"/>
+      <text x="80"  y="32" fill="#00bfff" font-size="20">Game Name</text>
+      <text x="450" y="32" fill="#9acdfe" font-size="16">Day 42  |  17:23  |  Credits 123 456</text>
+  </g>
+
+  <!-- MAIN GALAXY CANVAS -->
+  <g id="galaxyCanvas" transform="translate(64,48)">
+      <rect width="1536" height="864" fill="#000"/>
+      <!-- placeholder spiral -->
+      <circle cx="768" cy="432" r="260" fill="url(#coreGlow)"/>
+      <!-- node cluster example -->
+      <g id="sector1" fill="#00bfff">
+          <circle cx="300" cy="180" r="6"/>
+          <circle cx="350" cy="220" r="6"/>
+          <circle cx="260" cy="240" r="6"/>
+      </g>
+  </g>
+
+  <!-- RIGHT SIDEBAR (context / inspectors) -->
+  <g id="rightPanel" transform="translate(1600,48)">
+      <rect width="320" height="864" fill="#111722"/>
+      <text x="12" y="36" fill="#00bfff" font-size="18">Details</text>
+      <line x1="12" y1="40" x2="320" y2="40" stroke="#00bfff" stroke-width="1"/>
+      <!-- sample bars -->
+      <!-- Fuel -->
+      <text x="12" y="70" fill="#00bfff" font-size="18">Fuel</text>
+      <rect x="12" y="75" width="296" height="8"  fill="#20324d"/>
+      <!-- Minerals -->
+      <text x="12" y="110" fill="#00bfff" font-size="18">Minerals</text>
+      <rect x="12" y="115" width="296" height="8" fill="#20324d"/>
+      <rect x="12" y="115" width="220" height="8" fill="#00bfff"/>
+      <!-- Population -->
+      <text x="12" y="150" fill="#00bfff" font-size="18">Population</text>
+      <rect x="12" y="155" width="296" height="8" fill="#20324d"/>
+      <rect x="12" y="155" width="220" height="8" fill="#00bfff"/>
+      <!-- Security -->
+      <text x="12" y="190" fill="#00bfff" font-size="18">Security</text>
+      <rect x="12" y="195" width="296" height="8" fill="#20324d"/>
+      <rect x="12" y="195" width="220" height="8" fill="#00bfff"/>
+  </g>
+
+  <!-- BOTTOM CONSOLE -->
+  <g id="console" transform="translate(64,912)">
+      <rect width="1856" height="168" fill="#111722"/>
+      <text x="12" y="36" fill="#00bfff" font-size="18">Event Log</text>
+      <text x="12" y="66" fill="#9acdfe" font-size="14">[17:23] Scanned system Delta-7 …</text>
+  </g>
+
+  <!-- EFFECTS -->
+  <defs>
+    <radialGradient id="coreGlow">
+      <stop offset="0%" stop-color="#009dff33"/>
+      <stop offset="60%" stop-color="#005dff11"/>
+      <stop offset="100%" stop-color="#00000000"/>
+    </radialGradient>
+  </defs>
+</svg>

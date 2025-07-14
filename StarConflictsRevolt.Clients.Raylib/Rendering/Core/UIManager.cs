@@ -59,10 +59,12 @@ public class UIManager
     
     private void InitializeCamera()
     {
+        // Center camera on the galaxy canvas
+        int canvasX = 64, canvasY = 48, canvasW = 1536, canvasH = 864;
         _camera = new Camera2D
         {
-            Target = new Vector2(0, 0), // Center world at (0,0)
-            Offset = new Vector2(BaseWidth / 2f, BaseHeight / 2f),
+            Target = new Vector2(canvasW / 2f, canvasH / 2f), // Center of galaxy canvas
+            Offset = new Vector2(canvasX + canvasW / 2f, canvasY + canvasH / 2f), // Center of canvas in screen space
             Rotation = 0.0f,
             Zoom = 1.0f
         };
@@ -156,8 +158,8 @@ public class UIManager
             CameraTarget += mouseWorldBefore - mouseWorldAfter;
         }
 
-        // Pan with right mouse button
-        if (_inputState.IsMouseButtonDown(MouseButton.Right))
+        // Pan with left mouse button
+        if (_inputState.IsMouseButtonDown(MouseButton.Left))
         {
             if (_lastPanMousePos == null)
                 _lastPanMousePos = _inputState.MousePosition;

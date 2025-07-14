@@ -1,4 +1,5 @@
-﻿using Raylib_CSharp.Colors;
+﻿using System.Numerics;
+using Raylib_CSharp.Colors;
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
@@ -19,41 +20,77 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
     private StarSystemWithSector? _selectedSystem = null;
     private bool _showSystemDialog = false;
     private StarSystemWithSector? _dialogSystem = null;
+    private SectorInfo? _selectedSector = null;
+    private bool _showSectorDialog = false;
+
+    private static readonly int CanvasX = 64;
+    private static readonly int CanvasY = 48;
+    private static readonly int CanvasW = 1536;
+    private static readonly int CanvasH = 864;
 
     public void Draw()
     {
         Graphics.ClearBackground(UIHelper.Colors.Background);
         _starfieldFrame++;
-        DrawStarfield();
+        // Main galaxy canvas (pans/zooms)
+        Raylib_CSharp.Rendering.Graphics.BeginScissorMode(CanvasX, CanvasY, CanvasW, CanvasH);
         Raylib_CSharp.Rendering.Graphics.BeginMode2D(renderContext.UIManager.Camera);
         DrawSectorBorders();
         DrawGalaxy();
-        HandleMouseHover();
-        HandleMouseSelection();
+        if (IsMouseInGalaxyCanvas())
+        {
+            HandleMouseHover();
+            HandleMouseSelection();
+        }
         Raylib_CSharp.Rendering.Graphics.EndMode2D();
-        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, renderContext.GameState.PlayerState);
-        UIHelper.DrawText("Galaxy View", 400, 20, UIHelper.FontSizes.Large, Color.White, true);
-        DrawActionPanel();
-        UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, null);
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"ESC/Backspace: Menu | F5-F8: Toggle Sectors");
-        HandleKeyboardInput();
-        UIHelper.DrawReticle();
+        Raylib_CSharp.Rendering.Graphics.EndScissorMode();
+        DrawStarfield(); // screen space, after camera
+        DrawLeftToolbar(); // screen space, after camera
+        DrawTopStatusBar(); // screen space, after camera
+        DrawRightSidebar(); // screen space, after camera
+        DrawBottomConsole(); // screen space, after camera
+        UIHelper.DrawReticle(); // screen space
         if (_showSystemDialog && _dialogSystem != null)
         {
             ShowSystemDialog(_dialogSystem);
         }
+        else if (_showSectorDialog && _selectedSector != null)
+        {
+            ShowSectorDialog(_selectedSector);
+        }
+    }
+
+    private bool IsMouseInGalaxyCanvas()
+    {
+        var mouse = Input.GetMousePosition();
+        return mouse.X >= 64 && mouse.X < 1600 && mouse.Y >= 48 && mouse.Y < 912;
     }
 
     private void DrawStarfield()
     {
+        // Draw in screen space (not affected by camera)
+        int numStars = 2000;
+        double spiralArms = 3.5;
+        double spiralSpread = 0.45;
+        double centerX = Window.GetScreenWidth() / 2.0;
+        double centerY = Window.GetScreenHeight() / 2.0;
+        double maxRadius = Math.Min(centerX, centerY) * 1.1;
         var rand = new Random(42);
-        for (int i = 0; i < 300; i++)
+        for (int i = 0; i < numStars; i++)
         {
-            int x = rand.Next(0, Window.GetScreenWidth());
-            int y = rand.Next(0, Window.GetScreenHeight());
-            // Animate twinkle
+            // Spiral math
+            double t = i * 0.15;
+            double arm = (i % (int)spiralArms) * (2 * Math.PI / spiralArms);
+            double radius = spiralSpread * t * maxRadius / numStars + rand.NextDouble() * 18;
+            double angle = t + arm + rand.NextDouble() * 0.25;
+            int x = (int)(centerX + Math.Cos(angle) * radius + rand.NextDouble() * 8 - 4);
+            int y = (int)(centerY + Math.Sin(angle) * radius + rand.NextDouble() * 8 - 4);
+            // Twinkle
             byte twinkle = (byte)(((_starfieldFrame / 10 + i) % 20 < 2) ? 40 : 0);
-            var color = i % 7 == 0 ? new Color((byte)(200 + twinkle), (byte)(200 + twinkle), 255, 255) : new Color((byte)(120 + twinkle), (byte)(120 + twinkle), 180, 255);
+            byte baseCol = (byte)(120 + rand.Next(80));
+            var color = (i % 7 == 0)
+                ? new Color((byte)(200 + twinkle), (byte)(200 + twinkle), 255, 255)
+                : new Color((byte)(baseCol + twinkle), (byte)(baseCol + twinkle), (byte)(180 + rand.Next(60)), 255);
             Graphics.DrawPixel(x, y, color);
         }
     }
@@ -63,7 +100,7 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
         foreach (var sector in GalaxyLayout.GetSectors())
         {
             int sx = 100 + sector.SectorId * 300;
-            UIHelper.DrawSciFiBorder(sx, 0, 300, Window.GetScreenHeight(), new Color(30, 30, 30, 180), 2);
+            UIHelper.DrawSciFiBorder(sx, 0, 300, CanvasH, new Color(30, 30, 30, 180), 2);
         }
     }
 
@@ -74,7 +111,7 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
             if (!sector.IsVisible)
             {
                 int sx = 100 + sector.SectorId * 300;
-                Graphics.DrawRectangle(sx, 0, 300, Window.GetScreenHeight(), new Color(30, 30, 30, 180));
+                Graphics.DrawRectangle(sx, 0, 300, CanvasH, new Color(30, 30, 30, 180));
                 UIHelper.DrawText($"{sector.Name} (Hidden)", sx + 20, 60, UIHelper.FontSizes.Medium, Color.Gray);
             }
         }
@@ -132,6 +169,7 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
         if (!Input.IsMouseButtonPressed(MouseButton.Left)) return;
         var mouse = Input.GetMousePosition();
         var systems = GalaxyLayout.GetAllSystems();
+        // Priority: system click
         foreach (var sys in systems)
         {
             if (!sys.IsVisible) continue;
@@ -141,9 +179,27 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
             {
                 _selectedSystem = sys;
                 _showSystemDialog = true;
+                _showSectorDialog = false;
                 _dialogSystem = sys;
+                _selectedSector = null;
                 renderContext.GameState.SelectedObject = sys.System;
                 renderContext.GameState.SetFeedback($"Selected system: {sys.System.Name}", TimeSpan.FromSeconds(2));
+                return;
+            }
+        }
+        // Only check sector click if no system was clicked
+        foreach (var sector in GalaxyLayout.GetSectors())
+        {
+            int sx = 100 + sector.SectorId * 300;
+            int ex = sx + 300;
+            if (mouse.X >= sx && mouse.X < ex && mouse.Y >= 0 && mouse.Y < CanvasH)
+            {
+                _selectedSector = sector;
+                _showSectorDialog = true;
+                _showSystemDialog = false;
+                _selectedSystem = null;
+                _dialogSystem = null;
+                renderContext.GameState.SetFeedback($"Selected sector: {sector.Name}", TimeSpan.FromSeconds(2));
                 return;
             }
         }
@@ -209,5 +265,69 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
             _showSystemDialog = false;
             _dialogSystem = null;
         }
+    }
+
+    private void ShowSectorDialog(SectorInfo sector)
+    {
+        int w = 400, h = 200;
+        int x = (Window.GetScreenWidth() - w) / 2;
+        int y = (Window.GetScreenHeight() - h) / 2;
+        UIHelper.DrawSciFiBorder(x, y, w, h, new Color(50, 50, 50, 200), 2);
+        UIHelper.DrawText($"Sector: {sector.Name}", x + 30, y + 40, UIHelper.FontSizes.Large, Color.White);
+        UIHelper.DrawText($"Visible: {(sector.IsVisible ? "Yes" : "No")}", x + 30, y + 80, UIHelper.FontSizes.Medium, Color.LightGray);
+        if (UIHelper.DrawButton(sector.IsVisible ? "Hide" : "Reveal", x + 30, y + h - 50, 100, 40))
+        {
+            GalaxyLayout.ToggleSectorVisibility(sector.SectorId);
+            _showSectorDialog = false;
+            _selectedSector = null;
+        }
+        if (UIHelper.DrawButton("Close", x + w - 110, y + h - 50, 100, 40))
+        {
+            _showSectorDialog = false;
+            _selectedSector = null;
+        }
+    }
+
+    private void DrawLeftToolbar()
+    {
+        // Toolbar background
+        Graphics.DrawRectangle(0, 0, 64, Window.GetScreenHeight(), new Color(17, 23, 34, 255));
+        // Buttons
+        int btnW = 40, btnH = 40, btnX = 12, btnY = 24, btnSpacing = 64;
+        for (int i = 0; i < 4; i++)
+        {
+            int y = btnY + i * btnSpacing;
+            Graphics.DrawRectangle(btnX, y, btnW, btnH, new Color(0, 191, 255, 255));
+            UIHelper.DrawText($"Btn{i+1}", btnX + 8, y + 12, 16, Color.Black);
+        }
+    }
+
+    private void DrawTopStatusBar()
+    {
+        Graphics.DrawRectangle(64, 0, Window.GetScreenWidth() - 64, 48, new Color(17, 23, 34, 255));
+        UIHelper.DrawText("Game Name", 80, 32, 20, new Color(0, 191, 255, 255));
+        UIHelper.DrawText("Day 42  |  17:23  |  Credits 123 456", 450, 32, 16, new Color(154, 205, 254, 255));
+    }
+
+    private void DrawRightSidebar()
+    {
+        int sidebarW = 320, sidebarH = Window.GetScreenHeight() - 48, sidebarX = Window.GetScreenWidth() - sidebarW, sidebarY = 48;
+        Graphics.DrawRectangle(sidebarX, sidebarY, sidebarW, sidebarH, new Color(17, 23, 34, 255));
+        UIHelper.DrawText("Details", sidebarX + 12, sidebarY + 36, 18, new Color(0, 191, 255, 255));
+        // Resource bars (placeholders)
+        int barY = sidebarY + 60;
+        for (int i = 0; i < 4; i++)
+        {
+            Graphics.DrawRectangle(sidebarX + 12, barY + i * 40, 296, 8, new Color(32, 50, 77, 255));
+            Graphics.DrawRectangle(sidebarX + 12, barY + i * 40, 220, 8, new Color(0, 191, 255, 255));
+        }
+    }
+
+    private void DrawBottomConsole()
+    {
+        int consoleH = 168, consoleY = Window.GetScreenHeight() - consoleH;
+        Graphics.DrawRectangle(64, consoleY, Window.GetScreenWidth() - 64, consoleH, new Color(17, 23, 34, 255));
+        UIHelper.DrawText("Event Log", 76, consoleY + 36, 18, new Color(0, 191, 255, 255));
+        UIHelper.DrawText("[17:23] Scanned system Delta-7 …", 76, consoleY + 66, 14, new Color(154, 205, 254, 255));
     }
 }
