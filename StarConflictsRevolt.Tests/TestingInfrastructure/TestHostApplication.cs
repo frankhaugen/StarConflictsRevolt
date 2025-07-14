@@ -32,8 +32,10 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 using Frank.Channels.DependencyInjection;
+using Frank.PulseFlow;
 using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -108,8 +110,8 @@ public class TestHostApplication : IDisposable
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
         
-        // Add Frank.Channels.DependencyInjection for GameTick channel
-        builder.Services.AddChannel<GameTickMessage>();
+        // Add Frank.PulseFlow for GameTick pulse
+        builder.Services.AddPulseFlow<GameTickMessageFlow>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
@@ -118,6 +120,10 @@ public class TestHostApplication : IDisposable
         // Register AI strategy for AiTurnService
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddSingleton<AiMemoryBank>();
+        
+        // Register services required by GameTickMessageFlow
+        builder.Services.AddSingleton<AiTurnService>();
+        builder.Services.AddSingleton<GameUpdateService>();
 
         // Add SignalR
         builder.Services.AddSignalR(config =>
@@ -169,8 +175,6 @@ public class TestHostApplication : IDisposable
         if (includeClientServices)
         {
             builder.Services.AddHostedService<GameTickService>();
-            builder.Services.AddHostedService<GameUpdateService>();
-            builder.Services.AddHostedService<AiTurnService>();
             builder.Services.AddHostedService<ProjectionService>();
             builder.Services.AddHostedService<EventBroadcastService>();
         }

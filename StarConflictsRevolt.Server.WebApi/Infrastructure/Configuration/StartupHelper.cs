@@ -13,6 +13,8 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.Channels.DependencyInjection;
+using Frank.PulseFlow;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
@@ -25,7 +27,7 @@ public static class StartupHelper
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
         // Add Frank.PulseFlow for GameTick pulse
-        builder.Services.AddPulse<GameTickMessage>();
+        builder.Services.AddPulseFlow<GameTickMessageFlow>();
         
         // Add core services
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
@@ -66,8 +68,6 @@ public static class StartupHelper
 
         // Register hosted services
         builder.Services.AddHostedService<GameTickService>();
-        builder.Services.AddHostedService<GameUpdateService>();
-        builder.Services.AddHostedService<AiTurnService>();
         builder.Services.AddHostedService<ProjectionService>();
         builder.Services.AddHostedService<EventBroadcastService>();
 

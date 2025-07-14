@@ -29,7 +29,7 @@ public class HostedServicesIsolationTests
         services.AddSignalR();
 
         // Add the service under test
-        services.AddHostedService<GameUpdateService>();
+        services.AddSingleton<GameUpdateService>();
 
         // Add minimal dependencies that GameUpdateService needs
         services.AddSingleton<SessionAggregateManager>();
@@ -70,7 +70,7 @@ public class HostedServicesIsolationTests
         services.AddLogging(builder => builder.AddConsole());
 
         // Add the service under test
-        services.AddHostedService<AiTurnService>();
+        services.AddSingleton<AiTurnService>();
 
         // Add minimal dependencies that AiTurnService needs
         services.AddSingleton<SessionAggregateManager>();
@@ -218,8 +218,8 @@ public class HostedServicesIsolationTests
         services.AddSignalR();
 
         // Add all hosted services
-        services.AddHostedService<GameUpdateService>();
-        services.AddHostedService<AiTurnService>();
+        services.AddSingleton<GameUpdateService>();
+        services.AddSingleton<AiTurnService>();
         services.AddHostedService<ProjectionService>();
         services.AddHostedService<EventBroadcastService>();
 

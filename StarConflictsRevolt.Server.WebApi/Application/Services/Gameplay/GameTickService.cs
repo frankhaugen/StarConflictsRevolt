@@ -5,15 +5,15 @@ namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 public class GameTickService : BackgroundService
 {
     private readonly ILogger<GameTickService> _logger;
-    private readonly IPulse<GameTickMessage> _pulse;
+    private readonly IConduit _conduit;
     
     // Game timing configuration
     private const int TICKS_PER_SECOND = 10; // 10 ticks per second = 100ms per tick
 
-    public GameTickService(ILogger<GameTickService> logger, IPulse<GameTickMessage> pulse)
+    public GameTickService(ILogger<GameTickService> logger, IConduit conduit)
     {
         _logger = logger;
-        _pulse = pulse;
+        _conduit = conduit;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -72,7 +72,7 @@ public class GameTickService : BackgroundService
                 Timestamp = new GameTimestamp(DateTime.UtcNow)
             };
 
-            await _pulse.Publish(tick);
+            await _conduit.SendAsync(tick, stoppingToken);
             
             _logger.LogDebug("Published tick {TickNumber}", tickNumber);
         }
