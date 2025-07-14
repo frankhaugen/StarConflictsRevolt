@@ -63,31 +63,47 @@ public class GameSetupService
     {
         var planets = world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)
-            .Where(p => p.PlanetType == PlanetType.Terran) // Start with Terran planets
+            .Where(p => p.PlanetType != null && p.PlanetType.CanBuildStructures)
             .ToList();
 
-        if (planets.Count < setup.Players.Count)
+        var random = new Random();
+        var playerCount = setup.Players.Count;
+        var positions = new List<int>();
+        int totalPlanets = planets.Count;
+
+        switch (setup.Mode)
         {
-            // If not enough Terran planets, use any available planets
-            planets = world.Galaxy.StarSystems
-                .SelectMany(s => s.Planets)
-                .Where(p => p.PlanetType.CanBuildStructures)
-                .ToList();
+            case GameMode.OneVsOne:
+                // Opposite sides
+                positions = new List<int> { 0, totalPlanets / 2 };
+                break;
+            case GameMode.TwoVsTwo:
+                // Four corners (spread evenly)
+                positions = new List<int> { 0, totalPlanets / 3, (2 * totalPlanets) / 3, totalPlanets - 1 };
+                break;
+            case GameMode.FreeForAll:
+                // Evenly distributed
+                for (int i = 0; i < playerCount; i++)
+                    positions.Add(i * totalPlanets / playerCount);
+                break;
+            case GameMode.HumanVsAI:
+            case GameMode.AIvsAI:
+            default:
+                // Random or fallback
+                positions = Enumerable.Range(0, playerCount).Select(_ => random.Next(totalPlanets)).ToList();
+                break;
         }
 
-        // Shuffle planets for random starting positions
-        var random = new Random();
+        // Shuffle planets for randomness
         planets = planets.OrderBy(x => random.Next()).ToList();
 
-        for (int i = 0; i < setup.Players.Count && i < planets.Count; i++)
+        for (int i = 0; i < playerCount && i < planets.Count; i++)
         {
             var player = setup.Players[i];
-            var planet = planets[i];
-            
+            var planet = planets[positions[i] % planets.Count];
             player.StartingPlanetId = planet.Id;
-            
-            _logger.LogDebug("Assigned player {PlayerName} to planet {PlanetName}", 
-                player.Name, planet.Name);
+            // Note: planet.OwnerId is not set here due to record immutability
+            _logger.LogDebug("Assigned player {PlayerName} to planet {PlanetName}", player.Name, planet.Name);
         }
     }
 

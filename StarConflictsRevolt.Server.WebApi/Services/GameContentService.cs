@@ -168,4 +168,16 @@ public class GameContentService
 
         return $"Game Content Loaded: {shipTemplates.Count()} ship types, {structureTemplates.Count()} structure types, {planetTypes.Count()} planet types";
     }
+
+    public IEnumerable<StructureTemplate> GetStartingStructureSet(string setType)
+    {
+        return setType.ToLower() switch
+        {
+            "basic" => new[] { StructureTemplate.Mine, StructureTemplate.ConstructionYard },
+            "military" => new[] { StructureTemplate.TrainingFacility, StructureTemplate.ShieldGenerator },
+            "economic" => new[] { StructureTemplate.Mine, StructureTemplate.Refinery, StructureTemplate.Shipyard },
+            "defensive" => new[] { StructureTemplate.ShieldGenerator, StructureTemplate.TrainingFacility },
+            _ => new[] { StructureTemplate.Mine }
+        };
+    }
 } 

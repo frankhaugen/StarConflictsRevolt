@@ -84,7 +84,35 @@ public class WorldFactory
             };
             world.Players.Add(controller);
         }
-        
+
+        // Assign starting resources to each player's starting planet
+        foreach (var player in setup.Players)
+        {
+            if (player.StartingPlanetId.HasValue)
+            {
+                var planet = galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == player.StartingPlanetId.Value);
+                if (planet != null)
+                {
+                    // Apply resource bonuses from planet type
+                    var pt = planet.PlanetType;
+                    var credits = player.StartingCredits + (pt?.CreditsBonus ?? 0);
+                    var materials = player.StartingMaterials + (pt?.MaterialsBonus ?? 0);
+                    var fuel = player.StartingFuel + (pt?.FuelBonus ?? 0);
+                    // Create a new planet record with updated resources
+                    var updatedPlanet = planet with { Credits = credits, Materials = materials, Fuel = fuel };
+                    // Replace in star system
+                    foreach (var system in galaxy.StarSystems)
+                    {
+                        for (int i = 0; i < system.Planets.Count; i++)
+                        {
+                            if (system.Planets[i].Id == updatedPlanet.Id)
+                                system.Planets[i] = updatedPlanet;
+                        }
+                    }
+                }
+            }
+        }
+
         return world;
     }
 

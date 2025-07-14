@@ -45,6 +45,7 @@
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Renderers/MenuView.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Models/Planet.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/appsettings.Development.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" root0="SKIP_HIGHLIGHTING" />
@@ -213,7 +214,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="11761000" />
+      <workItem from="1752432073576" duration="11976000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -488,7 +489,14 @@
       <option name="presentableId" value="LOCAL−00039" />
       <updated>1752481985447</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL−00040" summary="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets">
+      <option name="closed" value="true" />
+      <created>1752482463172</created>
+      <option name="number" value="LOCAL−00040" />
+      <option name="presentableId" value="LOCAL−00040" />
+      <updated>1752482463172</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -508,7 +516,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor integration tests to use TokenRequest and update token response handling" />
     <MESSAGE value="Refactor health check integration test to include cancellation token" />
     <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
     <MESSAGE value="Refactor integration tests to use TestHostApplication with cancellation token and improve token response handling" />
@@ -533,7 +540,8 @@
     <MESSAGE value="Refactor namespaces in Client, GameDbContextExtensions, and various test files for improved organization and clarity" />
     <MESSAGE value="Add interfaces and implementations for game rendering and client initialization" />
     <MESSAGE value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
+    <MESSAGE value="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

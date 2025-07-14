@@ -39,23 +39,23 @@ This document outlines the implementation plan for adding essential game mechani
   - [x] Balanced fleet: Mix of ship types
 
 ### **Medium Priority**
-- [ ] **Add starting structure templates**
-  - [ ] Basic: Mine + Construction Yard
-  - [ ] Military: Training Facility + Shield Generator
-  - [ ] Economic: Mine + Refinery + Shipyard
-  - [ ] Defensive: Shield Generator + Training Facility
+- [x] **Add starting structure templates**
+  - [x] Basic: Mine + Construction Yard
+  - [x] Military: Training Facility + Shield Generator
+  - [x] Economic: Mine + Refinery + Shipyard
+  - [x] Defensive: Shield Generator + Training Facility
 
-- [ ] **Create balanced starting positions**
-  - [ ] 2-player: Opposite sides of galaxy
-  - [ ] 4-player: Four corners
-  - [ ] FFA: Distributed evenly
-  - [ ] Team games: Allies positioned together
+- [x] **Create balanced starting positions**
+  - [x] 2-player: Opposite sides of galaxy
+  - [x] 4-player: Four corners
+  - [x] FFA: Distributed evenly
+  - [x] Team games: Allies positioned together
 
-- [ ] **Add resource distribution**
-  - [ ] Starting credits: 1000 per player
-  - [ ] Starting materials: 500 per player
-  - [ ] Starting fuel: 200 per player
-  - [ ] Resource generation rates per planet
+- [x] **Add resource distribution**
+  - [x] Starting credits: 1000 per player
+  - [x] Starting materials: 500 per player
+  - [x] Starting fuel: 200 per player
+  - [x] Resource generation rates per planet
 
 ---
 
