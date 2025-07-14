@@ -2,6 +2,7 @@ using Raylib_CSharp.Colors;
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
+using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Services;
 
@@ -23,6 +24,7 @@ public class MenuView : IView
     private readonly GameCommandService _commandService;
     private readonly RenderContext _renderContext;
     private readonly SignalRService _signalRService;
+    private readonly IHttpApiClient _httpApiClient;
     private int _menuState; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select, 5: session list
     private string _playerName = "";
     private string _selectedSessionType = "Multiplayer";
@@ -32,11 +34,12 @@ public class MenuView : IView
     private List<SessionInfo>? _availableSessions;
     private int _selectedSessionIndex = 0;
 
-    public MenuView(RenderContext renderContext, GameCommandService commandService, SignalRService signalRService)
+    public MenuView(RenderContext renderContext, GameCommandService commandService, SignalRService signalRService, IHttpApiClient httpApiClient)
     {
         _renderContext = renderContext;
         _commandService = commandService;
         _signalRService = signalRService;
+        _httpApiClient = httpApiClient;
     }
 
     public GameView ViewType => GameView.Menu;
@@ -71,7 +74,7 @@ public class MenuView : IView
         var playerName = _renderContext.GameState.PlayerName ?? "Not set";
         var sessionName = _renderContext.GameState.Session?.SessionName ?? "None";
         var sessionType = _renderContext.GameState.Session?.SessionType ?? "None";
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName} ({sessionType})");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Player: {playerName} | Session: {sessionName} ({sessionType}) | ESC/Backspace: Menu");
     }
 
     private void DrawMainMenu()
@@ -248,7 +251,7 @@ public class MenuView : IView
 
     private async Task LoadSessionsAsync()
     {
-        _availableSessions = await _commandService.ListSessionsAsync();
+        _availableSessions = await _httpApiClient.GetSessionsAsync();
         if (_availableSessions == null)
         {
             _renderContext.GameState.SetFeedback("Failed to load sessions", TimeSpan.FromSeconds(3));
@@ -263,11 +266,25 @@ public class MenuView : IView
             return;
         }
 
-        var sessionId = await _commandService.CreateSessionAsync(_sessionName, sessionType);
-        if (sessionId.HasValue)
+        var sessionResponse = await _httpApiClient.CreateNewSessionAsync(_sessionName, sessionType);
+        
+        if (sessionResponse != null)
         {
-            _sessionId = sessionId.Value.ToString();
+            _sessionId = sessionResponse.SessionId.ToString();
             _selectedSessionType = sessionType;
+            // Store the world in the ClientWorldStore
+            if (sessionResponse.World != null)
+            {
+                _renderContext.WorldStore.ApplyFull(sessionResponse.World);
+            }
+            // Set up GameState for the new session
+            _renderContext.GameState.Session = new SessionDto
+            {
+                Id = sessionResponse.SessionId,
+                SessionName = _sessionName,
+                IsActive = true,
+                SessionType = sessionType
+            };
             _menuState = 4;
             _renderContext.GameState.SetFeedback($"{sessionType} session created! Enter player name.", TimeSpan.FromSeconds(3));
         }
@@ -280,7 +297,8 @@ public class MenuView : IView
             try
             {
                 // First join the session via HTTP
-                var sessionResponse = await _commandService.JoinSessionAsync(sessionGuid, _playerName);
+                var sessionResponse = await _httpApiClient.JoinSessionAsync(sessionGuid, _playerName);
+                
                 if (sessionResponse != null)
                 {
                     // Set up the game state
@@ -293,13 +311,13 @@ public class MenuView : IView
                     };
                     _renderContext.GameState.PlayerName = _playerName;
                     _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
-                    
+
                     // Apply the world data from the join response
                     if (sessionResponse.World != null)
                     {
                         _renderContext.WorldStore.ApplyFull(sessionResponse.World);
                     }
-                    
+
                     // Join the SignalR session
                     await _signalRService.JoinSessionAsync(sessionGuid);
                     

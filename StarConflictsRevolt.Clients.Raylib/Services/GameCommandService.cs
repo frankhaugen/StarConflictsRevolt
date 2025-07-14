@@ -20,23 +20,15 @@ public class GameCommandService
 
     public async Task<bool> SendCommandAsync(string endpoint, object payload, string? worldId = null)
     {
-        _logger.LogInformation("Sending command to endpoint: {Endpoint}, WorldId: {WorldId}", endpoint, worldId ?? "null");
-        _logger.LogDebug("Command payload: {Payload}", JsonSerializer.Serialize(payload));
+        _logger.LogInformation("Sending command to endpoint: {Endpoint}", endpoint);
 
         try
         {
-            var url = worldId != null ? $"{endpoint}?worldId={worldId}" : endpoint;
-            _logger.LogDebug("Full URL: {Url}", url);
-
-            var response = await _httpApiClient.PostAsync(url, payload);
-
-            _logger.LogInformation("Command response received. Status: {StatusCode}", response.StatusCode);
+            var uri = worldId != null ? $"{endpoint}?worldId={worldId}" : endpoint;
+            var response = await _httpApiClient.PostAsync(uri, payload);
 
             if (response.IsSuccessStatusCode)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                _logger.LogDebug("Success response content: {Content}", responseContent);
-                _gameState.SetFeedback("Command sent successfully", TimeSpan.FromSeconds(2));
                 _logger.LogInformation("Command sent successfully to {Endpoint}", endpoint);
                 return true;
             }
@@ -56,38 +48,20 @@ public class GameCommandService
 
     public async Task<bool> MoveFleetAsync(Guid fleetId, Guid fromPlanetId, Guid toPlanetId)
     {
-        _logger.LogInformation("Moving fleet {FleetId} from planet {FromPlanetId} to planet {ToPlanetId}",
+        _logger.LogInformation("Move fleet initiated. Fleet: {FleetId}, From: {FromPlanetId}, To: {ToPlanetId}",
             fleetId, fromPlanetId, toPlanetId);
 
-        var playerId = !string.IsNullOrEmpty(_gameState.PlayerId) && Guid.TryParse(_gameState.PlayerId, out var pid) ? pid : Guid.Empty;
-        _logger.LogDebug("Using player ID: {PlayerId}", playerId);
-
-        var payload = new
-        {
-            PlayerId = playerId,
-            FleetId = fleetId,
-            FromPlanetId = fromPlanetId,
-            ToPlanetId = toPlanetId
-        };
-
-        return await SendCommandAsync("/game/move-fleet", payload, _gameState.Session?.Id.ToString());
+        var worldId = _gameState.Session?.Id;
+        return await _httpApiClient.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId, worldId);
     }
 
     public async Task<bool> BuildStructureAsync(Guid planetId, string structureType)
     {
-        _logger.LogInformation("Building structure {StructureType} on planet {PlanetId}", structureType, planetId);
+        _logger.LogInformation("Build structure initiated. Planet: {PlanetId}, Structure: {StructureType}",
+            planetId, structureType);
 
-        var playerId = !string.IsNullOrEmpty(_gameState.PlayerId) && Guid.TryParse(_gameState.PlayerId, out var pid) ? pid : Guid.Empty;
-        _logger.LogDebug("Using player ID: {PlayerId}", playerId);
-
-        var payload = new
-        {
-            PlayerId = playerId,
-            PlanetId = planetId,
-            StructureType = structureType
-        };
-
-        return await SendCommandAsync("/game/build-structure", payload, _gameState.Session?.Id.ToString());
+        var worldId = _gameState.Session?.Id;
+        return await _httpApiClient.BuildStructureAsync(planetId, structureType, worldId);
     }
 
     public async Task<bool> AttackAsync(Guid attackerFleetId, Guid defenderFleetId, Guid locationPlanetId)
@@ -95,18 +69,8 @@ public class GameCommandService
         _logger.LogInformation("Attack initiated. Attacker: {AttackerFleetId}, Defender: {DefenderFleetId}, Location: {LocationPlanetId}",
             attackerFleetId, defenderFleetId, locationPlanetId);
 
-        var playerId = !string.IsNullOrEmpty(_gameState.PlayerId) && Guid.TryParse(_gameState.PlayerId, out var pid) ? pid : Guid.Empty;
-        _logger.LogDebug("Using player ID: {PlayerId}", playerId);
-
-        var payload = new
-        {
-            PlayerId = playerId,
-            AttackerFleetId = attackerFleetId,
-            DefenderFleetId = defenderFleetId,
-            LocationPlanetId = locationPlanetId
-        };
-
-        return await SendCommandAsync("/game/attack", payload, _gameState.Session?.Id.ToString());
+        var worldId = _gameState.Session?.Id;
+        return await _httpApiClient.AttackAsync(attackerFleetId, defenderFleetId, locationPlanetId, worldId);
     }
 
     public async Task<bool> DiplomacyAsync(Guid targetPlayerId, string proposalType, string message)
@@ -114,57 +78,27 @@ public class GameCommandService
         _logger.LogInformation("Diplomacy action. Target: {TargetPlayerId}, Type: {ProposalType}, Message: {Message}",
             targetPlayerId, proposalType, message);
 
-        var playerId = !string.IsNullOrEmpty(_gameState.PlayerId) && Guid.TryParse(_gameState.PlayerId, out var pid) ? pid : Guid.Empty;
-        _logger.LogDebug("Using player ID: {PlayerId}", playerId);
-
-        var payload = new
-        {
-            PlayerId = playerId,
-            TargetPlayerId = targetPlayerId,
-            ProposalType = proposalType,
-            Message = message
-        };
-
-        return await SendCommandAsync("/game/diplomacy", payload, _gameState.Session?.Id.ToString());
+        var worldId = _gameState.Session?.Id;
+        return await _httpApiClient.DiplomacyAsync(targetPlayerId, proposalType, message, worldId);
     }
 
-    public async Task<Guid?> CreateSessionAsync(string sessionName, string sessionType = "Multiplayer")
+    public async Task<SessionResponse?> CreateSessionAsync(string sessionName, string sessionType = "Multiplayer")
     {
         _logger.LogInformation("Creating new session with name: {SessionName}, type: {SessionType}", sessionName, sessionType);
 
         try
         {
-            var request = new
+            var sessionResponse = await _httpApiClient.CreateNewSessionAsync(sessionName, sessionType);
+            
+            if (sessionResponse != null)
             {
-                SessionName = sessionName,
-                SessionType = sessionType
-            };
-
-            var response = await _httpApiClient.PostAsync("/game/session", request);
-
-            _logger.LogInformation("Session creation response received. Status: {StatusCode}", response.StatusCode);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                _logger.LogDebug("Session creation response: {Response}", responseJson);
-
-                var responseObj = JsonSerializer.Deserialize<JsonElement>(responseJson);
-
-                if (responseObj.TryGetProperty("sessionId", out var sessionIdElement) &&
-                    Guid.TryParse(sessionIdElement.GetString(), out var sessionId))
-                {
-                    _logger.LogInformation("Session created successfully. SessionId: {SessionId}", sessionId);
-                    _gameState.SetFeedback("Session created successfully", TimeSpan.FromSeconds(2));
-                    return sessionId;
-                }
-
-                _logger.LogError("Failed to parse session ID from response: {Response}", responseJson);
+                _logger.LogInformation("Session created successfully. SessionId: {SessionId}", sessionResponse.SessionId);
+                _gameState.SetFeedback("Session created successfully", TimeSpan.FromSeconds(2));
+                return sessionResponse;
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning("Failed to create session. Status: {StatusCode}, Error: {Error}", response.StatusCode, errorContent);
-            _gameState.SetFeedback($"Failed to create session: {response.StatusCode} - {errorContent}", TimeSpan.FromSeconds(5));
+            _logger.LogWarning("Failed to create session - no response received");
+            _gameState.SetFeedback("Failed to create session", TimeSpan.FromSeconds(5));
             return null;
         }
         catch (Exception ex)
@@ -181,7 +115,7 @@ public class GameCommandService
 
         try
         {
-            var world = await _httpApiClient.GetAsync<WorldDto>("/game/state");
+            var world = await _httpApiClient.GetWorldStateAsync();
 
             if (world != null)
             {
@@ -209,7 +143,7 @@ public class GameCommandService
 
         try
         {
-            var sessions = await _httpApiClient.GetAsync<List<SessionInfo>>("/game/sessions");
+            var sessions = await _httpApiClient.GetSessionsAsync();
 
             if (sessions != null)
             {
@@ -240,34 +174,17 @@ public class GameCommandService
 
         try
         {
-            var request = new
+            var sessionResponse = await _httpApiClient.JoinSessionAsync(sessionId, playerName);
+            
+            if (sessionResponse != null)
             {
-                PlayerName = playerName
-            };
-
-            var response = await _httpApiClient.PostAsync($"/game/session/{sessionId}/join", request);
-
-            _logger.LogInformation("Join session response received. Status: {StatusCode}", response.StatusCode);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                _logger.LogDebug("Join session response: {Response}", responseJson);
-
-                var sessionResponse = JsonSerializer.Deserialize<SessionResponse>(responseJson);
-                if (sessionResponse != null)
-                {
-                    _logger.LogInformation("Successfully joined session {SessionId}", sessionId);
-                    _gameState.SetFeedback($"Joined session {sessionResponse.SessionId}", TimeSpan.FromSeconds(2));
-                    return sessionResponse;
-                }
-
-                _logger.LogError("Failed to parse join session response: {Response}", responseJson);
+                _logger.LogInformation("Successfully joined session {SessionId}", sessionId);
+                _gameState.SetFeedback($"Joined session {sessionResponse.SessionId}", TimeSpan.FromSeconds(2));
+                return sessionResponse;
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning("Failed to join session. Status: {StatusCode}, Error: {Error}", response.StatusCode, errorContent);
-            _gameState.SetFeedback($"Failed to join session: {response.StatusCode} - {errorContent}", TimeSpan.FromSeconds(5));
+            _logger.LogWarning("Failed to join session - no response received");
+            _gameState.SetFeedback("Failed to join session", TimeSpan.FromSeconds(5));
             return null;
         }
         catch (Exception ex)
@@ -277,13 +194,4 @@ public class GameCommandService
             return null;
         }
     }
-}
-
-public class SessionInfo
-{
-    public Guid Id { get; set; }
-    public string SessionName { get; set; } = string.Empty;
-    public DateTime Created { get; set; }
-    public string SessionType { get; set; } = string.Empty;
-    public int PlayerCount { get; set; }
 }
