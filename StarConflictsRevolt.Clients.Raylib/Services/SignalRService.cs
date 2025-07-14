@@ -8,26 +8,24 @@ namespace StarConflictsRevolt.Clients.Raylib.Services;
 public class SignalRService : IAsyncDisposable
 {
     private readonly IOptions<GameClientConfiguration> _gameClientConfiguration;
-    private readonly IGameRenderer _gameRenderer;
     private readonly ILogger<SignalRService> _logger;
     private readonly IClientWorldStore _worldStore;
     private CancellationTokenSource _cts = new();
     private HubConnection? _hubConnection;
+    private Guid? _currentSessionId;
 
     public SignalRService(IOptions<GameClientConfiguration> gameClientConfiguration,
         IClientWorldStore worldStore,
-        IGameRenderer gameRenderer,
         ILogger<SignalRService> logger)
     {
         _gameClientConfiguration = gameClientConfiguration;
         _worldStore = worldStore;
-        _gameRenderer = gameRenderer;
         _logger = logger;
         _logger.LogInformation("SignalRService initialized");
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         _logger.LogInformation("Disposing SignalR service");
 
@@ -45,7 +43,7 @@ public class SignalRService : IAsyncDisposable
         _logger.LogInformation("SignalR service disposed");
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public virtual async Task StartAsync(CancellationToken cancellationToken = default)
     {
         // Use service discovery for the GameEngine service (SignalR is in GameEngine)
         var hubUrl = _gameClientConfiguration.Value.GameServerHubUrl;
@@ -131,19 +129,31 @@ public class SignalRService : IAsyncDisposable
         }
     }
 
+    public virtual async Task JoinSessionAsync(Guid sessionId)
+    {
+        if (_hubConnection?.State != HubConnectionState.Connected)
+        {
+            _logger.LogWarning("Cannot join session {SessionId}: SignalR connection not established", sessionId);
+            return;
+        }
+
+        _currentSessionId = sessionId;
+        _logger.LogInformation("Joining world group for session: {SessionId}", sessionId);
+        await _hubConnection.SendAsync("JoinWorld", sessionId.ToString(), _cts.Token);
+        _logger.LogInformation("Successfully joined world group for session {SessionId}", sessionId);
+    }
+
     private async Task StartHubConnectionAsync()
     {
         _logger.LogInformation("Attempting to start SignalR connection");
         await _hubConnection!.StartAsync(_cts.Token);
         _logger.LogInformation("SignalR connection started successfully");
 
-        // join the world group
-        _logger.LogInformation("Joining world group: world-1");
-        await _hubConnection.SendAsync("JoinWorld", "world-1", _cts.Token);
-        _logger.LogInformation("Successfully joined world group");
+        // Don't join any world group here - wait for explicit session join
+        _logger.LogInformation("SignalR connection ready - waiting for session join");
     }
 
-    public async Task StopAsync()
+    public virtual async Task StopAsync()
     {
         _logger.LogInformation("Stopping SignalR service");
         await _cts.CancelAsync();

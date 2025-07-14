@@ -22,6 +22,7 @@ public class MenuView : IView
 
     private readonly GameCommandService _commandService;
     private readonly RenderContext _renderContext;
+    private readonly SignalRService _signalRService;
     private int _menuState; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select
     private string _playerName = "";
     private string _selectedSessionType = "Multiplayer";
@@ -29,10 +30,11 @@ public class MenuView : IView
     private string _sessionId = "";
     private string _sessionName = "";
 
-    public MenuView(RenderContext renderContext, GameCommandService commandService)
+    public MenuView(RenderContext renderContext, GameCommandService commandService, SignalRService signalRService)
     {
         _renderContext = renderContext;
         _commandService = commandService;
+        _signalRService = signalRService;
     }
 
     public GameView ViewType => GameView.Menu;
@@ -184,7 +186,7 @@ public class MenuView : IView
         }
     }
 
-    private void JoinSession()
+    private async void JoinSession()
     {
         if (Guid.TryParse(_sessionId, out var sessionGuid))
         {
@@ -197,6 +199,10 @@ public class MenuView : IView
             };
             _renderContext.GameState.PlayerName = _playerName;
             _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
+            
+            // Join the SignalR session
+            await _signalRService.JoinSessionAsync(sessionGuid);
+            
             _renderContext.GameState.NavigateTo(GameView.Galaxy);
             _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
         }

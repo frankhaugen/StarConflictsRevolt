@@ -12,11 +12,6 @@ public static class ServiceCollectionExtensions
         return AddClientServices(builder.Services, builder.Configuration);
     }
 
-    public static IServiceCollection AddClientServices(this WebApplicationBuilder builder)
-    {
-        return AddClientServices(builder.Services, builder.Configuration);
-    }
-
     private static IServiceCollection AddClientServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Add custom file logging provider

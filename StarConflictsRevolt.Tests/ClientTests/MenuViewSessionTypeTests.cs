@@ -22,6 +22,10 @@ public class MenuViewSessionTypeTests
             sp.GetRequiredService<RenderContext>().GameState,
             sp.GetRequiredService<ILogger<GameCommandService>>(),
             new TestHttpApiClient())); // Use a test implementation instead of null
+        services.AddSingleton<SignalRService>(sp => new TestSignalRService(
+            sp.GetRequiredService<IOptions<GameClientConfiguration>>(),
+            sp.GetRequiredService<IClientWorldStore>(),
+            sp.GetRequiredService<ILogger<SignalRService>>()));
         services.AddSingleton<MenuView>();
         return services.BuildServiceProvider();
     }
@@ -110,6 +114,37 @@ public class MenuViewSessionTypeTests
 
         public IReadOnlyList<WorldDto?> History => new List<WorldDto?>();
         public SessionDto? Session { get; set; }
+    }
+
+    // Minimal fake for SignalRService
+    private class TestSignalRService : SignalRService
+    {
+        public TestSignalRService(IOptions<GameClientConfiguration> gameClientConfiguration, 
+            IClientWorldStore worldStore, 
+            ILogger<SignalRService> logger) 
+            : base(gameClientConfiguration, worldStore, null!, logger)
+        {
+        }
+
+        public override Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Task JoinSessionAsync(Guid sessionId)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Task StopAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
     }
 
     // Minimal fake for IHttpApiClient
