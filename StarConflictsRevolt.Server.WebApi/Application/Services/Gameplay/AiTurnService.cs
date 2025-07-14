@@ -9,12 +9,12 @@ public class AiTurnService : BackgroundService
     private readonly List<Task> _activeOperations = new();
     private readonly SessionAggregateManager _aggregateManager;
     private readonly IAiStrategy _aiStrategy;
-    private readonly CommandQueue<IGameEvent> _commandQueue;
+    private readonly CommandQueue _commandQueue;
     private readonly IEventStore _eventStore;
     private readonly ILogger<AiTurnService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-    private readonly ChannelReader<GameTick> _tickChannelReader;
-    private readonly Dictionary<Guid, AiSessionState> _sessionStates = new();
+    private readonly ChannelReader<GameTickMessage> _tickChannelReader;
+    private readonly Dictionary<GameSessionId, AiSessionState> _sessionStates = new();
     private readonly object _sessionStatesLock = new();
 
     // AI action rate limits based on difficulty
@@ -27,9 +27,9 @@ public class AiTurnService : BackgroundService
         ILogger<AiTurnService> logger,
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
-        CommandQueue<IGameEvent> commandQueue,
+        CommandQueue commandQueue,
         IAiStrategy aiStrategy,
-        ChannelReader<GameTick> tickChannelReader)
+        ChannelReader<GameTickMessage> tickChannelReader)
     {
         _logger = logger;
         _eventStore = eventStore;
@@ -82,7 +82,7 @@ public class AiTurnService : BackgroundService
         }
     }
 
-    private async Task ProcessTickAsync(GameTick tick, CancellationToken stoppingToken)
+    private async Task ProcessTickAsync(GameTickMessage tick, CancellationToken stoppingToken)
     {
         var sessions = _aggregateManager.GetAllAggregates();
         
@@ -92,7 +92,7 @@ public class AiTurnService : BackgroundService
             
             try
             {
-                await ProcessSessionAiTurnAsync(session.SessionId, tick, stoppingToken);
+                await ProcessSessionAiTurnAsync(new GameSessionId(session.SessionId), tick, stoppingToken);
             }
             catch (Exception ex)
             {
@@ -102,7 +102,7 @@ public class AiTurnService : BackgroundService
         }
     }
 
-    private async Task ProcessSessionAiTurnAsync(Guid sessionId, GameTick tick, CancellationToken stoppingToken)
+    private async Task ProcessSessionAiTurnAsync(GameSessionId sessionId, GameTickMessage tick, CancellationToken stoppingToken)
     {
         var sessionState = GetOrCreateSessionState(sessionId);
         var sessionAggregate = _aggregateManager.GetAggregate(sessionId);
@@ -144,7 +144,7 @@ public class AiTurnService : BackgroundService
         sessionState.LastAiActionTime = tick.Timestamp;
     }
 
-    private bool ShouldProcessAiActions(AiSessionState sessionState, long tickNumber)
+    private bool ShouldProcessAiActions(AiSessionState sessionState, GameTickNumber tickNumber)
     {
         var aiDifficulty = sessionState.AiDifficulty;
         var actionsPerSecond = GetAiActionsPerSecond(aiDifficulty);
@@ -218,7 +218,7 @@ public class AiTurnService : BackgroundService
         }
     }
 
-    public void RegisterSession(Guid sessionId, AiDifficulty aiDifficulty = AiDifficulty.Normal)
+    public void RegisterSession(GameSessionId sessionId, AiDifficulty aiDifficulty = AiDifficulty.Normal)
     {
         lock (_sessionStatesLock)
         {
@@ -226,15 +226,15 @@ public class AiTurnService : BackgroundService
             {
                 SessionId = sessionId,
                 AiDifficulty = aiDifficulty,
-                LastAiTick = 0,
-                LastAiActionTime = DateTime.UtcNow
+                LastAiTick = new GameTickNumber(0),
+                LastAiActionTime = new GameTimestamp(DateTime.UtcNow)
             };
         }
         
         _logger.LogInformation("Registered AI session {SessionId} with difficulty {AiDifficulty}", sessionId, aiDifficulty);
     }
 
-    public void UnregisterSession(Guid sessionId)
+    public void UnregisterSession(GameSessionId sessionId)
     {
         lock (_sessionStatesLock)
         {
@@ -244,7 +244,7 @@ public class AiTurnService : BackgroundService
         _logger.LogInformation("Unregistered AI session {SessionId}", sessionId);
     }
 
-    public void UpdateAiDifficulty(Guid sessionId, AiDifficulty newDifficulty)
+    public void UpdateAiDifficulty(GameSessionId sessionId, AiDifficulty newDifficulty)
     {
         lock (_sessionStatesLock)
         {
@@ -256,7 +256,7 @@ public class AiTurnService : BackgroundService
         }
     }
 
-    private AiSessionState GetOrCreateSessionState(Guid sessionId)
+    private AiSessionState GetOrCreateSessionState(GameSessionId sessionId)
     {
         lock (_sessionStatesLock)
         {
@@ -266,8 +266,8 @@ public class AiTurnService : BackgroundService
                 {
                     SessionId = sessionId,
                     AiDifficulty = AiDifficulty.Normal,
-                    LastAiTick = 0,
-                    LastAiActionTime = DateTime.UtcNow
+                    LastAiTick = new GameTickNumber(0),
+                    LastAiActionTime = new GameTimestamp(DateTime.UtcNow)
                 };
                 _sessionStates[sessionId] = state;
             }
@@ -306,8 +306,8 @@ public class AiTurnService : BackgroundService
 
 public class AiSessionState
 {
-    public Guid SessionId { get; set; }
+    public GameSessionId SessionId { get; set; }
     public AiDifficulty AiDifficulty { get; set; }
-    public long LastAiTick { get; set; }
-    public DateTime LastAiActionTime { get; set; }
+    public GameTickNumber LastAiTick { get; set; }
+    public GameTimestamp LastAiActionTime { get; set; }
 }

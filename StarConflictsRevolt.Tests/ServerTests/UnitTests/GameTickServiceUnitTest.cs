@@ -19,19 +19,19 @@ public class GameTickServiceUnitTest
         services.AddLogging(builder => builder.AddConsole());
         
         // Add Frank.Channels.DependencyInjection
-        services.AddChannel<GameTick>();
+        services.AddChannel<GameTickMessage>();
         
         services.AddSingleton<GameTickService>();
         
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTick>>();
+        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTickMessage>>();
         
         // Start the service
         await gameTickService.StartAsync(cancellationToken);
         
-        var receivedTicks = new List<GameTick>();
-        var tickReceived = new TaskCompletionSource<GameTick>();
+        var receivedTicks = new List<GameTickMessage>();
+        var tickReceived = new TaskCompletionSource<GameTickMessage>();
 
         // Subscribe to ticks
         var tickTask = Task.Run(async () =>
@@ -52,8 +52,8 @@ public class GameTickServiceUnitTest
 
         // Assert: Should receive ticks
         await Assert.That(firstTick).IsNotNull();
-        await Assert.That(firstTick.TickNumber).IsEqualTo(1);
-        await Assert.That(firstTick.Timestamp).IsGreaterThan(DateTime.UtcNow.AddSeconds(-1));
+        await Assert.That(firstTick.TickNumber.Value).IsEqualTo(1);
+        await Assert.That(firstTick.Timestamp.Value).IsGreaterThan(DateTime.UtcNow.AddSeconds(-1));
 
         // Wait a bit more and check tick rate
         await Task.Delay(1500); // Wait 1.5 seconds
@@ -65,7 +65,7 @@ public class GameTickServiceUnitTest
         // Verify tick numbers are sequential
         for (int i = 1; i < receivedTicks.Count; i++)
         {
-            await Assert.That(receivedTicks[i].TickNumber).IsEqualTo(receivedTicks[i - 1].TickNumber + 1);
+            await Assert.That(receivedTicks[i].TickNumber.Value).IsEqualTo(receivedTicks[i - 1].TickNumber.Value + 1);
         }
 
         // Cleanup
@@ -81,19 +81,19 @@ public class GameTickServiceUnitTest
         services.AddLogging(builder => builder.AddConsole());
         
         // Add Frank.Channels.DependencyInjection
-        services.AddChannel<GameTick>();
+        services.AddChannel<GameTickMessage>();
         
         services.AddSingleton<GameTickService>();
         
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTick>>();
+        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTickMessage>>();
         
         // Start the service
         await gameTickService.StartAsync(cancellationToken);
         
-        var ticks1 = new List<GameTick>();
-        var ticks2 = new List<GameTick>();
+        var ticks1 = new List<GameTickMessage>();
+        var ticks2 = new List<GameTickMessage>();
 
         // Start two subscribers
         var task1 = Task.Run(async () =>
@@ -125,7 +125,7 @@ public class GameTickServiceUnitTest
 
         for (int i = 0; i < 5; i++)
         {
-            await Assert.That(ticks1[i].TickNumber).IsEqualTo(ticks2[i].TickNumber);
+            await Assert.That(ticks1[i].TickNumber.Value).IsEqualTo(ticks2[i].TickNumber.Value);
         }
 
         // Cleanup
@@ -141,13 +141,13 @@ public class GameTickServiceUnitTest
         services.AddLogging(builder => builder.AddConsole());
         
         // Add Frank.Channels.DependencyInjection
-        services.AddChannel<GameTick>();
+        services.AddChannel<GameTickMessage>();
         
         services.AddSingleton<GameTickService>();
         
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTick>>();
+        var tickChannelReader = serviceProvider.GetRequiredService<ChannelReader<GameTickMessage>>();
         
         // Start the service
         await gameTickService.StartAsync(cancellationToken);

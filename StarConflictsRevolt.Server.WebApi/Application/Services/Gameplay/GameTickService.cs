@@ -2,21 +2,15 @@ using System.Threading.Channels;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class GameTick
-{
-    public long TickNumber { get; set; }
-    public DateTime Timestamp { get; set; }
-}
-
 public class GameTickService : BackgroundService
 {
     private readonly ILogger<GameTickService> _logger;
-    private readonly ChannelWriter<GameTick> _tickChannelWriter;
+    private readonly ChannelWriter<GameTickMessage> _tickChannelWriter;
     
     // Game timing configuration
     private const int TICKS_PER_SECOND = 10; // 10 ticks per second = 100ms per tick
 
-    public GameTickService(ILogger<GameTickService> logger, ChannelWriter<GameTick> tickChannelWriter)
+    public GameTickService(ILogger<GameTickService> logger, ChannelWriter<GameTickMessage> tickChannelWriter)
     {
         _logger = logger;
         _tickChannelWriter = tickChannelWriter;
@@ -72,10 +66,10 @@ public class GameTickService : BackgroundService
     {
         try
         {
-            var tick = new GameTick
+            var tick = new GameTickMessage
             {
-                TickNumber = tickNumber,
-                Timestamp = DateTime.UtcNow
+                TickNumber = new GameTickNumber(tickNumber),
+                Timestamp = new GameTimestamp(DateTime.UtcNow)
             };
 
             await _tickChannelWriter.WriteAsync(tick, stoppingToken);
@@ -88,11 +82,11 @@ public class GameTickService : BackgroundService
         }
     }
 
-    public ChannelReader<GameTick> GetTickReader()
+    public ChannelReader<GameTickMessage> GetTickReader()
     {
         // Get the channel reader from the DI container
         // This will be provided by Frank.Channels.DependencyInjection
-        throw new NotImplementedException("Use ChannelReader<GameTick> from DI container instead of this method");
+        throw new NotImplementedException("Use ChannelReader<GameTickMessage> from DI container instead of this method");
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

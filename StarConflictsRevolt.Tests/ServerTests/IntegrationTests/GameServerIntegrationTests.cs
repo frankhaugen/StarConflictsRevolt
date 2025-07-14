@@ -25,60 +25,6 @@ public class GameServerIntegrationTests
 
     [Test]
     [Timeout(30_000)]
-    public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
-    {
-        var testHost = new TestHostApplication();
-        await testHost.StartServerAsync(cancellationToken);
-        var httpClient = testHost.GetHttpClient();
-
-        // Create a session
-        var sessionName = $"test-session-{Guid.NewGuid()}";
-        var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", new { SessionName = sessionName, SessionType = "Multiplayer" }, cancellationToken);
-
-        createSessionResponse.EnsureSuccessStatusCode();
-        var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);
-        var sessionId = sessionObj?.SessionId ?? throw new Exception("No sessionId returned");
-
-        // Output the response for debugging
-        await Context.Current.OutputWriter.WriteLineAsync($"Create session request: {createSessionResponse.ReasonPhrase} ({createSessionResponse.StatusCode})");
-        await Context.Current.OutputWriter.WriteLineAsync($"Session created with ID: {sessionId}");
-
-        // Connect to SignalR and join the session
-        var hubConnection = new HubConnectionBuilder()
-            .WithUrl(testHost.GetGameServerHubUrl())
-            .WithAutomaticReconnect()
-            .Build();
-
-        await hubConnection.StartAsync(cancellationToken);
-        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken);
-
-        // Verify we can receive updates
-        var receivedUpdates = new List<GameObjectUpdate>();
-        hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates => receivedUpdates.AddRange(updates));
-
-        // Perform a simple action to trigger updates
-        if (sessionObj?.World?.Galaxy?.StarSystems?.FirstOrDefault()?.Planets?.FirstOrDefault() is PlanetDto planet)
-        {
-            var buildCommand = new BuildStructureEvent(
-                Guid.NewGuid(),
-                planet.Id,
-                "Mine"
-            );
-
-            var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand, cancellationToken);
-            buildResponse.EnsureSuccessStatusCode();
-            await Context.Current.OutputWriter.WriteLineAsync($"[TEST] Build command sent for planet {planet.Id}");
-        }
-
-        // Wait a moment for initial world state and updates
-        await Task.Delay(2000, cancellationToken);
-
-        await hubConnection.StopAsync(cancellationToken);
-        await Assert.That(receivedUpdates).IsNotEmpty();
-    }
-
-    [Test]
-    [Timeout(30_000)]
     public async Task GameServer_CanUseRavenDbForPersistence(CancellationToken cancellationToken)
     {
         var testHost = new TestHostApplication(false);

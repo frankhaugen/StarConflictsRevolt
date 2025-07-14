@@ -25,7 +25,7 @@ public static class StartupHelper
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
         // Add Frank.Channels.DependencyInjection for GameTick channel
-        builder.Services.AddChannel<GameTick>();
+        builder.Services.AddChannel<GameTickMessage>();
         
         // Add core services
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
@@ -62,11 +62,11 @@ public static class StartupHelper
         builder.Services.AddScoped<LeaderboardService>();
 
         // Register CommandQueue with factory to handle circular dependency
-        builder.Services.AddSingleton<CommandQueue<IGameEvent>>(serviceProvider =>
+        builder.Services.AddSingleton<CommandQueue>(serviceProvider =>
         {
-            var logger = serviceProvider.GetRequiredService<ILogger<CommandQueue<IGameEvent>>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<CommandQueue>>();
             var gameUpdateService = serviceProvider.GetService<GameUpdateService>();
-            return new CommandQueue<IGameEvent>(logger, gameUpdateService);
+            return new CommandQueue(logger, gameUpdateService);
         });
 
         // Register hosted services

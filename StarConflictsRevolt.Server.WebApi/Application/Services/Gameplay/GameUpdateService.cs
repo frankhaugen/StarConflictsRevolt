@@ -8,26 +8,26 @@ public class GameUpdateService : BackgroundService
 {
     private readonly List<Task> _activeOperations = new();
     private readonly SessionAggregateManager _aggregateManager;
-    private readonly CommandQueue<IGameEvent> _commandQueue;
+    private readonly CommandQueue _commandQueue;
     private readonly IEventStore _eventStore;
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-    private readonly Channel<Guid> _sessionNotificationChannel;
+    private readonly Channel<GameSessionId> _sessionNotificationChannel;
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext,
         ILogger<GameUpdateService> logger,
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
-        CommandQueue<IGameEvent> commandQueue)
+        CommandQueue commandQueue)
     {
         _hubContext = hubContext;
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
-        _sessionNotificationChannel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
+        _sessionNotificationChannel = Channel.CreateUnbounded<GameSessionId>(new UnboundedChannelOptions
         {
             SingleReader = true,
             SingleWriter = false
@@ -79,7 +79,7 @@ public class GameUpdateService : BackgroundService
         }
     }
 
-    private async Task ProcessSessionAggregateAsync(Guid sessionId, CancellationToken cancellationToken)
+    private async Task ProcessSessionAggregateAsync(GameSessionId sessionId, CancellationToken cancellationToken)
     {
         var sessionAggregate = _aggregateManager.GetAggregate(sessionId);
         if (sessionAggregate == null)
@@ -91,12 +91,12 @@ public class GameUpdateService : BackgroundService
         _logger.LogDebug("Processing session {SessionId}", sessionId);
 
         var commandsProcessed = 0;
-        while (_commandQueue.TryDequeue(sessionId, out var command))
+        while (_commandQueue.TryDequeue(sessionId, out var commandMessage))
         {
             if (cancellationToken.IsCancellationRequested)
                 break;
 
-            await ProcessCommandAsync(sessionAggregate, command, cancellationToken);
+            await ProcessCommandAsync(sessionAggregate, commandMessage.Command, cancellationToken);
             commandsProcessed++;
         }
 
@@ -109,7 +109,7 @@ public class GameUpdateService : BackgroundService
         await HandleSnapshotAsync(sessionAggregate, cancellationToken);
     }
 
-    public void NotifySessionHasCommands(Guid sessionId)
+    public void NotifySessionHasCommands(GameSessionId sessionId)
     {
         try
         {
@@ -119,6 +119,11 @@ public class GameUpdateService : BackgroundService
         {
             _logger.LogError(ex, "Failed to notify session {SessionId} has commands", sessionId);
         }
+    }
+
+    public void NotifySessionHasCommands(Guid sessionId)
+    {
+        NotifySessionHasCommands(new GameSessionId(sessionId));
     }
 
     private async Task ProcessCommandAsync(SessionAggregate sessionAggregate, IGameEvent command, CancellationToken cancellationToken)

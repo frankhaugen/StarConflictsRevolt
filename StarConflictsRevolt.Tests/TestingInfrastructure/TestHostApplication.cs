@@ -33,6 +33,7 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
+using Frank.Channels.DependencyInjection;
 using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -103,9 +104,12 @@ public class TestHostApplication : IDisposable
 
         // Register test-specific services instead of production StartupHelper
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
-        builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        builder.Services.AddSingleton<CommandQueue>();
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
+        
+        // Add Frank.Channels.DependencyInjection for GameTick channel
+        builder.Services.AddChannel<GameTickMessage>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
@@ -164,6 +168,7 @@ public class TestHostApplication : IDisposable
         // They should only be enabled for tests that specifically need the full game loop
         if (includeClientServices)
         {
+            builder.Services.AddHostedService<GameTickService>();
             builder.Services.AddHostedService<GameUpdateService>();
             builder.Services.AddHostedService<AiTurnService>();
             builder.Services.AddHostedService<ProjectionService>();

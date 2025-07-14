@@ -13,7 +13,7 @@ public static class GameActionEndpointHandler
     {
         app.MapPost("/game/move-fleet", async context =>
         {
-            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
             var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
@@ -79,7 +79,7 @@ public static class GameActionEndpointHandler
 
         app.MapPost("/game/build-structure", async context =>
         {
-            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<BuildStructureEvent>(context.RequestAborted);
             if (dto == null)
@@ -114,7 +114,7 @@ public static class GameActionEndpointHandler
 
         app.MapPost("/game/attack", async context =>
         {
-            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<AttackEvent>(context.RequestAborted);
             if (dto == null)
@@ -164,7 +164,7 @@ public static class GameActionEndpointHandler
 
         app.MapPost("/game/diplomacy", async context =>
         {
-            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue<IGameEvent>>();
+            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<DiplomacyEvent>(context.RequestAborted);
             if (dto == null)

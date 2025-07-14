@@ -17,10 +17,9 @@ public class GameTickServiceTest
         var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         
-        var gameTickService = testHost.Server.Services.GetRequiredService<GameTickService>();
-        var reader = gameTickService.GetTickReader();
-        var receivedTicks = new List<GameTick>();
-        var tickReceived = new TaskCompletionSource<GameTick>();
+        var reader = testHost.Server.Services.GetRequiredService<ChannelReader<GameTickMessage>>();
+        var receivedTicks = new List<GameTickMessage>();
+        var tickReceived = new TaskCompletionSource<GameTickMessage>();
 
         // Subscribe to ticks
         var tickTask = Task.Run(async () =>
@@ -41,8 +40,8 @@ public class GameTickServiceTest
 
         // Assert: Should receive ticks
         await Assert.That(firstTick).IsNotNull();
-        await Assert.That(firstTick.TickNumber).IsEqualTo(1);
-        await Assert.That(firstTick.Timestamp).IsGreaterThan(DateTime.UtcNow.AddSeconds(-1));
+        await Assert.That(firstTick.TickNumber.Value).IsEqualTo(1);
+        await Assert.That(firstTick.Timestamp.Value).IsGreaterThan(DateTime.UtcNow.AddSeconds(-1));
 
         // Wait a bit more and check tick rate
         await Task.Delay(1500); // Wait 1.5 seconds
@@ -54,7 +53,7 @@ public class GameTickServiceTest
         // Verify tick numbers are sequential
         for (int i = 1; i < receivedTicks.Count; i++)
         {
-            await Assert.That(receivedTicks[i].TickNumber).IsEqualTo(receivedTicks[i - 1].TickNumber + 1);
+            await Assert.That(receivedTicks[i].TickNumber.Value).IsEqualTo(receivedTicks[i - 1].TickNumber.Value + 1);
         }
     }
 
@@ -66,12 +65,11 @@ public class GameTickServiceTest
         var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         
-        var gameTickService = testHost.Server.Services.GetRequiredService<GameTickService>();
-        var reader1 = gameTickService.GetTickReader();
-        var reader2 = gameTickService.GetTickReader();
+        var reader1 = testHost.Server.Services.GetRequiredService<ChannelReader<GameTickMessage>>();
+        var reader2 = testHost.Server.Services.GetRequiredService<ChannelReader<GameTickMessage>>();
 
-        var ticks1 = new List<GameTick>();
-        var ticks2 = new List<GameTick>();
+        var ticks1 = new List<GameTickMessage>();
+        var ticks2 = new List<GameTickMessage>();
 
         // Start two subscribers
         var task1 = Task.Run(async () =>
@@ -103,7 +101,7 @@ public class GameTickServiceTest
 
         for (int i = 0; i < 5; i++)
         {
-            await Assert.That(ticks1[i].TickNumber).IsEqualTo(ticks2[i].TickNumber);
+            await Assert.That(ticks1[i].TickNumber.Value).IsEqualTo(ticks2[i].TickNumber.Value);
         }
     }
 
@@ -115,8 +113,7 @@ public class GameTickServiceTest
         var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         
-        var gameTickService = testHost.Server.Services.GetRequiredService<GameTickService>();
-        var reader = gameTickService.GetTickReader();
+        var reader = testHost.Server.Services.GetRequiredService<ChannelReader<GameTickMessage>>();
         var tickTimestamps = new List<DateTime>();
 
         // Subscribe to ticks
@@ -125,7 +122,7 @@ public class GameTickServiceTest
             while (await reader.WaitToReadAsync(CancellationToken.None))
             {
                 var tick = await reader.ReadAsync(CancellationToken.None);
-                tickTimestamps.Add(tick.Timestamp);
+                tickTimestamps.Add(tick.Timestamp.Value);
                 if (tickTimestamps.Count >= 11) break; // Get 11 ticks to measure 10 intervals
             }
         });

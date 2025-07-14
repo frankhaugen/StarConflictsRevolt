@@ -7,6 +7,7 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using Frank.Channels.DependencyInjection;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -35,7 +36,7 @@ public class HostedServicesIsolationTests
         services.AddSingleton<WorldService>();
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
-        services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<CommandQueue>();
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -76,9 +77,12 @@ public class HostedServicesIsolationTests
         services.AddSingleton<WorldService>();
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
-        services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<CommandQueue>();
         services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         services.AddSingleton<AiMemoryBank>();
+        
+        // Add Frank.Channels.DependencyInjection for GameTick channel
+        services.AddChannel<GameTickMessage>();
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -172,7 +176,7 @@ public class HostedServicesIsolationTests
 
         // Add SignalR (required for IHubContext<WorldHub>)
         services.AddSignalR();
-        services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<CommandQueue>();
         // Add a mock hub context for testing
         services.AddSignalR(options =>
         {
@@ -224,9 +228,12 @@ public class HostedServicesIsolationTests
         services.AddSingleton<WorldService>();
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
-        services.AddSingleton(typeof(CommandQueue<IGameEvent>));
+        services.AddSingleton<CommandQueue>();
         services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         services.AddSingleton<AiMemoryBank>();
+        
+        // Add Frank.Channels.DependencyInjection for GameTick channel
+        services.AddChannel<GameTickMessage>();
 
         var serviceProvider = services.BuildServiceProvider();
 

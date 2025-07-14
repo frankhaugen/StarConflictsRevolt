@@ -1,54 +1,81 @@
 using System.Collections.Concurrent;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class CommandQueue<TCommand>
+public class CommandQueue
 {
-    private readonly ILogger<CommandQueue<TCommand>> _logger;
-    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<TCommand>> _queues = new();
+    private readonly ILogger<CommandQueue> _logger;
+    private readonly ConcurrentDictionary<GameSessionId, ConcurrentQueue<GameCommandMessage>> _queues = new();
     private readonly GameUpdateService? _gameUpdateService;
 
-    public CommandQueue(ILogger<CommandQueue<TCommand>> logger, GameUpdateService? gameUpdateService = null)
+    public CommandQueue(ILogger<CommandQueue> logger, GameUpdateService? gameUpdateService = null)
     {
         _logger = logger;
         _gameUpdateService = gameUpdateService;
     }
 
-    public void Enqueue(Guid sessionId, TCommand command)
+    public void Enqueue(GameSessionId sessionId, IGameEvent command)
     {
-        var queue = _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<TCommand>());
-        queue.Enqueue(command);
+        var commandMessage = new GameCommandMessage
+        {
+            SessionId = sessionId,
+            Command = command
+        };
+        
+        var queue = _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<GameCommandMessage>());
+        queue.Enqueue(commandMessage);
         _logger.LogInformation("Enqueued command {CommandType} for session {SessionId}", command?.GetType().Name, sessionId);
         
         // Notify GameUpdateService that this session has commands to process
         _gameUpdateService?.NotifySessionHasCommands(sessionId);
     }
 
-    public bool TryDequeue(Guid sessionId, out TCommand command)
+    public void Enqueue(Guid sessionId, IGameEvent command)
     {
-        command = default!;
+        Enqueue(new GameSessionId(sessionId), command);
+    }
+
+    public bool TryDequeue(GameSessionId sessionId, out GameCommandMessage commandMessage)
+    {
+        commandMessage = default!;
         if (_queues.TryGetValue(sessionId, out var queue))
         {
-            var dequeued = queue.TryDequeue(out command);
-            if (dequeued) _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", command?.GetType().Name, sessionId);
+            var dequeued = queue.TryDequeue(out commandMessage);
+            if (dequeued) _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", commandMessage.Command?.GetType().Name, sessionId);
             return dequeued;
         }
 
         return false;
     }
 
-    public ConcurrentQueue<TCommand> GetOrCreateQueue(Guid sessionId)
+    public bool TryDequeue(Guid sessionId, out GameCommandMessage commandMessage)
     {
-        return _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<TCommand>());
+        return TryDequeue(new GameSessionId(sessionId), out commandMessage);
     }
 
-    public int GetQueueCount(Guid sessionId)
+    public ConcurrentQueue<GameCommandMessage> GetOrCreateQueue(GameSessionId sessionId)
+    {
+        return _queues.GetOrAdd(sessionId, _ => new ConcurrentQueue<GameCommandMessage>());
+    }
+
+    public int GetQueueCount(GameSessionId sessionId)
     {
         return _queues.TryGetValue(sessionId, out var queue) ? queue.Count : 0;
     }
 
-    public bool HasCommands(Guid sessionId)
+    public int GetQueueCount(Guid sessionId)
+    {
+        return GetQueueCount(new GameSessionId(sessionId));
+    }
+
+    public bool HasCommands(GameSessionId sessionId)
     {
         return GetQueueCount(sessionId) > 0;
+    }
+
+    public bool HasCommands(Guid sessionId)
+    {
+        return HasCommands(new GameSessionId(sessionId));
     }
 }

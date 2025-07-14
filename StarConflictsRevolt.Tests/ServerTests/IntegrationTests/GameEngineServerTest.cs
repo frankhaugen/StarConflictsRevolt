@@ -75,7 +75,7 @@ public class GameEngineServerTest
         ravenDbStore.Database.Should().NotBeEmpty("because the RavenDB store should have a database created");
         ravenDbStore.Database.Should().MatchRegex("^(StarConflictsRevolt|test-database-).*$", "because test runs may use isolated test-database-* names");
 
-        await hubConnection.StartAsync(); // Start the SignalR connection
+        await hubConnection.StartAsync(cancellationToken); // Start the SignalR connection
 
         // Create a test session via HTTP API
         var sessionName = $"test-session-{Guid.NewGuid()}";
@@ -91,7 +91,7 @@ public class GameEngineServerTest
         await hubConnection.SendAsync("JoinWorld", sessionId.ToString());
 
         // Get the world state to find a valid planet ID for sending a command
-        var worldResponse = await httpClient.GetAsync("/game/state");
+        var worldResponse = await httpClient.GetAsync("/game/state", cancellationToken);
         if (!worldResponse.IsSuccessStatusCode)
         {
             var errorContent = await worldResponse.Content.ReadAsStringAsync();
@@ -119,7 +119,7 @@ public class GameEngineServerTest
         };
 
         await Context.Current.OutputWriter.WriteLineAsync($"Sending build command for planet: {planet.Id}");
-        var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand);
+        var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand, cancellationToken: cancellationToken);
 
         if (!buildResponse.IsSuccessStatusCode)
         {
@@ -131,7 +131,7 @@ public class GameEngineServerTest
         await Context.Current.OutputWriter.WriteLineAsync("Build command sent successfully");
 
         // Wait for updates to be sent
-        await Task.Delay(1000).ConfigureAwait(false);
+        await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
 
         // Assert: Check if the application is running and can respond to requests
         var clientWorldStore = serviceProvider.GetRequiredService<IClientWorldStore>();
@@ -145,6 +145,6 @@ public class GameEngineServerTest
         foreach (var update in updatesReceived) await Context.Current.OutputWriter.WriteLineAsync($"Update: {update}");
 
         // Gracefully stop the SignalR connection
-        await hubConnection.StopAsync();
+        await hubConnection.StopAsync(cancellationToken);
     }
 }

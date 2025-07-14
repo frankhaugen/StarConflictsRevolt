@@ -96,13 +96,14 @@ public class ChangeTrackerTests
     [Test]
     public async Task CommandQueue_Enqueue_Dequeue_Logs()
     {
-        var logger = _provider.GetRequiredService<ILogger<CommandQueue<string>>>();
-        var queue = new CommandQueue<string>(logger);
+        var logger = _provider.GetRequiredService<ILogger<CommandQueue>>();
+        var queue = new CommandQueue(logger);
         var sessionId = Guid.NewGuid();
-        queue.Enqueue(sessionId, "test");
+        var testEvent = new BuildStructureEvent(Guid.NewGuid(), Guid.NewGuid(), "Mine");
+        queue.Enqueue(sessionId, testEvent);
         var dequeued = queue.TryDequeue(sessionId, out var result);
         await Assert.That(dequeued).IsTrue();
-        await Assert.That(result).IsEqualTo("test");
+        await Assert.That(result.Command).IsEqualTo(testEvent);
         await Assert.That(_logSink.Any(msg => msg.Contains("Enqueued command"))).IsTrue();
         await Assert.That(_logSink.Any(msg => msg.Contains("Dequeued command"))).IsTrue();
     }
