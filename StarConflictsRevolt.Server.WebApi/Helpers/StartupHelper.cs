@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
@@ -101,7 +102,15 @@ public static class StartupHelper
     {
         builder.Services.AddDbContext<GameDbContext>(options =>
         {
-            var connectionString = builder.Configuration.GetConnectionString("gameDb");
+            var rawConnectionString = builder.Configuration.GetConnectionString("gameDb");
+            var connectionStringBuilder = new SqlConnectionStringBuilder(rawConnectionString)
+            {
+                // Ensure the connection string is valid and not using default placeholder
+                ApplicationName = "StarConflictsRevolt.Server.WebApi",
+                MultipleActiveResultSets = true,
+                InitialCatalog = "StarConflictsRevolt"
+            };
+            var connectionString = connectionStringBuilder.ConnectionString;
             options.UseSqlServer(connectionString);
             options.EnableSensitiveDataLogging();
             options.EnableDetailedErrors();
@@ -110,65 +119,28 @@ public static class StartupHelper
 
     public static async Task ConfigureAsync(WebApplication app)
     {
-        // Ensure database is created with retry logic
+        // Run migrations
         using (var scope = app.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            var connectionString = configuration.GetConnectionString("gameDb");
-            if (!string.IsNullOrEmpty(connectionString))
+            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            
+            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
             {
-                var safeConnectionString = connectionString.Replace("Password=", "Password=***");
-                logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
-                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT") logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
+                // Clean the database if it exists
+                await dbContext.Database.EnsureDeletedAsync();
+                // await dbContext.Database.EnsureCreatedAsync();
+                
+                Console.WriteLine("Applying pending migrations...");
+                await dbContext.Database.MigrateAsync();
+                Console.WriteLine("Migrations applied successfully.");
             }
             else
             {
-                logger.LogWarning("No connection string found for 'gameDb'");
+                Console.WriteLine("No pending migrations found.");
             }
-
-            var maxRetries = 5;
-            var retryDelay = TimeSpan.FromSeconds(2);
-            for (var attempt = 1; attempt <= maxRetries; attempt++)
-                try
-                {
-                    logger.LogInformation("Attempting to ensure database is created (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
-                    
-                    // Check if database exists first
-                    var databaseExists = await db.Database.CanConnectAsync();
-                    logger.LogInformation("Database connection test result: {DatabaseExists}", databaseExists);
-                    
-                    // Ensure database is created
-                    var created = db.Database.EnsureCreated();
-                    logger.LogInformation("Database creation result: {Created}", created);
-                    
-                    // Verify tables were created
-                    var tables = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(db.Database.SqlQueryRaw<string>("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"));
-                    logger.LogInformation("Created tables: {Tables}", string.Join(", ", tables));
-                    
-                    // Verify the Clients table specifically exists
-                    if (!tables.Contains("Clients"))
-                    {
-                        throw new InvalidOperationException("Clients table was not created");
-                    }
-                    
-                    logger.LogInformation("Database created successfully with all required tables");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to create database on attempt {Attempt}/{MaxRetries}", attempt, maxRetries);
-                    if (attempt == maxRetries)
-                    {
-                        logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
-                        throw; // Re-throw to prevent application from starting with broken database
-                    }
-
-                    await Task.Delay(retryDelay);
-                }
         }
-
+        
         app.UseAuthentication();
         app.UseAuthorization();
         MinimalApiHelper.MapMinimalApis(app);
