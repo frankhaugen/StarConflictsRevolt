@@ -12,7 +12,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignDocs/TODOs.md" beforeDir="false" afterPath="$PROJECT_DIR$/DesignDocs/TODOs.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Rendering/Core/IView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Rendering/Core/IView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -225,14 +230,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="15442000" />
-    </task>
-    <task id="LOCAL−00004" summary="Add Proxy and SubstituteExtensions for fluent mocking capabilities">
-      <option name="closed" value="true" />
-      <created>1752407145599</created>
-      <option name="number" value="LOCAL−00004" />
-      <option name="presentableId" value="LOCAL−00004" />
-      <updated>1752407145599</updated>
+      <workItem from="1752432073576" duration="16303000" />
     </task>
     <task id="LOCAL−00005" summary="Update namespaces in MockLite files to reflect new testing infrastructure structure">
       <option name="closed" value="true" />
@@ -570,7 +568,14 @@
       <option name="presentableId" value="LOCAL−00052" />
       <updated>1752492661771</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL−00053" summary="Update TODOs with completed tasks for CombatSimulator and core game systems">
+      <option name="closed" value="true" />
+      <created>1752492887894</created>
+      <option name="number" value="LOCAL−00053" />
+      <option name="presentableId" value="LOCAL−00053" />
+      <updated>1752492887894</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -590,7 +595,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
     <MESSAGE value="Refactor Session and Client models to initialize properties; add database migration for Clients and Sessions tables" />
     <MESSAGE value="Refactor workspace.xml to update change list comments and improve task duration values" />
     <MESSAGE value="Refactor StartupHelper to improve database connection handling and apply migrations" />
@@ -615,7 +619,8 @@
     <MESSAGE value="Remove unused using directives to clean up code and improve readability" />
     <MESSAGE value="Fix formatting issues by removing unnecessary blank lines and ensuring consistent code style across multiple files" />
     <MESSAGE value="Enhance UI overhaul section in TODOs with detailed priorities and tasks for modern sci-fi interface" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enhance UI overhaul section in TODOs with detailed priorities and tasks for modern sci-fi interface" />
+    <MESSAGE value="Update TODOs with completed tasks for CombatSimulator and core game systems" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update TODOs with completed tasks for CombatSimulator and core game systems" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
