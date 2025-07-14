@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Http.Authentication;
 using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 

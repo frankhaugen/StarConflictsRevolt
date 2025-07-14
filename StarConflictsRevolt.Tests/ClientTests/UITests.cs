@@ -1,12 +1,10 @@
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Raylib_CSharp.Colors;
 using Raylib_CSharp.Interact;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 using StarConflictsRevolt.Clients.Raylib.Rendering.UI;
 using System.Numerics;
-using TUnit.Assertions;
-using TUnit.Core;
+using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 
 namespace StarConflictsRevolt.Tests.ClientTests;
 
@@ -15,7 +13,6 @@ namespace StarConflictsRevolt.Tests.ClientTests;
 /// </summary>
 public class UITests
 {
-    private ILogger<BaseView> _loggerMock;
     private IInputState _inputStateMock;
     private IUIRenderer _rendererMock;
     private TestView _testView;
@@ -25,11 +22,10 @@ public class UITests
     public async Task ButtonElement_ShouldDetectMouseHover()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.ActivePersonnel);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         var mousePosition = new Vector2(150, 125); // Inside button bounds
@@ -47,11 +43,10 @@ public class UITests
     public async Task ButtonElement_ShouldHandleClick()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.DeathStarControl);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         var mousePosition = new Vector2(150, 125);
@@ -77,11 +72,10 @@ public class UITests
     public async Task ButtonElement_ShouldHandleKeyboardActivation()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.BuildShips);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         var clicked = false;
@@ -102,11 +96,10 @@ public class UITests
     public async Task ButtonElement_ShouldRenderCorrectly()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.DeathStarControl);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(800);
@@ -124,11 +117,10 @@ public class UITests
     public async Task ButtonElement_ShouldContainPoint()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.MultiplayerOptions);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         var pointInside = new Vector2(150, 125);
@@ -143,11 +135,10 @@ public class UITests
     public async Task ButtonElement_ShouldHaveCorrectBounds()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.BuildTroops);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         // Act & Assert
@@ -161,11 +152,10 @@ public class UITests
     public async Task View_ShouldHaveCorrectViewType()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.Encyclopedia);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         // Act & Assert
@@ -176,11 +166,10 @@ public class UITests
     public async Task View_ShouldDraw()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.BuildFacilities);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(800);
@@ -200,11 +189,10 @@ public class UITests
     public async Task UIManager_ShouldInitializeCorrectly()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.IdleTrainingFacilities);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(1920);
@@ -223,11 +211,10 @@ public class UITests
     public async Task UIManager_ShouldDetectHighDpi()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.BuildShips);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(3840);
@@ -244,11 +231,10 @@ public class UITests
     public async Task UIManager_ShouldHandleCameraUpdates()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.MultiplayerOptions);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(1920);
@@ -269,11 +255,10 @@ public class UITests
     public async Task UIManager_ShouldRegisterAndSetViews()
     {
         // Arrange
-        _loggerMock = Substitute.For<ILogger<BaseView>>();
         _inputStateMock = Substitute.For<IInputState>();
         _rendererMock = Substitute.For<IUIRenderer>();
         
-        _testView = new TestView();
+        _testView = new TestView(GameView.DeathStarControl);
         _testButton = new ButtonElement("test-button", "Test Button", new Vector2(100, 100), new Vector2(200, 50));
         
         _rendererMock.ScreenWidth.Returns(1920);

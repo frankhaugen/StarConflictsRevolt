@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using Frank.Channels.DependencyInjection;
 

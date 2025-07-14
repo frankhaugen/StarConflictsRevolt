@@ -150,63 +150,6 @@ public static class UIHelper
         }
     }
 
-    public static void DrawMinimap(int x, int y, int width, int height, WorldDto? world)
-    {
-        DrawPanel(x, y, width, height);
-        Graphics.DrawText("Minimap", x + 5, y + 5, FontSizes.Small, Color.White);
-
-        if (world?.Galaxy?.StarSystems == null) return;
-
-        var systems = world.Galaxy.StarSystems.ToList();
-        if (systems.Count == 0) return;
-
-        // Find bounds
-        var minX = systems.Min(s => s.Coordinates.X);
-        var maxX = systems.Max(s => s.Coordinates.X);
-        var minY = systems.Min(s => s.Coordinates.Y);
-        var maxY = systems.Max(s => s.Coordinates.Y);
-
-        var scaleX = (width - 20) / (maxX - minX);
-        var scaleY = (height - 40) / (maxY - minY);
-        var scale = Math.Min(scaleX, scaleY);
-
-        // Draw systems
-        foreach (var system in systems)
-        {
-            var mapX = x + 10 + (int)((system.Coordinates.X - minX) * scale);
-            var mapY = y + 25 + (int)((system.Coordinates.Y - minY) * scale);
-
-            Graphics.DrawCircle(mapX, mapY, 2, Color.Yellow);
-        }
-    }
-
-    public static void DrawResourceBar(int x, int y, int width, int height, GameStateInfoDto? playerState)
-    {
-        DrawPanel(x, y, width, height, Colors.Panel, Colors.Primary);
-        var padding = 16;
-        var iconSize = 24;
-        var fontSize = FontSizes.Medium;
-        int currentX = x + padding;
-        int currentY = y + (height - iconSize) / 2;
-
-        // Credits
-        Graphics.DrawText("⦿", currentX, currentY, iconSize, Colors.Warning); // Placeholder icon
-        currentX += iconSize + 8;
-        Graphics.DrawText($"Credits: {playerState?.Credits ?? 0}", currentX, currentY, fontSize, Colors.Light);
-        currentX += 120;
-
-        // Materials
-        Graphics.DrawText("■", currentX, currentY, iconSize, Colors.Success); // Placeholder icon
-        currentX += iconSize + 8;
-        Graphics.DrawText($"Materials: {playerState?.Materials ?? 0}", currentX, currentY, fontSize, Colors.Light);
-        currentX += 140;
-
-        // Fuel
-        Graphics.DrawText("▲", currentX, currentY, iconSize, Colors.Accent); // Placeholder icon
-        currentX += iconSize + 8;
-        Graphics.DrawText($"Fuel: {playerState?.Fuel ?? 0}", currentX, currentY, fontSize, Colors.Light);
-    }
-
     public static class Colors
     {
         public static Color Primary = new(52, 152, 219, 255);
@@ -227,5 +170,84 @@ public static class UIHelper
         public const int Medium = 20;
         public const int Large = 24;
         public const int Title = 32;
+    }
+
+    public static class SciFiColors
+    {
+        public static Color LaserRay = Color.Red;
+        public static Color Asteroid = Color.Gray;
+        public static Color Background = Color.Black;
+        public static Color HUDText = Color.Green;
+        public static Color HUDBackground = new(10, 10, 20, 220);
+        public static Color HUDSeperator = Color.DarkGray;
+        public static Color Reticle = Color.Green;
+        public static Color GameOverText = Color.Red;
+        public static Color Star = Color.White;
+        public static Color MinimapBackground = Color.Black;
+        public static Color MinimapGrid = Color.DarkGray;
+        public static Color RadarObject = Color.Green;
+        public static Color EnergyBar = Color.Green;
+        public static Color ShieldBar = Color.Blue;
+        public static Color HullBar = Color.Red;
+        public static Color MinimapShip = Color.Green;
+    }
+
+    public static void DrawReticle()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var centerY = Window.GetScreenHeight() / 2;
+        var size = 10;
+        Graphics.DrawLine(centerX - size, centerY, centerX + size, centerY, SciFiColors.Reticle);
+        Graphics.DrawLine(centerX, centerY - size, centerX, centerY + size, SciFiColors.Reticle);
+    }
+
+    public static void DrawResourceBars(int x, int y, int width, int barHeight, GameStateInfoDto? playerState)
+    {
+        // Energy (Credits)
+        DrawBar(x, y, width, barHeight, playerState?.Credits ?? 0, 1000, SciFiColors.EnergyBar, "Credits");
+        // Shield (Materials)
+        DrawBar(x, y + barHeight + 4, width, barHeight, playerState?.Materials ?? 0, 500, SciFiColors.ShieldBar, "Materials");
+        // Hull (Fuel)
+        DrawBar(x, y + 2 * (barHeight + 4), width, barHeight, playerState?.Fuel ?? 0, 200, SciFiColors.HullBar, "Fuel");
+    }
+
+    private static void DrawBar(int x, int y, int width, int height, int value, int max, Color color, string label)
+    {
+        Graphics.DrawRectangle(x, y, width, height, SciFiColors.HUDSeperator);
+        int filled = (int)(width * (Math.Min(value, max) / (float)max));
+        Graphics.DrawRectangle(x, y, filled, height, color);
+        Graphics.DrawText($"{label}: {value}", x + 8, y + 2, FontSizes.Small, SciFiColors.HUDText);
+    }
+
+    public static void DrawResourceBar(int x, int y, int width, int height, GameStateInfoDto? playerState)
+    {
+        // Draw background panel
+        DrawPanel(x, y, width, height, SciFiColors.HUDBackground, SciFiColors.HUDSeperator);
+        // Draw resource bars
+        DrawResourceBars(x + 16, y + 8, width - 32, 14, playerState);
+    }
+
+    public static void DrawMinimap(int x, int y, int width, int height, WorldDto? world)
+    {
+        // Draw minimap background
+        Graphics.DrawRectangle(x, y, width, height, SciFiColors.MinimapBackground);
+        Graphics.DrawRectangleLines(x, y, width, height, SciFiColors.MinimapGrid);
+        Graphics.DrawText("Minimap", x + 5, y + 5, FontSizes.Small, SciFiColors.HUDText);
+        if (world?.Galaxy?.StarSystems == null) return;
+        var systems = world.Galaxy.StarSystems.ToList();
+        if (systems.Count == 0) return;
+        var minX = systems.Min(s => s.Coordinates.X);
+        var maxX = systems.Max(s => s.Coordinates.X);
+        var minY = systems.Min(s => s.Coordinates.Y);
+        var maxY = systems.Max(s => s.Coordinates.Y);
+        var scaleX = (width - 20) / (maxX - minX);
+        var scaleY = (height - 40) / (maxY - minY);
+        var scale = Math.Min(scaleX, scaleY);
+        foreach (var system in systems)
+        {
+            var mapX = x + 10 + (int)((system.Coordinates.X - minX) * scale);
+            var mapY = y + 25 + (int)((system.Coordinates.Y - minY) * scale);
+            Graphics.DrawCircle(mapX, mapY, 2, SciFiColors.Star);
+        }
     }
 }

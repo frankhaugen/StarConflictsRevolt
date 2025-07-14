@@ -12,7 +12,6 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
-using Frank.Channels.DependencyInjection;
 using Frank.PulseFlow;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;

@@ -23,38 +23,29 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
         // Update player state for HUD
         renderContext.GameState.PlayerState = currentWorld?.PlayerState;
 
-        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, renderContext.GameState.PlayerState);
+        // Begin camera mode for world rendering
+        Raylib_CSharp.Rendering.Graphics.BeginMode2D(renderContext.UIManager.Camera);
+        DrawGalaxy(currentWorld);
+        HandleMouseSelection(currentWorld);
+        Raylib_CSharp.Rendering.Graphics.EndMode2D();
 
+        // UI overlays (not affected by camera)
+        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, renderContext.GameState.PlayerState);
         logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
             currentWorld?.Id, currentWorld?.Galaxy != null, currentWorld?.Galaxy?.StarSystems?.Count() ?? 0);
-
         if (currentWorld == null)
         {
             UIHelper.DrawText("No world data available", 400, 300, UIHelper.FontSizes.Large, Color.White, true);
             UIHelper.DrawText("Press Backspace or Escape to return to menu", 400, 350, UIHelper.FontSizes.Medium, Color.Gray, true);
             return;
         }
-
-        // Draw title
         UIHelper.DrawText("Galaxy View", 400, 20, UIHelper.FontSizes.Large, Color.White, true);
-
-        // Draw star systems and planets
-        DrawGalaxy(currentWorld);
-
-        // Handle mouse selection
-        HandleMouseSelection(currentWorld);
-
-        // Draw action panel
         DrawActionPanel();
-
-        // Draw minimap
         UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, currentWorld);
-
-        // Draw status bar
         UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {renderContext.GameState.SelectedObject?.GetType().Name ?? "None"} | ESC/Backspace: Menu");
-
-        // Handle keyboard input
         HandleKeyboardInput();
+        // Draw reticle at center
+        UIHelper.DrawReticle();
     }
 
     private void DrawGalaxy(WorldDto world)

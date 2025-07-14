@@ -2,7 +2,6 @@ using System.Numerics;
 using Raylib_CSharp.Colors;
 using Raylib_CSharp.Camera.Cam2D;
 using Raylib_CSharp.Interact;
-using StarConflictsRevolt.Clients.Raylib.Core;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -15,6 +14,7 @@ public class UIManager
     private readonly IInputState _inputState;
     private readonly Dictionary<string, IView> _views;
     private IView? _currentView;
+    private Vector2? _lastPanMousePos = null;
     
     // High resolution support
     public float DpiScale { get; private set; } = 1.0f;
@@ -58,11 +58,12 @@ public class UIManager
     {
         _camera = new Camera2D
         {
-            Target = new Vector2(BaseWidth / 2f, BaseHeight / 2f),
+            Target = new Vector2(0, 0), // Center world at (0,0)
             Offset = new Vector2(BaseWidth / 2f, BaseHeight / 2f),
             Rotation = 0.0f,
             Zoom = 1.0f
         };
+        CameraTarget = _camera.Target;
     }
     
     private void DetectHighResolution()
@@ -129,20 +130,34 @@ public class UIManager
     
     private void UpdateCamera(float deltaTime)
     {
-        // Handle camera zoom with mouse wheel
+        // Handle camera zoom with mouse wheel (centered on screen center)
         var wheelMove = _inputState.MouseWheelMove;
         if (Math.Abs(wheelMove) > 0.1f)
         {
+            var mouseScreen = _inputState.MousePosition;
+            var mouseWorldBefore = ScreenToWorld(mouseScreen);
             CameraZoom = Math.Clamp(CameraZoom + wheelMove * 0.1f, 0.1f, 10.0f);
+            var mouseWorldAfter = ScreenToWorld(mouseScreen);
+            CameraTarget += mouseWorldBefore - mouseWorldAfter;
         }
-        
-        // Handle camera pan with middle mouse button
-        if (_inputState.IsMouseButtonDown(MouseButton.Middle))
+
+        // Pan with right mouse button
+        if (_inputState.IsMouseButtonDown(MouseButton.Right))
         {
-            var mouseDelta = _inputState.MousePosition - CameraTarget;
-            CameraTarget += mouseDelta * 0.01f;
+            if (_lastPanMousePos == null)
+                _lastPanMousePos = _inputState.MousePosition;
+            else
+            {
+                var mouseDelta = _inputState.MousePosition - _lastPanMousePos.Value;
+                CameraTarget -= mouseDelta / CameraZoom; // Move camera target by delta in world space
+                _lastPanMousePos = _inputState.MousePosition;
+            }
         }
-        
+        else
+        {
+            _lastPanMousePos = null;
+        }
+
         // Update camera properties
         _camera.Target = CameraTarget;
         _camera.Zoom = CameraZoom;

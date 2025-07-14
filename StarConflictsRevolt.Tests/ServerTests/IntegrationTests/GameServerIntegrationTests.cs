@@ -1,7 +1,3 @@
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.SignalR.Client;
-using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;

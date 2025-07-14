@@ -1,6 +1,4 @@
-﻿using StarConflictsRevolt.Clients.Raylib.Core;
-
-namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
+﻿namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
 /// <summary>
 /// Represents a view in the game UI system.

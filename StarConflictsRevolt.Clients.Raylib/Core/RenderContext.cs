@@ -9,12 +9,14 @@ public class RenderContext
 {
     private readonly IOptions<GameClientConfiguration> _configurationOptions;
     private readonly ILogger<RenderContext> _logger;
+    private readonly UIManager _uiManager;
 
-    public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore)
+    public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore, UIManager uiManager)
     {
         _logger = logger;
         _configurationOptions = configurationOptions;
         WorldStore = worldStore;
+        _uiManager = uiManager;
     }
 
     public GameClientConfiguration Configuration => _configurationOptions.Value;
@@ -57,4 +59,6 @@ public class RenderContext
         get => GameState.PlayerId;
         set => GameState.PlayerId = value;
     }
+
+    public UIManager UIManager => _uiManager;
 }
