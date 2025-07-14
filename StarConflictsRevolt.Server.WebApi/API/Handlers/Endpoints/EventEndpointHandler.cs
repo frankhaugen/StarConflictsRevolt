@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
-namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
 /// <summary>
 ///     Handles event store and snapshot endpoints

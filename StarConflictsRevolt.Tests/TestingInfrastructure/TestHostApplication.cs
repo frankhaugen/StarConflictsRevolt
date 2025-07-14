@@ -24,7 +24,7 @@ using StarConflictsRevolt.Clients.Raylib.Infrastructure.Configuration;
 using StarConflictsRevolt.Clients.Raylib.Infrastructure.Services;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 using StarConflictsRevolt.Server.WebApi;
-using StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;

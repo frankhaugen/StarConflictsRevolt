@@ -8,7 +8,7 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
-namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
 /// <summary>
 ///     Handles authentication and token endpoints

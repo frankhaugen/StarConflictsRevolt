@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
-using StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;

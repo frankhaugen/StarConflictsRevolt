@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
 /// <summary>
 ///     Main API endpoint handler that orchestrates all sub-handlers

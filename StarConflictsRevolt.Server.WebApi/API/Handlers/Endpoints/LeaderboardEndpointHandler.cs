@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-namespace StarConflictsRevolt.Server.WebApi.API.Controllers.Endpoints;
+namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
 /// <summary>
 ///     Handles leaderboard endpoints
