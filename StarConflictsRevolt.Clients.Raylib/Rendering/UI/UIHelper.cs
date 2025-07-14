@@ -319,6 +319,17 @@ public static class UIHelper
             Graphics.DrawLine(x1, y1, x2, y2, borderColor);
         }
     }
+
+    public static void DrawPlanetIcon(int x, int y, int radius = 3)
+    {
+        Graphics.DrawCircle(x, y, radius, Color.Blue);
+        Graphics.DrawCircleLines(x, y, radius + 1, Color.LightGray);
+    }
+    public static void DrawFleetIcon(int x, int y)
+    {
+        Graphics.DrawRectangle(x, y, 6, 3, Color.LightGray);
+        Graphics.DrawRectangleLines(x, y, 6, 3, Color.DarkGray);
+    }
 }
 
 public static class FontHelper

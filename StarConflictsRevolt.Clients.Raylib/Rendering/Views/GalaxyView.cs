@@ -14,179 +14,164 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
     /// <inheritdoc />
     public GameView ViewType => GameView.Galaxy;
 
-    /// <inheritdoc />
+    private int _starfieldFrame = 0;
+    private StarSystemWithSector? _hoveredSystem = null;
+    private StarSystemWithSector? _selectedSystem = null;
+    private bool _showSystemDialog = false;
+    private StarSystemWithSector? _dialogSystem = null;
+
     public void Draw()
     {
         Graphics.ClearBackground(UIHelper.Colors.Background);
-
-        var currentWorld = renderContext.World;
-        // Update player state for HUD
-        renderContext.GameState.PlayerState = currentWorld?.PlayerState;
-
-        // Begin camera mode for world rendering
+        _starfieldFrame++;
+        DrawStarfield();
         Raylib_CSharp.Rendering.Graphics.BeginMode2D(renderContext.UIManager.Camera);
-        DrawGalaxy(currentWorld);
-        HandleMouseSelection(currentWorld);
+        DrawSectorBorders();
+        DrawGalaxy();
+        HandleMouseHover();
+        HandleMouseSelection();
         Raylib_CSharp.Rendering.Graphics.EndMode2D();
-
-        // UI overlays (not affected by camera)
         UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, renderContext.GameState.PlayerState);
-        logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
-            currentWorld?.Id, currentWorld?.Galaxy != null, currentWorld?.Galaxy?.StarSystems?.Count() ?? 0);
-        if (currentWorld == null)
-        {
-            UIHelper.DrawText("No world data available", 400, 300, UIHelper.FontSizes.Large, Color.White, true);
-            UIHelper.DrawText("Press Backspace or Escape to return to menu", 400, 350, UIHelper.FontSizes.Medium, Color.Gray, true);
-            return;
-        }
         UIHelper.DrawText("Galaxy View", 400, 20, UIHelper.FontSizes.Large, Color.White, true);
         DrawActionPanel();
-        UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, currentWorld);
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {renderContext.GameState.SelectedObject?.GetType().Name ?? "None"} | ESC/Backspace: Menu");
+        UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, null);
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"ESC/Backspace: Menu | F5-F8: Toggle Sectors");
         HandleKeyboardInput();
-        // Draw reticle at center
         UIHelper.DrawReticle();
+        if (_showSystemDialog && _dialogSystem != null)
+        {
+            ShowSystemDialog(_dialogSystem);
+        }
     }
 
-    private void DrawGalaxy(WorldDto world)
+    private void DrawStarfield()
     {
-        var systems = world.Galaxy?.StarSystems;
-        if (systems == null || !systems.Any())
+        var rand = new Random(42);
+        for (int i = 0; i < 300; i++)
         {
-            UIHelper.DrawText("No systems found in the galaxy.", 400, 300, UIHelper.FontSizes.Medium, Color.White, true);
-            return;
+            int x = rand.Next(0, Window.GetScreenWidth());
+            int y = rand.Next(0, Window.GetScreenHeight());
+            // Animate twinkle
+            byte twinkle = (byte)(((_starfieldFrame / 10 + i) % 20 < 2) ? 40 : 0);
+            var color = i % 7 == 0 ? new Color((byte)(200 + twinkle), (byte)(200 + twinkle), 255, 255) : new Color((byte)(120 + twinkle), (byte)(120 + twinkle), 180, 255);
+            Graphics.DrawPixel(x, y, color);
         }
+    }
 
-        // Draw star systems and planets
-        foreach (var system in systems)
+    private void DrawSectorBorders()
+    {
+        foreach (var sector in GalaxyLayout.GetSectors())
         {
-            // Draw system
-            Graphics.DrawCircle((int)system.Coordinates.X, (int)system.Coordinates.Y, 16, Color.Yellow);
-            UIHelper.DrawText(system.Name, (int)(system.Coordinates.X + 18), (int)(system.Coordinates.Y - 8), 12, Color.White);
+            int sx = 100 + sector.SectorId * 300;
+            UIHelper.DrawSciFiBorder(sx, 0, 300, Window.GetScreenHeight(), new Color(30, 30, 30, 180), 2);
+        }
+    }
 
-            // Draw planets around the system
-            if (system.Planets != null)
+    private void DrawGalaxy()
+    {
+        foreach (var sector in GalaxyLayout.GetSectors())
+        {
+            if (!sector.IsVisible)
             {
-                var angleStep = 2 * Math.PI / Math.Max(1, system.Planets.Count());
-                var radius = 32;
-                var i = 0;
-                foreach (var planet in system.Planets)
-                {
-                    var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
-                    var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
-
-                    // Highlight selected planet
-                    var planetColor = renderContext.GameState.SelectedObject?.Id == planet.Id ? Color.Red : Color.Blue;
-                    Graphics.DrawCircle(px, py, 6, planetColor);
-                    UIHelper.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
-                    i++;
-                }
+                int sx = 100 + sector.SectorId * 300;
+                Graphics.DrawRectangle(sx, 0, 300, Window.GetScreenHeight(), new Color(30, 30, 30, 180));
+                UIHelper.DrawText($"{sector.Name} (Hidden)", sx + 20, 60, UIHelper.FontSizes.Medium, Color.Gray);
             }
         }
+        var systems = GalaxyLayout.GetAllSystems();
+        foreach (var sys in systems)
+        {
+            if (!sys.IsVisible) continue;
+            var pos = sys.System.Coordinates;
+            // Glow
+            for (int r = 18; r > 8; r -= 2)
+                Graphics.DrawCircle((int)pos.X, (int)pos.Y, r, new Color(255, 255, 100, 30));
+            // Main system dot
+            Graphics.DrawCircle((int)pos.X, (int)pos.Y, 8, Color.Yellow);
+            // Demo: draw a small planet icon
+            Graphics.DrawCircle((int)pos.X + 12, (int)pos.Y + 6, 3, Color.Blue);
+            // Demo: draw a small fleet icon
+            Graphics.DrawRectangle((int)pos.X - 10, (int)pos.Y + 10, 6, 3, Color.LightGray);
+            // Name
+            UIHelper.DrawText(sys.System.Name, (int)pos.X + 16, (int)pos.Y - 8, 14, Color.White);
+        }
+        // Hover effect
+        if (_hoveredSystem != null)
+        {
+            var pos = _hoveredSystem.System.Coordinates;
+            Graphics.DrawCircle((int)pos.X, (int)pos.Y, 16, Color.SkyBlue);
+        }
+        // Selection effect
+        if (_selectedSystem != null)
+        {
+            var pos = _selectedSystem.System.Coordinates;
+            Graphics.DrawCircle((int)pos.X, (int)pos.Y, 24, Color.SkyBlue);
+        }
     }
 
-    private void HandleMouseSelection(WorldDto world)
+    private void HandleMouseHover()
     {
-        if (!Input.IsMouseButtonPressed(MouseButton.Left)) return;
-
         var mouse = Input.GetMousePosition();
-        var systems = world.Galaxy?.StarSystems;
-        if (systems == null) return;
-
-        foreach (var system in systems)
+        _hoveredSystem = null;
+        var systems = GalaxyLayout.GetAllSystems();
+        foreach (var sys in systems)
         {
-            var dist = Math.Sqrt(Math.Pow(mouse.X - system.Coordinates.X, 2) + Math.Pow(mouse.Y - system.Coordinates.Y, 2));
+            if (!sys.IsVisible) continue;
+            var pos = sys.System.Coordinates;
+            var dist = Math.Sqrt(Math.Pow(mouse.X - pos.X, 2) + Math.Pow(mouse.Y - pos.Y, 2));
             if (dist < 16)
             {
-                renderContext.GameState.SelectedObject = system;
-                renderContext.GameState.SetFeedback($"Selected system: {system.Name}", TimeSpan.FromSeconds(2));
-                return;
+                _hoveredSystem = sys;
+                break;
             }
+        }
+    }
 
-            if (system.Planets != null)
+    private void HandleMouseSelection()
+    {
+        if (!Input.IsMouseButtonPressed(MouseButton.Left)) return;
+        var mouse = Input.GetMousePosition();
+        var systems = GalaxyLayout.GetAllSystems();
+        foreach (var sys in systems)
+        {
+            if (!sys.IsVisible) continue;
+            var pos = sys.System.Coordinates;
+            var dist = Math.Sqrt(Math.Pow(mouse.X - pos.X, 2) + Math.Pow(mouse.Y - pos.Y, 2));
+            if (dist < 16)
             {
-                var angleStep = 2 * Math.PI / Math.Max(1, system.Planets.Count());
-                var radius = 32;
-                var i = 0;
-                foreach (var planet in system.Planets)
-                {
-                    var px = (int)(system.Coordinates.X + Math.Cos(i * angleStep) * radius);
-                    var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
-                    var pdist = Math.Sqrt(Math.Pow(mouse.X - px, 2) + Math.Pow(mouse.Y - py, 2));
-                    if (pdist < 6)
-                    {
-                        renderContext.GameState.SelectedObject = planet;
-                        renderContext.GameState.SetFeedback($"Selected planet: {planet.Name}", TimeSpan.FromSeconds(2));
-                        return;
-                    }
-
-                    i++;
-                }
+                _selectedSystem = sys;
+                _showSystemDialog = true;
+                _dialogSystem = sys;
+                renderContext.GameState.SelectedObject = sys.System;
+                renderContext.GameState.SetFeedback($"Selected system: {sys.System.Name}", TimeSpan.FromSeconds(2));
+                return;
             }
         }
     }
 
     private void DrawActionPanel()
     {
-        var selected = renderContext.GameState.SelectedObject;
-        if (selected == null) return;
-
-        // Draw info panel
-        var info = new List<(string Label, string Value)>();
-
-        if (selected is PlanetDto planet)
+        if (_selectedSystem == null) return;
+        var system = _selectedSystem.System;
+        var info = new List<(string Label, string Value)>
         {
-            info.Add(("Planet", planet.Name));
-            info.Add(("Radius", $"{planet.Radius:F1}"));
-            info.Add(("Mass", $"{planet.Mass:F1}"));
-            info.Add(("Distance", $"{planet.DistanceFromSun:F1}"));
-        }
-        else if (selected is StarSystemDto system)
-        {
-            info.Add(("System", system.Name));
-            info.Add(("Planets", $"{system.Planets?.Count() ?? 0}"));
-            info.Add(("Coordinates", $"({system.Coordinates.X:F0}, {system.Coordinates.Y:F0})"));
-        }
-
-        UIHelper.DrawInfoPanel(10, Window.GetScreenHeight() - 200, 300, 150, "Selected Object", info);
-
-        // Draw action buttons
-        var buttonY = Window.GetScreenHeight() - 80;
-        var buttonWidth = 100;
-        var buttonHeight = 30;
-        var spacing = 20;
-        var startX = 320;
-
-        if (UIHelper.DrawButton("Move Fleet", startX, buttonY, buttonWidth, buttonHeight)) ShowMoveFleetDialog();
-
-        if (UIHelper.DrawButton("Build Structure", startX + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight)) ShowBuildStructureDialog();
-
-        if (UIHelper.DrawButton("Attack", startX + (buttonWidth + spacing) * 2, buttonY, buttonWidth, buttonHeight)) ShowAttackDialog();
-
-        if (UIHelper.DrawButton("Diplomacy", startX + (buttonWidth + spacing) * 3, buttonY, buttonWidth, buttonHeight)) ShowDiplomacyDialog();
+            ("System", system.Name),
+            ("Coordinates", $"({system.Coordinates.X:F0}, {system.Coordinates.Y:F0})"),
+            ("Planets", $"{system.Planets?.Count() ?? 0}")
+        };
+        UIHelper.DrawInfoPanel(10, Window.GetScreenHeight() - 200, 300, 150, "Selected System", info);
     }
 
     private void HandleKeyboardInput()
     {
-        if (Input.IsKeyPressed(KeyboardKey.Escape))
+        if (Input.IsKeyPressed(KeyboardKey.Escape) || Input.IsKeyPressed(KeyboardKey.Backspace))
         {
-            logger.LogDebug("Escape key pressed - navigating to menu");
             renderContext.GameState.NavigateTo(GameView.Menu);
         }
-
-        if (Input.IsKeyPressed(KeyboardKey.Backspace))
-        {
-            logger.LogDebug("Backspace key pressed - navigating to menu");
-            renderContext.GameState.NavigateTo(GameView.Menu);
-        }
-
-        if (Input.IsKeyPressed(KeyboardKey.F1)) renderContext.GameState.NavigateTo(GameView.Menu);
-
-        if (Input.IsKeyPressed(KeyboardKey.F2)) renderContext.GameState.NavigateTo(GameView.FleetFinder);
-
-        if (Input.IsKeyPressed(KeyboardKey.F3)) renderContext.GameState.NavigateTo(GameView.GameOptions);
-
-        if (Input.IsKeyPressed(KeyboardKey.F4)) renderContext.GameState.NavigateTo(GameView.PlanetaryFinder);
+        if (Input.IsKeyPressed(KeyboardKey.F5)) GalaxyLayout.ToggleSectorVisibility(1);
+        if (Input.IsKeyPressed(KeyboardKey.F6)) GalaxyLayout.ToggleSectorVisibility(2);
+        if (Input.IsKeyPressed(KeyboardKey.F7)) GalaxyLayout.ToggleSectorVisibility(3);
+        if (Input.IsKeyPressed(KeyboardKey.F8)) GalaxyLayout.ToggleSectorVisibility(4);
     }
 
     private void ShowMoveFleetDialog()
@@ -207,5 +192,22 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
     private void ShowDiplomacyDialog()
     {
         renderContext.GameState.SetFeedback("Diplomacy dialog not implemented yet", TimeSpan.FromSeconds(3));
+    }
+
+    private void ShowSystemDialog(StarSystemWithSector sys)
+    {
+        // Placeholder: draw a sci-fi panel in the center with system info
+        int w = 400, h = 250;
+        int x = (Window.GetScreenWidth() - w) / 2;
+        int y = (Window.GetScreenHeight() - h) / 2;
+        UIHelper.DrawSciFiBorder(x, y, w, h, new Color(50, 50, 50, 200), 2);
+        UIHelper.DrawText($"System: {sys.System.Name}", x + 30, y + 40, UIHelper.FontSizes.Large, Color.White);
+        UIHelper.DrawText($"Sector: {sys.SectorName}", x + 30, y + 80, UIHelper.FontSizes.Medium, Color.LightGray);
+        UIHelper.DrawText($"Planets: {sys.System.Planets?.Count() ?? 0}", x + 30, y + 120, UIHelper.FontSizes.Medium, Color.LightGray);
+        if (UIHelper.DrawButton("Close", x + w - 110, y + h - 50, 100, 40))
+        {
+            _showSystemDialog = false;
+            _dialogSystem = null;
+        }
     }
 }
