@@ -22,6 +22,7 @@ public static class StartupHelper
         builder.Services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
+        builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
@@ -107,7 +108,7 @@ public static class StartupHelper
         });
     }
 
-    public static void Configure(WebApplication app)
+    public static async Task ConfigureAsync(WebApplication app)
     {
         // Ensure database is created with retry logic
         using (var scope = app.Services.CreateScope())
@@ -127,14 +128,32 @@ public static class StartupHelper
                 logger.LogWarning("No connection string found for 'gameDb'");
             }
 
-            var maxRetries = 2;
-            var retryDelay = TimeSpan.FromSeconds(1);
+            var maxRetries = 5;
+            var retryDelay = TimeSpan.FromSeconds(2);
             for (var attempt = 1; attempt <= maxRetries; attempt++)
                 try
                 {
                     logger.LogInformation("Attempting to ensure database is created (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
-                    db.Database.EnsureCreated();
-                    logger.LogInformation("Database created successfully");
+                    
+                    // Check if database exists first
+                    var databaseExists = await db.Database.CanConnectAsync();
+                    logger.LogInformation("Database connection test result: {DatabaseExists}", databaseExists);
+                    
+                    // Ensure database is created
+                    var created = db.Database.EnsureCreated();
+                    logger.LogInformation("Database creation result: {Created}", created);
+                    
+                    // Verify tables were created
+                    var tables = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(db.Database.SqlQueryRaw<string>("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"));
+                    logger.LogInformation("Created tables: {Tables}", string.Join(", ", tables));
+                    
+                    // Verify the Clients table specifically exists
+                    if (!tables.Contains("Clients"))
+                    {
+                        throw new InvalidOperationException("Clients table was not created");
+                    }
+                    
+                    logger.LogInformation("Database created successfully with all required tables");
                     break;
                 }
                 catch (Exception ex)
@@ -143,13 +162,11 @@ public static class StartupHelper
                     if (attempt == maxRetries)
                     {
                         logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
-                        break;
+                        throw; // Re-throw to prevent application from starting with broken database
                     }
 
-                    Thread.Sleep(retryDelay);
+                    await Task.Delay(retryDelay);
                 }
-
-            logger.LogInformation("Database created successfully");
         }
 
         app.UseAuthentication();

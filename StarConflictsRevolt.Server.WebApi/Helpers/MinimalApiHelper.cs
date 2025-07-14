@@ -47,8 +47,44 @@ public static class MinimalApiHelper
             }
 
             var gameDbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+            
+            // Check if database is ready
+            try
+            {
+                var canConnect = await gameDbContext.Database.CanConnectAsync(context.RequestAborted);
+                if (!canConnect)
+                {
+                    context.Response.StatusCode = 503;
+                    await context.Response.WriteAsync("Database not ready");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TokenEndpoint");
+                logger.LogWarning(ex, "Database connection check failed for client {ClientId}", request.ClientId);
+                context.Response.StatusCode = 503;
+                await context.Response.WriteAsync("Database not ready");
+                return;
+            }
+            
             // Use direct lookup if GetClientAsync is not available
-            var existingClient = gameDbContext.Clients.FirstOrDefault(c => c.Id == request.ClientId);
+            Client? existingClient = null;
+            try
+            {
+                existingClient = gameDbContext.Clients.FirstOrDefault(c => c.Id == request.ClientId);
+            }
+            catch (Exception ex)
+            {
+                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TokenEndpoint");
+                logger.LogWarning(ex, "Failed to query Clients table for client {ClientId}. Database may not be fully initialized.", request.ClientId);
+                context.Response.StatusCode = 503;
+                await context.Response.WriteAsync("Database not ready");
+                return;
+            }
+            
             if (existingClient == null)
             {
                 existingClient = new Client { Id = request.ClientId, LastSeen = DateTime.UtcNow };

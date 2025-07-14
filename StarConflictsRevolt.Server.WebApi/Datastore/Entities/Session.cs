@@ -4,7 +4,7 @@ namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public class Session : IGameObject
 {
-    public string SessionName { get; set; }
+    public string SessionName { get; set; } = string.Empty;
 
     public DateTime Created { get; set; }
 

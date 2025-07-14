@@ -18,6 +18,6 @@ Debug.Assert(config.GetConnectionString("ravenDb") != "SET_BY_ASPIRE_OR_ENVIRONM
 
 app.MapDefaultEndpoints();
 
-StartupHelper.Configure(app);
+await StartupHelper.ConfigureAsync(app);
 
-app.Run();
+await app.RunAsync();

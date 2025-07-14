@@ -13,12 +13,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/StarConflictsRevolt.Tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Client.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Client.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/GameDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/GameDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DpaMonitoringSettings">
+    <option name="firstShow" value="false" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -62,6 +68,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Aspire Host.StarConflictsRevolt.Aspire.AppHost: http.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -205,7 +212,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="6856000" />
+      <workItem from="1752432073576" duration="8089000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -396,7 +403,14 @@
       <option name="presentableId" value="LOCAL−00027" />
       <updated>1752445990164</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL−00028" summary="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis">
+      <option name="closed" value="true" />
+      <created>1752446502623</created>
+      <option name="number" value="LOCAL−00028" />
+      <option name="presentableId" value="LOCAL−00028" />
+      <updated>1752446502623</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -416,7 +430,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests" />
     <MESSAGE value="Add Proxy and SubstituteExtensions for fluent mocking capabilities" />
     <MESSAGE value="Update namespaces in MockLite files to reflect new testing infrastructure structure" />
     <MESSAGE value="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions" />
@@ -441,7 +454,8 @@
     <MESSAGE value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
     <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
     <MESSAGE value="Refactor workspace.xml to update session response model and enhance event processing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor workspace.xml to update session response model and enhance event processing" />
+    <MESSAGE value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
