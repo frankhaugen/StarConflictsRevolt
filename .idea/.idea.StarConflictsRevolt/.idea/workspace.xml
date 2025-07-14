@@ -12,17 +12,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Add victory conditions and technology system with resource management">
-      <change afterPath="$PROJECT_DIR$/DesignDocs/CombatSystem.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DesignDocs/MissionSystem.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/ResourceSystem.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/Technology.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/VictoryCondition.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/UnitTests/GameContentTests.cs" afterDir="false" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DesignDocs/TODOs.md" beforeDir="false" afterPath="$PROJECT_DIR$/DesignDocs/TODOs.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/GameSetup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Models/GameSetup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/HostedServicesIsolationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +55,7 @@
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Models/Planet.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/GameContentService.cs" root0="SKIP_HIGHLIGHTING" />
@@ -90,6 +87,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "f86cb571-24b9-49cf-b1f3-e904181eeabb.executor": "Debug",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
@@ -230,7 +228,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="13613000" />
+      <workItem from="1752432073576" duration="14628000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -533,7 +531,28 @@
       <option name="presentableId" value="LOCAL−00043" />
       <updated>1752485006862</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL−00044" summary="Add victory conditions and technology system with resource management">
+      <option name="closed" value="true" />
+      <created>1752489104765</created>
+      <option name="number" value="LOCAL−00044" />
+      <option name="presentableId" value="LOCAL−00044" />
+      <updated>1752489104765</updated>
+    </task>
+    <task id="LOCAL−00045" summary="Update workspace configuration to reflect recent changes in victory conditions and resource management">
+      <option name="closed" value="true" />
+      <created>1752489137179</created>
+      <option name="number" value="LOCAL−00045" />
+      <option name="presentableId" value="LOCAL−00045" />
+      <updated>1752489137179</updated>
+    </task>
+    <task id="LOCAL−00046" summary="Add combat simulation framework with Death Star mechanics and combat services">
+      <option name="closed" value="true" />
+      <created>1752490242095</created>
+      <option name="number" value="LOCAL−00046" />
+      <option name="presentableId" value="LOCAL−00046" />
+      <updated>1752490242095</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -553,8 +572,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor integration tests to utilize TestHostApplication for improved HTTP client handling and remove manual token acquisition" />
-    <MESSAGE value="Add integration tests for authentication and HTTP client configuration" />
     <MESSAGE value="Add isolation tests for hosted services and update database name validation" />
     <MESSAGE value="Update workspace configuration to reflect recent test additions and modifications" />
     <MESSAGE value="Enhance hosted services isolation tests with in-memory database setup and mock event store" />
@@ -578,7 +595,9 @@
     <MESSAGE value="Enhance error handling and logging in token management and session creation" />
     <MESSAGE value="Add AI strategies and memory management for enhanced decision-making" />
     <MESSAGE value="Add victory conditions and technology system with resource management" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add victory conditions and technology system with resource management" />
+    <MESSAGE value="Update workspace configuration to reflect recent changes in victory conditions and resource management" />
+    <MESSAGE value="Add combat simulation framework with Death Star mechanics and combat services" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add combat simulation framework with Death Star mechanics and combat services" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

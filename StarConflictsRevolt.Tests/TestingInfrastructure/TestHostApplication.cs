@@ -26,8 +26,10 @@ using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Helpers;
+using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
+using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -107,6 +109,7 @@ public class TestHostApplication : IDisposable
         
         // Register AI strategy for AiTurnService
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
+        builder.Services.AddSingleton<AiMemoryBank>();
 
         // Add SignalR
         builder.Services.AddSignalR(config =>

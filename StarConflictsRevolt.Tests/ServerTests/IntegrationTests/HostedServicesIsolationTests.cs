@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -113,6 +114,7 @@ public class HostedServicesIsolationTests
         services.AddSingleton<IEventStore, MockEventStore>();
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
+        services.AddSingleton<AiMemoryBank>();
         
         var serviceProvider = services.BuildServiceProvider();
         
@@ -165,6 +167,7 @@ public class HostedServicesIsolationTests
         services.AddSingleton<WorldService>();
         services.AddSingleton<SessionService>();
         services.AddSingleton<IEventStore, MockEventStore>();
+        services.AddSingleton<AiMemoryBank>();
         
         var serviceProvider = services.BuildServiceProvider();
         
@@ -259,6 +262,7 @@ public class HostedServicesIsolationTests
         services.AddSingleton<IEventStore, MockEventStore>();
         services.AddSingleton(typeof(CommandQueue<IGameEvent>));
         services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
+        services.AddSingleton<AiMemoryBank>();
         
         var serviceProvider = services.BuildServiceProvider();
         

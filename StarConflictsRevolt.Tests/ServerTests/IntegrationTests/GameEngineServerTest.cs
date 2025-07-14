@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Game.World;
 using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
@@ -31,13 +32,13 @@ public class GameEngineServerTest
         using var scope = app.Services.CreateScope();
         var serviceProvider = scope.ServiceProvider;
         var dbContext = serviceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken); // Ensure the database is created
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new { ClientId = testClientId, ClientSecret = Constants.Secret });
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest() { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.AccessToken))
             throw new Exception("Failed to obtain JWT token for test user");
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj.AccessToken);
@@ -143,8 +144,4 @@ public class GameEngineServerTest
         // Gracefully stop the SignalR connection
         await hubConnection.StopAsync();
     }
-
-    private record SessionResponse(Guid SessionId);
-
-    private record TokenResponse(string AccessToken, int ExpiresIn, string TokenType);
 }

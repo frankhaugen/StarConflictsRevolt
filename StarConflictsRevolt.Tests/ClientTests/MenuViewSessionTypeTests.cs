@@ -22,15 +22,11 @@ public class MenuViewSessionTypeTests
         services.AddSingleton(Options.Create(new GameClientConfiguration()));
         services.AddSingleton<IClientWorldStore, TestWorldStore>();
         services.AddSingleton<RenderContext>();
-        services.AddSingleton<GameCommandService>(sp => new GameCommandService(
-            sp.GetRequiredService<RenderContext>().GameState,
-            sp.GetRequiredService<ILogger<GameCommandService>>(),
-            new TestHttpApiClient())); // Use a test implementation instead of null
-        services.AddSingleton<SignalRService>(sp => new TestSignalRService(
-            sp.GetRequiredService<IOptions<GameClientConfiguration>>(),
-            sp.GetRequiredService<IClientWorldStore>(),
-            sp.GetRequiredService<ILogger<SignalRService>>()));
+        services.AddSingleton<IHttpApiClient, TestHttpApiClient>();
+        services.AddSingleton<GameCommandService>();
+        services.AddSingleton<SignalRService>();
         services.AddSingleton<MenuView>();
+        services.AddSingleton<GameState>();
         return services.BuildServiceProvider();
     }
 
