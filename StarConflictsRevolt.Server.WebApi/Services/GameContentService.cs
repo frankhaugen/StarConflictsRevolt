@@ -160,14 +160,7 @@ public class GameContentService
         return hasShipyard;
     }
 
-    public string GetGameBalanceInfo()
-    {
-        var shipTemplates = GetAllShipTemplates();
-        var structureTemplates = GetAllStructureTemplates();
-        var planetTypes = GetAllPlanetTypes();
 
-        return $"Game Content Loaded: {shipTemplates.Count()} ship types, {structureTemplates.Count()} structure types, {planetTypes.Count()} planet types";
-    }
 
     public IEnumerable<StructureTemplate> GetStartingStructureSet(string setType)
     {
@@ -178,6 +171,162 @@ public class GameContentService
             "economic" => new[] { StructureTemplate.Mine, StructureTemplate.Refinery, StructureTemplate.Shipyard },
             "defensive" => new[] { StructureTemplate.ShieldGenerator, StructureTemplate.TrainingFacility },
             _ => new[] { StructureTemplate.Mine }
+        };
+    }
+
+    // Technology system methods
+    public IEnumerable<Technology> GetAllTechnologies()
+    {
+        return new[]
+        {
+            Technology.BasicWeapons,
+            Technology.AdvancedWeapons,
+            Technology.HeavyWeapons,
+            Technology.BasicArmor,
+            Technology.AdvancedArmor,
+            Technology.ReinforcedHull,
+            Technology.BasicEngines,
+            Technology.AdvancedEngines,
+            Technology.Hyperdrive,
+            Technology.BasicMining,
+            Technology.AdvancedMining,
+            Technology.AutomatedMining,
+            Technology.BasicConstruction,
+            Technology.AdvancedConstruction,
+            Technology.MegaConstruction
+        };
+    }
+
+    public Technology? GetTechnology(string name)
+    {
+        return GetAllTechnologies().FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public IEnumerable<Technology> GetAvailableTechnologies(List<string> researchedTechnologies)
+    {
+        var allTechnologies = GetAllTechnologies();
+        var available = new List<Technology>();
+
+        foreach (var tech in allTechnologies)
+        {
+            if (researchedTechnologies.Contains(tech.Name))
+                continue;
+
+            // Check if all prerequisites are met
+            var prerequisitesMet = tech.Prerequisites.All(prereq => researchedTechnologies.Contains(prereq));
+            if (prerequisitesMet)
+            {
+                available.Add(tech);
+            }
+        }
+
+        return available;
+    }
+
+    public bool CanResearchTechnology(string technologyName, List<string> researchedTechnologies, int availableCredits)
+    {
+        var tech = GetTechnology(technologyName);
+        if (tech == null)
+            return false;
+
+        // Check if already researched
+        if (researchedTechnologies.Contains(tech.Name))
+            return false;
+
+        // Check prerequisites
+        var prerequisitesMet = tech.Prerequisites.All(prereq => researchedTechnologies.Contains(prereq));
+        if (!prerequisitesMet)
+            return false;
+
+        // Check if player has enough credits
+        return availableCredits >= tech.ResearchCost;
+    }
+
+    // Victory condition methods
+    public IEnumerable<VictoryCondition> GetAllVictoryConditions()
+    {
+        return new[]
+        {
+            VictoryCondition.MilitaryVictory,
+            VictoryCondition.EconomicVictory,
+            VictoryCondition.TechnologyVictory,
+            VictoryCondition.TimeVictory,
+            VictoryCondition.DiplomaticVictory
+        };
+    }
+
+    public VictoryCondition? GetVictoryCondition(string name)
+    {
+        return GetAllVictoryConditions().FirstOrDefault(v => v.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public VictoryCondition? GetVictoryCondition(VictoryType type)
+    {
+        return GetAllVictoryConditions().FirstOrDefault(v => v.Type == type);
+    }
+
+    // Resource system methods
+    public Dictionary<ResourceType, ResourceDefinition> GetResourceDefinitions()
+    {
+        return ResourceSystem.ResourceDefinitions;
+    }
+
+    public ResourceDefinition? GetResourceDefinition(ResourceType type)
+    {
+        return ResourceSystem.ResourceDefinitions.TryGetValue(type, out var definition) ? definition : null;
+    }
+
+    public bool TryConvertResource(ResourceType fromType, ResourceType toType, int amount, out int convertedAmount)
+    {
+        return ResourceSystem.TryConvertResource(fromType, toType, amount, out convertedAmount);
+    }
+
+    public int GetResourceValue(ResourceType type, int amount)
+    {
+        return ResourceSystem.GetResourceValue(type, amount);
+    }
+
+    public Dictionary<ResourceType, int> CalculateMaintenanceCosts(List<Structure> structures)
+    {
+        return ResourceSystem.CalculateMaintenanceCosts(structures);
+    }
+
+    public Dictionary<ResourceType, int> CalculateResourceProduction(Planet planet)
+    {
+        return ResourceSystem.CalculateResourceProduction(planet);
+    }
+
+    // Game balance and information methods
+    public string GetGameBalanceInfo()
+    {
+        var shipTemplates = GetAllShipTemplates();
+        var structureTemplates = GetAllStructureTemplates();
+        var planetTypes = GetAllPlanetTypes();
+        var technologies = GetAllTechnologies();
+        var victoryConditions = GetAllVictoryConditions();
+        var resourceTypes = GetResourceDefinitions();
+
+        return $"Game Content Loaded: {shipTemplates.Count()} ship types, {structureTemplates.Count()} structure types, " +
+               $"{planetTypes.Count()} planet types, {technologies.Count()} technologies, " +
+               $"{victoryConditions.Count()} victory conditions, {resourceTypes.Count()} resource types";
+    }
+
+    public Dictionary<string, object> GetGameStatistics()
+    {
+        return new Dictionary<string, object>
+        {
+            ["ShipTypes"] = GetAllShipTemplates().Count(),
+            ["StructureTypes"] = GetAllStructureTemplates().Count(),
+            ["PlanetTypes"] = GetAllPlanetTypes().Count(),
+            ["Technologies"] = GetAllTechnologies().Count(),
+            ["VictoryConditions"] = GetAllVictoryConditions().Count(),
+            ["ResourceTypes"] = GetResourceDefinitions().Count(),
+            ["TotalContentItems"] = GetAllShipTemplates().Count() + 
+                                   GetAllStructureTemplates().Count() + 
+                                   GetAllPlanetTypes().Count() + 
+                                   GetAllTechnologies().Count() + 
+                                   GetAllVictoryConditions().Count() + 
+                                   GetResourceDefinitions().Count()
         };
     }
 } 

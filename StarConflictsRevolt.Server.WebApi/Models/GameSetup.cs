@@ -6,7 +6,7 @@ public class GameSetup
 {
     public string SessionName { get; set; } = string.Empty;
     public GameMode Mode { get; set; }
-    public VictoryCondition VictoryCondition { get; set; } = VictoryCondition.Military;
+    public VictoryCondition VictoryCondition { get; set; } = VictoryCondition.MilitaryVictory;
     public List<PlayerSetup> Players { get; set; } = new();
     
     // Galaxy configuration

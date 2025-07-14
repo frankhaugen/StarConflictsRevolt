@@ -111,8 +111,8 @@ This document outlines the implementation plan for adding essential game mechani
   - [x] Add ship templates with stats (health, attack, speed, cost)
   - [x] Add structure templates with effects
   - [x] Add planet types with bonuses
-  - [ ] Add technology tree (basic)
-  - [ ] Add resource types and conversion rates
+  - [x] Add technology tree (basic)
+  - [x] Add resource types and conversion rates
 
 - [x] **Add ship types and stats**
   - [x] Scout: Fast (speed 3), weak (attack 1, health 10), cheap (cost 50)
@@ -138,19 +138,19 @@ This document outlines the implementation plan for adding essential game mechani
   - [x] Ocean: +food (+15), -materials (-5)
 
 ### **Medium Priority**
-- [ ] **Create technology system**
-  - [ ] Basic tech tree with 3-5 levels
-  - [ ] Ship upgrades (weapons, armor, engines)
-  - [ ] Structure upgrades (efficiency, capacity)
-  - [ ] Research costs and time
-  - [ ] Technology prerequisites
+- [x] **Create technology system**
+  - [x] Basic tech tree with 3-5 levels
+  - [x] Ship upgrades (weapons, armor, engines)
+  - [x] Structure upgrades (efficiency, capacity)
+  - [x] Research costs and time
+  - [x] Technology prerequisites
 
-- [ ] **Add victory conditions**
-  - [ ] Military victory: Control 75% of planets
-  - [ ] Economic victory: Accumulate 10,000 credits
-  - [ ] Technology victory: Research all techs
-  - [ ] Diplomatic victory: Form alliances (future feature)
-  - [ ] Time victory: Survive for 100 turns
+- [x] **Add victory conditions**
+  - [x] Military victory: Control 75% of planets
+  - [x] Economic victory: Accumulate 10,000 credits
+  - [x] Technology victory: Research all techs
+  - [x] Diplomatic victory: Form alliances (future feature)
+  - [x] Time victory: Survive for 100 turns
 
 - [ ] **Create game scenarios**
   - [ ] Tutorial scenario: 1v1 with AI (small galaxy)
@@ -158,15 +158,92 @@ This document outlines the implementation plan for adding essential game mechani
   - [ ] Epic battle: 4-player large galaxy (25-30 planets)
   - [ ] Campaign: Series of connected scenarios (future feature)
 
-- [ ] **Add resource management**
-  - [ ] Resource storage limits per planet
-  - [ ] Resource transfer between planets
-  - [ ] Resource consumption for maintenance
-  - [ ] Resource bonuses from structures
+- [x] **Add resource management**
+  - [x] Resource storage limits per planet
+  - [x] Resource transfer between planets
+  - [x] Resource consumption for maintenance
+  - [x] Resource bonuses from structures
 
 ---
 
-## 🔧 **4. Implementation Order**
+## ⚔️ **4. CombatSimulator**
+
+### **High Priority**
+- [ ] **Create `CombatSimulatorService`** for managing all combat scenarios
+  - [ ] Add method `SimulateFleetCombat(Fleet attacker, Fleet defender, Planet location)`
+  - [ ] Add method `SimulatePlanetaryCombat(Fleet attacker, Planet defender)`
+  - [ ] Add method `SimulateDeathStarRun(Fleet attacker, DeathStar defender)`
+  - [ ] Add method `SimulateMission(Mission mission, Character agent, Planet target)`
+  - [ ] Support different combat environments (space, planetary, special)
+
+- [ ] **Implement Fleet Combat Simulation**
+  - [ ] Ship-to-ship combat resolution
+  - [ ] Fleet formation and positioning effects
+  - [ ] Weapon range and accuracy calculations
+  - [ ] Shield and armor damage absorption
+  - [ ] Critical hit system and special abilities
+  - [ ] Retreat mechanics and morale effects
+  - [ ] Combat result reporting and fleet losses
+
+- [ ] **Implement Planetary Combat Simulation**
+  - [ ] Ground troop vs ground troop combat
+  - [ ] Ship bombardment of planetary defenses
+  - [ ] Planetary shield effects and generator targeting
+  - [ ] Structure damage and destruction
+  - [ ] Population resistance and loyalty effects
+  - [ ] Planetary capture mechanics
+  - [ ] Environmental effects (terrain, weather)
+
+- [ ] **Implement Death Star Run Combat**
+  - [ ] Trench run mechanics and timing
+  - [ ] Turbolaser defense systems
+  - [ ] TIE Fighter escort and interception
+  - [ ] Shield generator targeting and destruction
+  - [ ] Exhaust port vulnerability and timing
+  - [ ] Hero character effects and Force abilities
+  - [ ] Death Star destruction sequence
+
+### **Medium Priority**
+- [ ] **Create Mission System**
+  - [ ] Character assignment and skill requirements
+  - [ ] Mission types: Diplomacy, Espionage, Sabotage, Rescue, etc.
+  - [ ] Mission success/failure probability calculations
+  - [ ] Mission duration and time-based events
+  - [ ] Mission rewards and consequences
+  - [ ] Character experience and skill progression
+
+- [ ] **Add Character System**
+  - [ ] Character stats (Leadership, Combat, Diplomacy, Espionage)
+  - [ ] Character abilities and special powers
+  - [ ] Force sensitivity and Jedi/Sith abilities
+  - [ ] Character relationships and loyalty
+  - [ ] Character death and replacement mechanics
+
+- [ ] **Implement Advanced Combat Features**
+  - [ ] Weather and environmental effects on combat
+  - [ ] Terrain bonuses and penalties
+  - [ ] Supply lines and logistics effects
+  - [ ] Intelligence and reconnaissance effects
+  - [ ] Surprise attacks and ambush mechanics
+
+### **Low Priority**
+- [ ] **Add Cinematic Combat Sequences**
+  - [ ] Real-time combat visualization
+  - [ ] Camera angles and dramatic effects
+  - [ ] Sound effects and music integration
+  - [ ] Slow-motion and highlight reels
+  - [ ] Combat replay and analysis tools
+
+- [ ] **Create Special Combat Scenarios**
+  - [ ] Asteroid field navigation and combat
+  - [ ] Nebula effects and sensor interference
+  - [ ] Space station assaults
+  - [ ] Capital ship boarding actions
+  - [ ] Escape pod and rescue missions
+
+---
+
+## 🔧 **5. Implementation Order**
 
 ### **Week 1: Foundation**
 1. Create `GameSetupService` and `PlayerSetup` model
@@ -189,7 +266,14 @@ This document outlines the implementation plan for adding essential game mechani
 4. Add victory conditions
 5. Create game scenarios
 
-### **Week 4: Polish & Testing**
+### **Week 4: Combat System**
+1. Create `CombatSimulatorService`
+2. Implement fleet combat simulation
+3. Implement planetary combat simulation
+4. Implement Death Star run mechanics
+5. Add basic mission system
+
+### **Week 5: Polish & Testing**
 1. Balance gameplay mechanics
 2. Add comprehensive tests
 3. Performance optimization
@@ -198,7 +282,7 @@ This document outlines the implementation plan for adding essential game mechani
 
 ---
 
-## 🧪 **5. Testing Requirements**
+## 🧪 **6. Testing Requirements**
 
 ### **Unit Tests**
 - [ ] `GameSetupService` tests
@@ -230,7 +314,7 @@ This document outlines the implementation plan for adding essential game mechani
 
 ---
 
-## 📁 **6. File Structure Changes**
+## 📁 **7. File Structure Changes**
 
 ### **New Files to Create**
 ```
@@ -265,7 +349,7 @@ StarConflictsRevolt.Server.WebApi/
 
 ---
 
-## 🎯 **7. Success Criteria**
+## 🎯 **8. Success Criteria**
 
 ### **Minimal Viable Game**
 - [ ] Players can start a new game with balanced conditions
@@ -283,7 +367,7 @@ StarConflictsRevolt.Server.WebApi/
 
 ---
 
-## 📝 **8. Notes**
+## 📝 **9. Notes**
 
 - **Priority**: Focus on High Priority items first to achieve minimal playability
 - **Testing**: Write tests alongside implementation, not after
