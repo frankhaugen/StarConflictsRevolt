@@ -12,11 +12,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="Refactor Session and Client models to initialize properties; add database migration for Clients and Sessions tables">
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/dataSources.local.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/dataSources/bc38c3af-40eb-49c0-b1e9-cba0cfbc7475.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Migrations/20250714065023_Initial.Designer.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Migrations/20250714065023_Initial.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Migrations/GameDbContextModelSnapshot.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Client.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Client.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Session.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Session.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/GameDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/GameDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/StartupHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/StarConflictsRevolt.Server.WebApi.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/StarConflictsRevolt.Server.WebApi.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -212,7 +222,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="8089000" />
+      <workItem from="1752432073576" duration="8635000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -430,7 +440,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add Proxy and SubstituteExtensions for fluent mocking capabilities" />
     <MESSAGE value="Update namespaces in MockLite files to reflect new testing infrastructure structure" />
     <MESSAGE value="Fix condition in Invoke method to check if target was invoked in SubstituteExtensions" />
     <MESSAGE value="Add Proxy class and initial tests for Substitute mocking functionality" />
@@ -455,7 +464,8 @@
     <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
     <MESSAGE value="Refactor workspace.xml to update session response model and enhance event processing" />
     <MESSAGE value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
+    <MESSAGE value="Refactor Session and Client models to initialize properties; add database migration for Clients and Sessions tables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor Session and Client models to initialize properties; add database migration for Clients and Sessions tables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
