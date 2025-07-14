@@ -42,7 +42,7 @@ public class PlanetaryFinderView : IView
         DrawActionButtons();
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Planets: {GetFilteredPlanets().Count()} | Selected: {_selectedPlanetIndex + 1}");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Planets: {GetFilteredPlanets().Count()} | Selected: {_selectedPlanetIndex + 1} | ESC/Backspace: Menu");
 
         // Handle keyboard navigation
         HandleKeyboardInput();
@@ -130,6 +130,8 @@ public class PlanetaryFinderView : IView
         if (Input.IsKeyPressed(KeyboardKey.Enter)) SelectCurrentPlanet();
 
         if (Input.IsKeyPressed(KeyboardKey.Escape)) _renderContext.GameState.NavigateTo(GameView.Menu);
+
+        if (Input.IsKeyPressed(KeyboardKey.Backspace)) _renderContext.GameState.NavigateTo(GameView.Menu);
     }
 
     private IEnumerable<PlanetDto> GetFilteredPlanets()

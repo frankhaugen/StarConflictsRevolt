@@ -23,12 +23,14 @@ public class MenuView : IView
     private readonly GameCommandService _commandService;
     private readonly RenderContext _renderContext;
     private readonly SignalRService _signalRService;
-    private int _menuState; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select
+    private int _menuState; // 0: main, 1: create single player, 2: create multiplayer, 3: join, 4: player select, 5: session list
     private string _playerName = "";
     private string _selectedSessionType = "Multiplayer";
     private int _selectedView;
     private string _sessionId = "";
     private string _sessionName = "";
+    private List<SessionInfo>? _availableSessions;
+    private int _selectedSessionIndex = 0;
 
     public MenuView(RenderContext renderContext, GameCommandService commandService, SignalRService signalRService)
     {
@@ -60,7 +62,10 @@ public class MenuView : IView
             DrawCreateMultiplayerSession();
         else if (_menuState == 3)
             DrawJoinSession();
-        else if (_menuState == 4) DrawPlayerSelect();
+        else if (_menuState == 4) 
+            DrawPlayerSelect();
+        else if (_menuState == 5)
+            DrawSessionList();
 
         // Draw status bar
         var playerName = _renderContext.GameState.PlayerName ?? "Not set";
@@ -81,7 +86,7 @@ public class MenuView : IView
 
         if (UIHelper.DrawButton("Start Multiplayer Session", centerX - 150, startY + buttonSpacing, 300, buttonHeight, UIHelper.Colors.Secondary)) _menuState = 2;
 
-        if (UIHelper.DrawButton("Join Existing Session", centerX - 150, startY + buttonSpacing * 2, 300, buttonHeight)) _menuState = 3;
+        if (UIHelper.DrawButton("Join Existing Session", centerX - 150, startY + buttonSpacing * 2, 300, buttonHeight)) _menuState = 5;
 
         if (UIHelper.DrawButton("Exit Game", centerX - 150, startY + buttonSpacing * 3, 300, buttonHeight, UIHelper.Colors.Danger)) Window.Close();
 
@@ -134,6 +139,79 @@ public class MenuView : IView
         if (UIHelper.DrawButton("Back", centerX - 100, startY + 200, 200, 40, UIHelper.Colors.Secondary)) _menuState = 0;
     }
 
+    private void DrawSessionList()
+    {
+        var centerX = Window.GetScreenWidth() / 2;
+        var startY = 150;
+
+        UIHelper.DrawText("Available Sessions", centerX, startY, UIHelper.FontSizes.Large, Color.White, true);
+
+        if (_availableSessions == null)
+        {
+            UIHelper.DrawText("Loading sessions...", centerX, startY + 50, UIHelper.FontSizes.Medium, Color.Yellow, true);
+            _ = LoadSessionsAsync();
+            return;
+        }
+
+        if (!_availableSessions.Any())
+        {
+            UIHelper.DrawText("No sessions available", centerX, startY + 50, UIHelper.FontSizes.Medium, Color.Gray, true);
+            if (UIHelper.DrawButton("Refresh", centerX - 50, startY + 100, 100, 30)) _availableSessions = null;
+            if (UIHelper.DrawButton("Back", centerX - 50, startY + 140, 100, 30)) _menuState = 0;
+            return;
+        }
+
+        // Draw session list
+        var listStartY = startY + 50;
+        var itemHeight = 60;
+        var maxItems = 8;
+        var startIndex = Math.Max(0, Math.Min(_selectedSessionIndex - maxItems / 2, _availableSessions.Count - maxItems));
+
+        for (var i = 0; i < Math.Min(maxItems, _availableSessions.Count - startIndex); i++)
+        {
+            var session = _availableSessions[startIndex + i];
+            var y = listStartY + i * itemHeight;
+            var isSelected = startIndex + i == _selectedSessionIndex;
+
+            // Highlight selected session
+            if (isSelected)
+            {
+                Graphics.DrawRectangle(50, y - 5, Window.GetScreenWidth() - 100, itemHeight, UIHelper.Colors.Primary);
+            }
+
+            // Session info
+            UIHelper.DrawText(session.SessionName, 70, y, UIHelper.FontSizes.Medium, isSelected ? Color.White : Color.LightGray);
+            UIHelper.DrawText($"Type: {session.SessionType} | Created: {session.Created:MM/dd HH:mm}", 70, y + 20, UIHelper.FontSizes.Small, Color.Gray);
+            UIHelper.DrawText($"Players: {session.PlayerCount} | ID: {session.Id}", 70, y + 35, UIHelper.FontSizes.Small, Color.DarkGray);
+        }
+
+        // Navigation
+        if (Input.IsKeyPressed(KeyboardKey.Up) && _selectedSessionIndex > 0)
+        {
+            _selectedSessionIndex--;
+        }
+        if (Input.IsKeyPressed(KeyboardKey.Down) && _selectedSessionIndex < _availableSessions.Count - 1)
+        {
+            _selectedSessionIndex++;
+        }
+
+        // Buttons
+        var buttonY = Window.GetScreenHeight() - 100;
+        if (UIHelper.DrawButton("Join Selected", centerX - 150, buttonY, 140, 40, UIHelper.Colors.Success))
+        {
+            if (_selectedSessionIndex >= 0 && _selectedSessionIndex < _availableSessions.Count)
+            {
+                _sessionId = _availableSessions[_selectedSessionIndex].Id.ToString();
+                _sessionName = _availableSessions[_selectedSessionIndex].SessionName;
+                _selectedSessionType = _availableSessions[_selectedSessionIndex].SessionType;
+                _menuState = 4; // Go to player select
+            }
+        }
+
+        if (UIHelper.DrawButton("Refresh", centerX, buttonY, 100, 40)) _availableSessions = null;
+        if (UIHelper.DrawButton("Back", centerX + 110, buttonY, 100, 40, UIHelper.Colors.Secondary)) _menuState = 0;
+    }
+
     private void DrawJoinSession()
     {
         var centerX = Window.GetScreenWidth() / 2;
@@ -168,6 +246,15 @@ public class MenuView : IView
         if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary)) _menuState = 3;
     }
 
+    private async Task LoadSessionsAsync()
+    {
+        _availableSessions = await _commandService.ListSessionsAsync();
+        if (_availableSessions == null)
+        {
+            _renderContext.GameState.SetFeedback("Failed to load sessions", TimeSpan.FromSeconds(3));
+        }
+    }
+
     private async Task CreateSessionAsync(string sessionType)
     {
         if (string.IsNullOrWhiteSpace(_sessionName))
@@ -190,21 +277,33 @@ public class MenuView : IView
     {
         if (Guid.TryParse(_sessionId, out var sessionGuid))
         {
-            _renderContext.GameState.Session = new SessionDto
+            // First join the session via HTTP
+            var sessionResponse = await _commandService.JoinSessionAsync(sessionGuid, _playerName);
+            if (sessionResponse != null)
             {
-                Id = sessionGuid,
-                SessionName = _sessionName,
-                IsActive = true,
-                SessionType = _selectedSessionType
-            };
-            _renderContext.GameState.PlayerName = _playerName;
-            _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
-            
-            // Join the SignalR session
-            await _signalRService.JoinSessionAsync(sessionGuid);
-            
-            _renderContext.GameState.NavigateTo(GameView.Galaxy);
-            _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
+                // Set up the game state
+                _renderContext.GameState.Session = new SessionDto
+                {
+                    Id = sessionResponse.SessionId,
+                    SessionName = _sessionName,
+                    IsActive = true,
+                    SessionType = _selectedSessionType
+                };
+                _renderContext.GameState.PlayerName = _playerName;
+                _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
+                
+                // Apply the world data from the join response
+                if (sessionResponse.World != null)
+                {
+                    _renderContext.WorldStore.ApplyFull(sessionResponse.World);
+                }
+                
+                // Join the SignalR session
+                await _signalRService.JoinSessionAsync(sessionGuid);
+                
+                _renderContext.GameState.NavigateTo(GameView.Galaxy);
+                _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
+            }
         }
         else
         {

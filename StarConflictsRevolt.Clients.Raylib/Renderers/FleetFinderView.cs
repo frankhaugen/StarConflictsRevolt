@@ -42,7 +42,7 @@ public class FleetFinderView : IView
         DrawActionButtons();
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Fleets: {GetFilteredFleets().Count()} | Selected: {_selectedFleetIndex + 1}");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Fleets: {GetFilteredFleets().Count()} | Selected: {_selectedFleetIndex + 1} | ESC/Backspace: Menu");
 
         // Handle keyboard navigation
         HandleKeyboardInput();
@@ -128,6 +128,8 @@ public class FleetFinderView : IView
         if (Input.IsKeyPressed(KeyboardKey.Enter)) SelectCurrentFleet();
 
         if (Input.IsKeyPressed(KeyboardKey.Escape)) _renderContext.GameState.NavigateTo(GameView.Menu);
+
+        if (Input.IsKeyPressed(KeyboardKey.Backspace)) _renderContext.GameState.NavigateTo(GameView.Menu);
     }
 
     private IEnumerable<dynamic> GetFilteredFleets()

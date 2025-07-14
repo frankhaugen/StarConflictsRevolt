@@ -202,4 +202,88 @@ public class GameCommandService
             return null;
         }
     }
+
+    public async Task<List<SessionInfo>?> ListSessionsAsync()
+    {
+        _logger.LogInformation("Requesting list of available sessions");
+
+        try
+        {
+            var sessions = await _httpApiClient.GetAsync<List<SessionInfo>>("/game/sessions");
+
+            if (sessions != null)
+            {
+                _logger.LogInformation("Retrieved {SessionCount} available sessions", sessions.Count);
+                foreach (var session in sessions)
+                {
+                    _logger.LogDebug("Session: {SessionId} - {SessionName} ({SessionType})", 
+                        session.Id, session.SessionName, session.SessionType);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Session list request returned null");
+            }
+
+            return sessions;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception occurred while getting session list");
+            return null;
+        }
+    }
+
+    public async Task<SessionResponse?> JoinSessionAsync(Guid sessionId, string playerName)
+    {
+        _logger.LogInformation("Joining session {SessionId} as player {PlayerName}", sessionId, playerName);
+
+        try
+        {
+            var request = new
+            {
+                PlayerName = playerName
+            };
+
+            var response = await _httpApiClient.PostAsync($"/game/session/{sessionId}/join", request);
+
+            _logger.LogInformation("Join session response received. Status: {StatusCode}", response.StatusCode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Join session response: {Response}", responseJson);
+
+                var sessionResponse = JsonSerializer.Deserialize<SessionResponse>(responseJson);
+                if (sessionResponse != null)
+                {
+                    _logger.LogInformation("Successfully joined session {SessionId}", sessionId);
+                    _gameState.SetFeedback($"Joined session {sessionResponse.SessionId}", TimeSpan.FromSeconds(2));
+                    return sessionResponse;
+                }
+
+                _logger.LogError("Failed to parse join session response: {Response}", responseJson);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to join session. Status: {StatusCode}, Error: {Error}", response.StatusCode, errorContent);
+            _gameState.SetFeedback($"Failed to join session: {response.StatusCode} - {errorContent}", TimeSpan.FromSeconds(5));
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception occurred while joining session");
+            _gameState.SetFeedback($"Network error: {ex.Message}", TimeSpan.FromSeconds(5));
+            return null;
+        }
+    }
+}
+
+public class SessionInfo
+{
+    public Guid Id { get; set; }
+    public string SessionName { get; set; } = string.Empty;
+    public DateTime Created { get; set; }
+    public string SessionType { get; set; } = string.Empty;
+    public int PlayerCount { get; set; }
 }

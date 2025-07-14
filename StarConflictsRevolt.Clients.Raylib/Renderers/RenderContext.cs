@@ -21,6 +21,9 @@ public class RenderContext
 
     public WorldDto? World => _worldStore.GetCurrent();
 
+    // World store access
+    public IClientWorldStore WorldStore => _worldStore;
+
     // Game state management
     public GameState GameState { get; } = new();
 

@@ -122,7 +122,7 @@ public class MenuViewSessionTypeTests
         public TestSignalRService(IOptions<GameClientConfiguration> gameClientConfiguration, 
             IClientWorldStore worldStore, 
             ILogger<SignalRService> logger) 
-            : base(gameClientConfiguration, worldStore, null!, logger)
+            : base(gameClientConfiguration, worldStore, logger)
         {
         }
 

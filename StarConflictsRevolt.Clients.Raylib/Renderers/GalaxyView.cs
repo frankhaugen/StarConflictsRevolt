@@ -51,7 +51,7 @@ public class GalaxyView : IView
         UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, currentWorld);
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {_renderContext.GameState.SelectedObject?.GetType().Name ?? "None"}");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {_renderContext.GameState.SelectedObject?.GetType().Name ?? "None"} | ESC/Backspace: Menu");
 
         // Handle keyboard input
         HandleKeyboardInput();
@@ -178,6 +178,8 @@ public class GalaxyView : IView
     private void HandleKeyboardInput()
     {
         if (Input.IsKeyPressed(KeyboardKey.Escape)) _renderContext.GameState.NavigateTo(GameView.Menu);
+
+        if (Input.IsKeyPressed(KeyboardKey.Backspace)) _renderContext.GameState.NavigateTo(GameView.Menu);
 
         if (Input.IsKeyPressed(KeyboardKey.F1)) _renderContext.GameState.NavigateTo(GameView.Menu);
 

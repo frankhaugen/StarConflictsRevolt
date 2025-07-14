@@ -14,6 +14,16 @@
   <component name="ChangeListManager">
     <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/FleetFinderView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/FleetFinderView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GalaxyView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GalaxyView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GameOptionsView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GameOptionsView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/MenuView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/MenuView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/PlanetaryFinderView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/PlanetaryFinderView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/RenderContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/RenderContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/TacticalBattleView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/TacticalBattleView.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -214,7 +224,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="9873000" />
+      <workItem from="1752432073576" duration="10423000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -440,7 +450,14 @@
       <option name="presentableId" value="LOCAL−00032" />
       <updated>1752477587024</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL−00033" summary="Refactor workspace.xml to update task duration values and improve change list comments">
+      <option name="closed" value="true" />
+      <created>1752477628786</created>
+      <option name="number" value="LOCAL−00033" />
+      <option name="presentableId" value="LOCAL−00033" />
+      <updated>1752477628786</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -460,7 +477,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Enhance Proxy and SubstituteExtensions for improved mocking functionality and add test views" />
     <MESSAGE value="Refactor namespaces and remove unused usings; add Client and TokenType classes" />
     <MESSAGE value="Refactor workspace configuration and update last commit message" />
     <MESSAGE value="Refactor integration tests to use test host application and improve token handling" />
@@ -485,7 +501,8 @@
     <MESSAGE value="Refactor workspace.xml to update change list comments and improve task duration values" />
     <MESSAGE value="Refactor StartupHelper to improve database connection handling and apply migrations" />
     <MESSAGE value="Refactor logging configuration to change default log level from Debug to Information; update MenuView to integrate SignalRService for session management" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor logging configuration to change default log level from Debug to Information; update MenuView to integrate SignalRService for session management" />
+    <MESSAGE value="Refactor workspace.xml to update task duration values and improve change list comments" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor workspace.xml to update task duration values and improve change list comments" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

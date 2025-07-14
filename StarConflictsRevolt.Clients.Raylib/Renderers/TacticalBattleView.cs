@@ -48,7 +48,7 @@ public class TacticalBattleView : IView
         DrawStatusPanel();
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, "Tactical Battle - Use mouse to select units, ESC to return");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, "Tactical Battle - Use mouse to select units, ESC: Galaxy, Backspace: Menu");
 
         // Handle input
         HandleInput();
@@ -134,6 +134,8 @@ public class TacticalBattleView : IView
     private void HandleInput()
     {
         if (Input.IsKeyPressed(KeyboardKey.Escape)) _renderContext.GameState.NavigateTo(GameView.Galaxy);
+
+        if (Input.IsKeyPressed(KeyboardKey.Backspace)) _renderContext.GameState.NavigateTo(GameView.Menu);
 
         if (Input.IsKeyPressed(KeyboardKey.Space)) _renderContext.GameState.SetFeedback("Battle paused", TimeSpan.FromSeconds(2));
 

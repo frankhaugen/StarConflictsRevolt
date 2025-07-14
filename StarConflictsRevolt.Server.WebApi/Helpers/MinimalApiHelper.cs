@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Models.Authentication;
@@ -412,6 +413,62 @@ public static class MinimalApiHelper
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         }).RequireAuthorization();
+
+        app.MapGet("/game/sessions", async context =>
+            {
+                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var sessions = await dbContext.Sessions
+                    .Where(s => s.IsActive)
+                    .OrderByDescending(s => s.Created)
+                    .Select(s => new
+                    {
+                        s.Id,
+                        s.SessionName,
+                        s.Created,
+                        s.SessionType,
+                        PlayerCount = 0 // TODO: Add player count tracking
+                    })
+                    .ToListAsync(context.RequestAborted);
+
+                await context.Response.WriteAsJsonAsync(sessions, context.RequestAborted);
+            })
+            .WithName("ListGameSessions")
+            .RequireAuthorization();
+
+        app.MapGet("/game/session/{sessionId}", async context =>
+            {
+                var sessionIdStr = context.Request.RouteValues["sessionId"]?.ToString();
+                if (!Guid.TryParse(sessionIdStr, out var sessionId))
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Invalid session ID");
+                    return;
+                }
+
+                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var session = await dbContext.Sessions
+                    .Where(s => s.Id == sessionId && s.IsActive)
+                    .Select(s => new
+                    {
+                        s.Id,
+                        s.SessionName,
+                        s.Created,
+                        s.SessionType,
+                        PlayerCount = 0 // TODO: Add player count tracking
+                    })
+                    .FirstOrDefaultAsync(context.RequestAborted);
+
+                if (session == null)
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("Session not found");
+                    return;
+                }
+
+                await context.Response.WriteAsJsonAsync(session, context.RequestAborted);
+            })
+            .WithName("GetGameSession")
+            .RequireAuthorization();
 
         app.MapGet("/game/{worldId}/events", async context =>
         {

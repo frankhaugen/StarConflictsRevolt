@@ -48,7 +48,7 @@ public class GameOptionsView : IView
         HandleKeyboardInput();
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, "Press S for Sound, F for Fullscreen, G for Game Speed");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, "Press S for Sound, F for Fullscreen, G for Game Speed, ESC/Backspace: Menu");
     }
 
     private void DrawOption(string label, string value, int x, int y, Action toggleAction)
@@ -91,5 +91,7 @@ public class GameOptionsView : IView
         if (Input.IsKeyPressed(KeyboardKey.G)) CycleGameSpeed();
 
         if (Input.IsKeyPressed(KeyboardKey.Escape)) _renderContext.GameState.NavigateTo(GameView.Menu);
+
+        if (Input.IsKeyPressed(KeyboardKey.Backspace)) _renderContext.GameState.NavigateTo(GameView.Menu);
     }
 }
