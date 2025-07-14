@@ -58,6 +58,11 @@ public class CachingTokenProvider : ITokenProvider
             _logger.LogInformation("Successfully obtained new token");
             return _cachedToken;
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP request failed when obtaining token from {TokenEndpoint}", _options.Value.TokenEndpoint);
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to obtain token from {TokenEndpoint}", _options.Value.TokenEndpoint);

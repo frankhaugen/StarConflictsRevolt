@@ -24,7 +24,7 @@ public class JwtTokenHandler : DelegatingHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to add Bearer token to request to {Uri}", request.RequestUri);
+            _logger.LogError(ex, "Failed to add Bearer token to request to {Uri}. This will result in a 401 Unauthorized response.", request.RequestUri);
             // Continue without token - the server will handle authentication failure
         }
 

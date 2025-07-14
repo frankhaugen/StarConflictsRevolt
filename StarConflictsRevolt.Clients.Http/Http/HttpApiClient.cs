@@ -23,7 +23,11 @@ public class HttpApiClient : IHttpApiClient
     public async Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
     {
         await EnsureHealthAsync(ct);
-        return await Client.GetFromJsonAsync<T>(uri, ct);
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        };
+        return await Client.GetFromJsonAsync<T>(uri, jsonOptions, ct);
     }
 
     public async Task<HttpResponseMessage> PostAsync<T>(string uri, T body, CancellationToken ct = default)

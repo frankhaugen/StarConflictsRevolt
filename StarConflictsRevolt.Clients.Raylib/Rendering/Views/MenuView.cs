@@ -270,12 +270,18 @@ public class MenuView : IView
             return;
         }
 
+        _renderContext.GameState.SetFeedback($"Creating {sessionType} session: {_sessionName}...", TimeSpan.FromSeconds(2));
+        
         var sessionResponse = await _httpApiClient.CreateNewSessionAsync(_sessionName, sessionType);
         
         if (sessionResponse != null)
         {
             _sessionId = sessionResponse.SessionId.ToString();
             _selectedSessionType = sessionType;
+            
+            // Debug logging
+            Console.WriteLine($"Session created successfully. SessionId: {sessionResponse.SessionId}, _sessionId: {_sessionId}");
+            
             // Store the world in the ClientWorldStore
             if (sessionResponse.World != null)
             {
@@ -290,21 +296,32 @@ public class MenuView : IView
                 SessionType = sessionType
             };
             _menuState = 4;
-            _renderContext.GameState.SetFeedback($"{sessionType} session created! Enter player name.", TimeSpan.FromSeconds(3));
+            _renderContext.GameState.SetFeedback($"{sessionType} session created! Session ID: {_sessionId}. Enter player name.", TimeSpan.FromSeconds(5));
+        }
+        else
+        {
+            _renderContext.GameState.SetFeedback("Failed to create session - no response received", TimeSpan.FromSeconds(3));
         }
     }
 
     private async Task JoinSession()
     {
+        Console.WriteLine($"JoinSession called with _sessionId: '{_sessionId}'");
+        
         if (Guid.TryParse(_sessionId, out var sessionGuid))
         {
+            Console.WriteLine($"Successfully parsed session GUID: {sessionGuid}");
             try
             {
+                _renderContext.GameState.SetFeedback($"Joining session {sessionGuid} as {_playerName}...", TimeSpan.FromSeconds(2));
+                
                 // First join the session via HTTP
                 var sessionResponse = await _httpApiClient.JoinSessionAsync(sessionGuid, _playerName);
                 
                 if (sessionResponse != null)
                 {
+                    Console.WriteLine($"Successfully joined session {sessionGuid}");
+                    
                     // Set up the game state
                     _renderContext.GameState.Session = new SessionDto
                     {
@@ -330,17 +347,19 @@ public class MenuView : IView
                 }
                 else
                 {
-                    _renderContext.GameState.SetFeedback("Failed to join session", TimeSpan.FromSeconds(3));
+                    _renderContext.GameState.SetFeedback("Failed to join session - no response received", TimeSpan.FromSeconds(3));
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Exception joining session: {ex}");
                 _renderContext.GameState.SetFeedback($"Error joining session: {ex.Message}", TimeSpan.FromSeconds(5));
             }
         }
         else
         {
-            _renderContext.GameState.SetFeedback("Invalid session ID", TimeSpan.FromSeconds(3));
+            Console.WriteLine($"Failed to parse session ID: '{_sessionId}'");
+            _renderContext.GameState.SetFeedback($"Invalid session ID: {_sessionId}", TimeSpan.FromSeconds(3));
         }
     }
 }

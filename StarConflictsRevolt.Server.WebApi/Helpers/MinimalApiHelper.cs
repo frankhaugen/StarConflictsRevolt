@@ -27,24 +27,68 @@ public static class MinimalApiHelper
         // Token endpoint for client authentication
         app.MapPost("/token", async context =>
         {
+            var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("TokenEndpoint");
+            
             var request = await context.Request.ReadFromJsonAsync<TokenRequest>(context.RequestAborted);
             if (request == null || string.IsNullOrEmpty(request.ClientId) || string.IsNullOrEmpty(request.ClientSecret))
             {
+                logger.LogWarning("Invalid token request received: ClientId={ClientId}, HasSecret={HasSecret}", 
+                    request?.ClientId ?? "null", !string.IsNullOrEmpty(request?.ClientSecret));
+                
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsync("Invalid request");
-                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("TokenEndpoint");
-                logger.LogCritical("Invalid token request: {Request}", request);
+                await context.Response.WriteAsJsonAsync(new 
+                { 
+                    error = "invalid_request",
+                    error_description = "ClientId and ClientSecret are required",
+                    timestamp = DateTime.UtcNow
+                }, context.RequestAborted);
                 return;
             }
 
+            logger.LogInformation("Token request received for client {ClientId}", request.ClientId);
+
+            // The only valid failure case: wrong secret
             if (request.ClientSecret != Constants.Secret)
             {
+                logger.LogWarning("Authentication failed for client {ClientId}: Invalid secret provided", request.ClientId);
+                
+                // Get existing sessions to provide helpful information
+                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var existingSessions = new List<object>();
+                
+                try
+                {
+                    var sessions = await dbContext.Sessions
+                        .Where(s => s.IsActive)
+                        .OrderByDescending(s => s.Created)
+                        .Take(5) // Limit to 5 most recent sessions
+                        .Select(s => new
+                        {
+                            s.Id,
+                            s.SessionName,
+                            s.Created,
+                            s.SessionType
+                        })
+                        .ToListAsync(context.RequestAborted);
+                    
+                    existingSessions = sessions.Cast<object>().ToList();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug(ex, "Could not retrieve existing sessions for error response");
+                }
+                
                 context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Invalid client secret");
-                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("TokenEndpoint");
-                logger.LogWarning("Invalid client secret for client {ClientId}", request.ClientId);
+                await context.Response.WriteAsJsonAsync(new 
+                { 
+                    error = "invalid_client",
+                    error_description = "Invalid client secret. Please check your configuration.",
+                    client_id = request.ClientId,
+                    timestamp = DateTime.UtcNow,
+                    existing_sessions = existingSessions,
+                    session_count = existingSessions.Count
+                }, context.RequestAborted);
                 return;
             }
 
@@ -56,18 +100,27 @@ public static class MinimalApiHelper
                 var canConnect = await gameDbContext.Database.CanConnectAsync(context.RequestAborted);
                 if (!canConnect)
                 {
+                    logger.LogError("Database connection failed for client {ClientId}", request.ClientId);
                     context.Response.StatusCode = 503;
-                    await context.Response.WriteAsync("Database not ready");
+                    await context.Response.WriteAsJsonAsync(new 
+                    { 
+                        error = "service_unavailable",
+                        error_description = "Database is not ready. Please try again later.",
+                        timestamp = DateTime.UtcNow
+                    }, context.RequestAborted);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("TokenEndpoint");
-                logger.LogWarning(ex, "Database connection check failed for client {ClientId}", request.ClientId);
+                logger.LogError(ex, "Database connection check failed for client {ClientId}", request.ClientId);
                 context.Response.StatusCode = 503;
-                await context.Response.WriteAsync("Database not ready");
+                await context.Response.WriteAsJsonAsync(new 
+                { 
+                    error = "service_unavailable",
+                    error_description = "Database connection failed. Please try again later.",
+                    timestamp = DateTime.UtcNow
+                }, context.RequestAborted);
                 return;
             }
             
@@ -79,11 +132,14 @@ public static class MinimalApiHelper
             }
             catch (Exception ex)
             {
-                var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("TokenEndpoint");
-                logger.LogWarning(ex, "Failed to query Clients table for client {ClientId}. Database may not be fully initialized.", request.ClientId);
+                logger.LogError(ex, "Failed to query Clients table for client {ClientId}. Database may not be fully initialized.", request.ClientId);
                 context.Response.StatusCode = 503;
-                await context.Response.WriteAsync("Database not ready");
+                await context.Response.WriteAsJsonAsync(new 
+                { 
+                    error = "service_unavailable",
+                    error_description = "Database is not fully initialized. Please try again later.",
+                    timestamp = DateTime.UtcNow
+                }, context.RequestAborted);
                 return;
             }
             
@@ -92,12 +148,14 @@ public static class MinimalApiHelper
                 existingClient = new Client { Id = request.ClientId, LastSeen = DateTime.UtcNow };
                 gameDbContext.Clients.Add(existingClient);
                 await gameDbContext.SaveChangesAsync(context.RequestAborted);
+                logger.LogInformation("Created new client record for {ClientId}", request.ClientId);
             }
             else
             {
                 existingClient.LastSeen = DateTime.UtcNow;
                 gameDbContext.Clients.Update(existingClient);
                 await gameDbContext.SaveChangesAsync(context.RequestAborted);
+                logger.LogDebug("Updated last seen timestamp for existing client {ClientId}", request.ClientId);
             }
 
             var claims = new[] { new Claim("client_id", request.ClientId) };
@@ -113,6 +171,9 @@ public static class MinimalApiHelper
                     SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
+            
+            logger.LogInformation("Successfully issued token for client {ClientId}", request.ClientId);
+            
             // Return JSON payload consistent with OAuth conventions and test expectations
             await context.Response.WriteAsJsonAsync(
                 new

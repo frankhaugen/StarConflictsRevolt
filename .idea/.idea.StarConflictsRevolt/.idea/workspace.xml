@@ -12,7 +12,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/CachingTokenProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/CachingTokenProvider.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/JwtTokenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/JwtTokenHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -42,9 +48,12 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/14eac595c88dcb101dfbe5e5f9e2b9af5f2da7b9a3d7ab4a94797c76747d0dc/AccessTokenHttpMessageHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d38692abc32c60d538385b7fb5c5a2df83c15d4754f6956a64ce1b8369fce8f/Host.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f16564c8c4b61e6ea398fe412680c6b795b266584ccf6a362aed712dc4d2b387/WebApplication.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Http/Authentication/CachingTokenProvider.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Http/Authentication/JwtTokenHandler.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Renderers/MenuView.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Models/Planet.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/Services/AiTurnService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/frankrepos/StarConflictsRevolt/StarConflictsRevolt.Server.WebApi/appsettings.Development.json" root0="FORCE_HIGHLIGHTING" />
@@ -214,7 +223,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="11976000" />
+      <workItem from="1752432073576" duration="12621000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -496,7 +505,14 @@
       <option name="presentableId" value="LOCAL−00040" />
       <updated>1752482463172</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL−00041" summary="Add starting structure templates and implement balanced starting positions for players">
+      <option name="closed" value="true" />
+      <created>1752482689547</created>
+      <option name="number" value="LOCAL−00041" />
+      <option name="presentableId" value="LOCAL−00041" />
+      <updated>1752482689547</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -516,7 +532,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor health check integration test to include cancellation token" />
     <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
     <MESSAGE value="Refactor integration tests to use TestHostApplication with cancellation token and improve token response handling" />
     <MESSAGE value="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum" />
@@ -541,7 +556,8 @@
     <MESSAGE value="Add interfaces and implementations for game rendering and client initialization" />
     <MESSAGE value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
     <MESSAGE value="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets" />
+    <MESSAGE value="Add starting structure templates and implement balanced starting positions for players" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add starting structure templates and implement balanced starting positions for players" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

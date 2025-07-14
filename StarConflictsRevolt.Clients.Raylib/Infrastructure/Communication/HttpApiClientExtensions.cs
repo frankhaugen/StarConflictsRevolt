@@ -31,7 +31,21 @@ public static class HttpApiClientExtensions
         if (response.IsSuccessStatusCode)
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
-            return JsonSerializer.Deserialize<SessionResponse>(responseJson);
+            Console.WriteLine($"Session creation response JSON: {responseJson}");
+            
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            var sessionResponse = JsonSerializer.Deserialize<SessionResponse>(responseJson, jsonOptions);
+            Console.WriteLine($"Deserialized SessionResponse: SessionId={sessionResponse?.SessionId}, World={sessionResponse?.World != null}");
+            
+            return sessionResponse;
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            Console.WriteLine($"Session creation failed: {response.StatusCode} - {errorContent}");
         }
 
         return null;
@@ -61,7 +75,11 @@ public static class HttpApiClientExtensions
         if (response.IsSuccessStatusCode)
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
-            return JsonSerializer.Deserialize<SessionResponse>(responseJson);
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            return JsonSerializer.Deserialize<SessionResponse>(responseJson, jsonOptions);
         }
 
         return null;
