@@ -243,42 +243,81 @@ This document outlines the implementation plan for adding essential game mechani
 
 ---
 
-## 🔧 **5. Implementation Order**
+## 🖥️ **5. UI Overhaul - Modern Sci-Fi Interface**
 
-### **Week 1: Foundation**
-1. Create `GameSetupService` and `PlayerSetup` model
-2. Enhance `WorldFactory` with starting conditions
-3. Add basic ship and structure templates
-4. Create starting fleet and structure collections
-5. Add resource system basics
+### **High Priority**
+- [ ] **High Resolution Support**
+  - [ ] Support 4K (3840x2160) and ultrawide resolutions
+  - [ ] Implement proper DPI scaling for high-DPI displays
+  - [ ] Add resolution detection and automatic scaling
+  - [ ] Create responsive UI layouts that adapt to screen size
+  - [ ] Support multiple monitor setups
 
-### **Week 2: AI Enhancement**
-1. Improve `DefaultAiStrategy` with proper decision making
-2. Add AI personality types
-3. Implement basic AI difficulty levels
-4. Add AI memory and learning system
-5. Create AI decision framework
+- [ ] **Enhanced Camera System**
+  - [ ] Smooth zooming with mouse wheel (0.1x to 10x zoom levels)
+  - [ ] Pan with middle mouse button or arrow keys
+  - [ ] Double-click to center on objects (planets, fleets, etc.)
+  - [ ] Camera inertia and momentum for smooth movement
+  - [ ] Zoom-to-fit functionality for selected objects
+  - [ ] Camera bookmarks for quick navigation
 
-### **Week 3: Game Content**
-1. Create `GameContentService`
-2. Add planet types and effects
-3. Implement basic technology system
-4. Add victory conditions
-5. Create game scenarios
+- [ ] **Modern Sci-Fi UI Design**
+  - [ ] EVE Online-inspired color scheme (dark blues, oranges, whites)
+  - [ ] Glowing borders and subtle animations
+  - [ ] High-contrast, readable fonts (Roboto, Inter, or similar)
+  - [ ] Semi-transparent panels with backdrop blur
+  - [ ] Consistent iconography and visual language
+  - [ ] Smooth transitions and hover effects
 
-### **Week 4: Combat System**
-1. Create `CombatSimulatorService`
-2. Implement fleet combat simulation
-3. Implement planetary combat simulation
-4. Implement Death Star run mechanics
-5. Add basic mission system
+### **Medium Priority**
+- [ ] **Separated UI Architecture**
+  - [ ] Create `IUiElement` interface for all UI components
+  - [ ] Implement `UiManager` to handle UI layer separation
+  - [ ] Separate game world rendering from UI overlays
+  - [ ] Create modular UI components (panels, buttons, tooltips)
+  - [ ] Implement UI state management system
+  - [ ] Add UI theming and customization options
 
-### **Week 5: Polish & Testing**
-1. Balance gameplay mechanics
-2. Add comprehensive tests
-3. Performance optimization
-4. UI improvements for new features
-5. Documentation updates
+- [ ] **Advanced UI Components**
+  - [ ] Collapsible side panels with smooth animations
+  - [ ] Context-sensitive tooltips with rich information
+  - [ ] Drag-and-drop interfaces for fleet management
+  - [ ] Modal dialogs with backdrop blur
+  - [ ] Progress bars and loading indicators
+  - [ ] Notification system with different priority levels
+
+- [ ] **Information Display**
+  - [ ] HUD overlay with key game information
+  - [ ] Minimap with zoom and pan capabilities
+  - [ ] Resource counters with real-time updates
+  - [ ] Fleet status indicators with health bars
+  - [ ] System information panels
+  - [ ] Player statistics and achievements display
+
+### **Low Priority**
+- [ ] **Advanced Visual Effects**
+  - [ ] Particle effects for UI interactions
+  - [ ] Screen space reflections and lighting
+  - [ ] Dynamic backgrounds with star fields
+  - [ ] Smooth fade transitions between views
+  - [ ] Ambient lighting effects
+  - [ ] Post-processing effects for UI elements
+
+- [ ] **Accessibility Features**
+  - [ ] High contrast mode for colorblind users
+  - [ ] Scalable UI elements for vision-impaired users
+  - [ ] Keyboard navigation for all UI elements
+  - [ ] Screen reader support
+  - [ ] Customizable UI layouts
+  - [ ] Multiple language support
+
+- [ ] **Performance Optimizations**
+  - [ ] UI element pooling for dynamic content
+  - [ ] Efficient rendering of large UI hierarchies
+  - [ ] Lazy loading of UI components
+  - [ ] GPU-accelerated UI rendering
+  - [ ] Memory-efficient texture management
+  - [ ] Frame rate optimization for smooth animations
 
 ---
 
@@ -367,7 +406,43 @@ StarConflictsRevolt.Server.WebApi/
 
 ---
 
-## 📝 **9. Notes**
+## 🏗️ **9. Infrastructure Improvements**
+
+### **Completed**
+- [x] **API Endpoint Handler Refactoring**
+  - [x] Split monolithic `MinimalApiHelper` into modular handlers
+  - [x] Created `ApiEndpointHandler` as main orchestrator
+  - [x] Organized endpoints by concern:
+    - [x] `HealthEndpointHandler` - Health checks and status
+    - [x] `AuthEndpointHandler` - Authentication and tokens
+    - [x] `SessionEndpointHandler` - Session management
+    - [x] `GameActionEndpointHandler` - Game commands
+    - [x] `LeaderboardEndpointHandler` - Leaderboard endpoints
+    - [x] `EventEndpointHandler` - Event store and snapshots
+  - [x] Updated `StartupHelper` and test infrastructure
+  - [x] Maintained full backward compatibility
+  - [x] All tests pass (127/127)
+  - [x] Created comprehensive documentation
+
+### **Future Infrastructure Work**
+- [ ] **API Versioning Strategy**
+  - [ ] Implement proper API versioning for breaking changes
+  - [ ] Add version-specific endpoint handlers
+  - [ ] Create migration guides for client updates
+
+- [ ] **API Documentation**
+  - [ ] Enhance OpenAPI/Swagger documentation
+  - [ ] Add endpoint-specific documentation
+  - [ ] Create API usage examples
+
+- [ ] **Performance Monitoring**
+  - [ ] Add endpoint performance metrics
+  - [ ] Implement request/response logging
+  - [ ] Add health check endpoints for dependencies
+
+---
+
+## 📝 **10. Notes**
 
 - **Priority**: Focus on High Priority items first to achieve minimal playability
 - **Testing**: Write tests alongside implementation, not after

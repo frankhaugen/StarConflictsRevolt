@@ -71,6 +71,9 @@
   &quot;associatedIndex&quot;: 6
 }</component>
   <component name="ProjectId" id="2znEKR7BQBJXU2rKkGj8SNu24Mk" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -222,21 +225,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="14940000" />
-    </task>
-    <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
-      <option name="closed" value="true" />
-      <created>1752401444331</created>
-      <option name="number" value="LOCAL−00001" />
-      <option name="presentableId" value="LOCAL−00001" />
-      <updated>1752401444331</updated>
-    </task>
-    <task id="LOCAL−00002" summary="Refactor workspace.xml to improve formatting and update environment variables for ASP.NET Core">
-      <option name="closed" value="true" />
-      <created>1752401454307</created>
-      <option name="number" value="LOCAL−00002" />
-      <option name="presentableId" value="LOCAL−00002" />
-      <updated>1752401454307</updated>
+      <workItem from="1752432073576" duration="15244000" />
     </task>
     <task id="LOCAL−00003" summary="Add MockLite library for NSubstitute-style mocking and implement parallel safety tests">
       <option name="closed" value="true" />
@@ -560,7 +549,28 @@
       <option name="presentableId" value="LOCAL−00048" />
       <updated>1752491803588</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL−00049" summary="Add combat-related enums and classes for enhanced gameplay mechanics">
+      <option name="closed" value="true" />
+      <created>1752491984489</created>
+      <option name="number" value="LOCAL−00049" />
+      <option name="presentableId" value="LOCAL−00049" />
+      <updated>1752491984489</updated>
+    </task>
+    <task id="LOCAL−00050" summary="Remove unused using directives to clean up code and improve readability">
+      <option name="closed" value="true" />
+      <created>1752492095084</created>
+      <option name="number" value="LOCAL−00050" />
+      <option name="presentableId" value="LOCAL−00050" />
+      <updated>1752492095085</updated>
+    </task>
+    <task id="LOCAL−00051" summary="Fix formatting issues by removing unnecessary blank lines and ensuring consistent code style across multiple files">
+      <option name="closed" value="true" />
+      <created>1752492216116</created>
+      <option name="number" value="LOCAL−00051" />
+      <option name="presentableId" value="LOCAL−00051" />
+      <updated>1752492216116</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -580,9 +590,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Enhance hosted services isolation tests with in-memory database setup and mock event store" />
-    <MESSAGE value="Increase timeout for TwoHumanPlayers session creation test to improve stability" />
-    <MESSAGE value="Add SessionResponse model and enhance event processing with timeouts" />
     <MESSAGE value="Refactor workspace.xml to update session response model and enhance event processing" />
     <MESSAGE value="Add Microsoft.Testing.Extensions.CodeCoverage package for improved test coverage analysis" />
     <MESSAGE value="Refactor Session and Client models to initialize properties; add database migration for Clients and Sessions tables" />
@@ -605,7 +612,10 @@
     <MESSAGE value="Add combat simulation framework with Death Star mechanics and combat services" />
     <MESSAGE value="Refactor integration tests to improve token handling and enhance service registrations" />
     <MESSAGE value="Refactor API endpoint handling into a modular structure for improved organization and maintainability" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor API endpoint handling into a modular structure for improved organization and maintainability" />
+    <MESSAGE value="Add combat-related enums and classes for enhanced gameplay mechanics" />
+    <MESSAGE value="Remove unused using directives to clean up code and improve readability" />
+    <MESSAGE value="Fix formatting issues by removing unnecessary blank lines and ensuring consistent code style across multiple files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix formatting issues by removing unnecessary blank lines and ensuring consistent code style across multiple files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
