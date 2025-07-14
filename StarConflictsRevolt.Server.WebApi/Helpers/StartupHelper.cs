@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
@@ -167,7 +168,7 @@ public static class StartupHelper
         
         app.UseAuthentication();
         app.UseAuthorization();
-        MinimalApiHelper.MapMinimalApis(app);
+        ApiEndpointHandler.MapAllEndpoints(app);
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();

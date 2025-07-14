@@ -26,6 +26,7 @@ using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Helpers;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
@@ -242,7 +243,7 @@ public class TestHostApplication : IDisposable
     {
         app.UseAuthentication();
         app.UseAuthorization();
-        MinimalApiHelper.MapMinimalApis(app);
+                    ApiEndpointHandler.MapAllEndpoints(app);
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
