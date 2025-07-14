@@ -241,7 +241,7 @@ public class MenuView : IView
 
         if (UIHelper.DrawButton("Join Session", centerX - 100, startY + 130, 200, 40, UIHelper.Colors.Success))
             if (!string.IsNullOrWhiteSpace(_playerName))
-                JoinSession();
+                _ = JoinSession();
 
         if (UIHelper.DrawButton("Back", centerX - 100, startY + 180, 200, 40, UIHelper.Colors.Secondary)) _menuState = 3;
     }
@@ -273,36 +273,47 @@ public class MenuView : IView
         }
     }
 
-    private async void JoinSession()
+    private async Task JoinSession()
     {
         if (Guid.TryParse(_sessionId, out var sessionGuid))
         {
-            // First join the session via HTTP
-            var sessionResponse = await _commandService.JoinSessionAsync(sessionGuid, _playerName);
-            if (sessionResponse != null)
+            try
             {
-                // Set up the game state
-                _renderContext.GameState.Session = new SessionDto
+                // First join the session via HTTP
+                var sessionResponse = await _commandService.JoinSessionAsync(sessionGuid, _playerName);
+                if (sessionResponse != null)
                 {
-                    Id = sessionResponse.SessionId,
-                    SessionName = _sessionName,
-                    IsActive = true,
-                    SessionType = _selectedSessionType
-                };
-                _renderContext.GameState.PlayerName = _playerName;
-                _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
-                
-                // Apply the world data from the join response
-                if (sessionResponse.World != null)
-                {
-                    _renderContext.WorldStore.ApplyFull(sessionResponse.World);
+                    // Set up the game state
+                    _renderContext.GameState.Session = new SessionDto
+                    {
+                        Id = sessionResponse.SessionId,
+                        SessionName = _sessionName,
+                        IsActive = true,
+                        SessionType = _selectedSessionType
+                    };
+                    _renderContext.GameState.PlayerName = _playerName;
+                    _renderContext.GameState.PlayerId = Guid.NewGuid().ToString(); // Generate player ID
+                    
+                    // Apply the world data from the join response
+                    if (sessionResponse.World != null)
+                    {
+                        _renderContext.WorldStore.ApplyFull(sessionResponse.World);
+                    }
+                    
+                    // Join the SignalR session
+                    await _signalRService.JoinSessionAsync(sessionGuid);
+                    
+                    _renderContext.GameState.NavigateTo(GameView.Galaxy);
+                    _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
                 }
-                
-                // Join the SignalR session
-                await _signalRService.JoinSessionAsync(sessionGuid);
-                
-                _renderContext.GameState.NavigateTo(GameView.Galaxy);
-                _renderContext.GameState.SetFeedback($"Joined session as {_playerName}", TimeSpan.FromSeconds(3));
+                else
+                {
+                    _renderContext.GameState.SetFeedback("Failed to join session", TimeSpan.FromSeconds(3));
+                }
+            }
+            catch (Exception ex)
+            {
+                _renderContext.GameState.SetFeedback($"Error joining session: {ex.Message}", TimeSpan.FromSeconds(5));
             }
         }
         else

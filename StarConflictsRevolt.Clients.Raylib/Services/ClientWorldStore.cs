@@ -22,7 +22,28 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
     public void ApplyFull(WorldDto? world)
     {
         logger.LogInformation("ApplyFull called with world: {WorldId}, StarSystems: {StarSystemCount}",
-            world.Id, world.Galaxy?.StarSystems?.Count() ?? 0);
+            world?.Id, world?.Galaxy?.StarSystems?.Count() ?? 0);
+
+        if (world == null)
+        {
+            logger.LogWarning("ApplyFull called with null world");
+            _current = null;
+            return;
+        }
+
+        if (world.Galaxy == null)
+        {
+            logger.LogWarning("ApplyFull called with world that has null Galaxy");
+            _current = world;
+            return;
+        }
+
+        if (world.Galaxy.StarSystems == null)
+        {
+            logger.LogWarning("ApplyFull called with world that has null StarSystems");
+            _current = world;
+            return;
+        }
 
         _current = world with
         {
@@ -31,6 +52,10 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
                 StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
             }
         };
+        
+        logger.LogInformation("World applied successfully. Current world: {WorldId}, StarSystems: {StarSystemCount}",
+            _current.Id, _current.Galaxy?.StarSystems?.Count() ?? 0);
+            
         Snapshot();
     }
 
@@ -71,6 +96,9 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
 
     public WorldDto? GetCurrent()
     {
+        logger.LogDebug("GetCurrent called. Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
+            _current?.Id, _current?.Galaxy != null, _current?.Galaxy?.StarSystems?.Count() ?? 0);
+            
         if (_current is null)
             return null;
         return _current with
