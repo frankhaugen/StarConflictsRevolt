@@ -4,23 +4,23 @@ public class PlanetType
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    
+
     // Resource bonuses per turn
     public int CreditsBonus { get; set; }
     public int MaterialsBonus { get; set; }
     public int FuelBonus { get; set; }
     public int FoodBonus { get; set; }
-    
+
     // Special characteristics
     public bool CanBuildStructures { get; set; } = true;
     public bool CanSupportPopulation { get; set; } = true;
     public int MaxStructures { get; set; } = 5;
     public int PopulationCapacity { get; set; } = 1000;
-    
+
     // Visual characteristics
     public string Color { get; set; } = "#4A90E2";
     public string TerrainType { get; set; } = "Standard";
-    
+
     public static PlanetType Terran => new()
     {
         Name = "Terran",
@@ -36,7 +36,7 @@ public class PlanetType
         Color = "#4A90E2",
         TerrainType = "Continental"
     };
-    
+
     public static PlanetType Desert => new()
     {
         Name = "Desert",
@@ -52,7 +52,7 @@ public class PlanetType
         Color = "#D4A574",
         TerrainType = "Desert"
     };
-    
+
     public static PlanetType Ice => new()
     {
         Name = "Ice",
@@ -68,7 +68,7 @@ public class PlanetType
         Color = "#B8E6B8",
         TerrainType = "Ice"
     };
-    
+
     public static PlanetType GasGiant => new()
     {
         Name = "Gas Giant",
@@ -84,7 +84,7 @@ public class PlanetType
         Color = "#FFD700",
         TerrainType = "Gas"
     };
-    
+
     public static PlanetType Asteroid => new()
     {
         Name = "Asteroid",
@@ -100,7 +100,7 @@ public class PlanetType
         Color = "#8B4513",
         TerrainType = "Rocky"
     };
-    
+
     public static PlanetType Ocean => new()
     {
         Name = "Ocean",
@@ -116,4 +116,4 @@ public class PlanetType
         Color = "#0066CC",
         TerrainType = "Oceanic"
     };
-} 
+}

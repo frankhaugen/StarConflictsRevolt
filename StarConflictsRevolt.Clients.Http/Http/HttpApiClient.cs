@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace StarConflictsRevolt.Clients.Http.Http;
 
@@ -23,9 +24,9 @@ public class HttpApiClient : IHttpApiClient
     public async Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
     {
         await EnsureHealthAsync(ct);
-        var jsonOptions = new System.Text.Json.JsonSerializerOptions
+        var jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         return await Client.GetFromJsonAsync<T>(uri, jsonOptions, ct);
     }

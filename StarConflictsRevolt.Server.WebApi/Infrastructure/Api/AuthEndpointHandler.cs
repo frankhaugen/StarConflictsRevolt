@@ -10,7 +10,7 @@ using StarConflictsRevolt.Server.WebApi.Security;
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>
-/// Handles authentication and token endpoints
+///     Handles authentication and token endpoints
 /// </summary>
 public static class AuthEndpointHandler
 {
@@ -21,16 +21,16 @@ public static class AuthEndpointHandler
         {
             var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("TokenEndpoint");
-            
+
             var request = await context.Request.ReadFromJsonAsync<TokenRequest>(context.RequestAborted);
             if (request == null || string.IsNullOrEmpty(request.ClientId) || string.IsNullOrEmpty(request.ClientSecret))
             {
-                logger.LogWarning("Invalid token request received: ClientId={ClientId}, HasSecret={HasSecret}", 
+                logger.LogWarning("Invalid token request received: ClientId={ClientId}, HasSecret={HasSecret}",
                     request?.ClientId ?? "null", !string.IsNullOrEmpty(request?.ClientSecret));
-                
+
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsJsonAsync(new 
-                { 
+                await context.Response.WriteAsJsonAsync(new
+                {
                     error = "invalid_request",
                     error_description = "ClientId and ClientSecret are required",
                     timestamp = DateTime.UtcNow
@@ -44,11 +44,11 @@ public static class AuthEndpointHandler
             if (request.ClientSecret != Constants.Secret)
             {
                 logger.LogWarning("Authentication failed for client {ClientId}: Invalid secret provided", request.ClientId);
-                
+
                 // Get existing sessions to provide helpful information
                 var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
                 var existingSessions = new List<object>();
-                
+
                 try
                 {
                     var sessions = await dbContext.Sessions
@@ -63,17 +63,17 @@ public static class AuthEndpointHandler
                             s.SessionType
                         })
                         .ToListAsync(context.RequestAborted);
-                    
+
                     existingSessions = sessions.Cast<object>().ToList();
                 }
                 catch (Exception ex)
                 {
                     logger.LogDebug(ex, "Could not retrieve existing sessions for error response");
                 }
-                
+
                 context.Response.StatusCode = 401;
-                await context.Response.WriteAsJsonAsync(new 
-                { 
+                await context.Response.WriteAsJsonAsync(new
+                {
                     error = "invalid_client",
                     error_description = "Invalid client secret. Please check your configuration.",
                     client_id = request.ClientId,
@@ -85,7 +85,7 @@ public static class AuthEndpointHandler
             }
 
             var gameDbContext = context.RequestServices.GetRequiredService<GameDbContext>();
-            
+
             // Check if database is ready
             try
             {
@@ -94,8 +94,8 @@ public static class AuthEndpointHandler
                 {
                     logger.LogError("Database connection failed for client {ClientId}", request.ClientId);
                     context.Response.StatusCode = 503;
-                    await context.Response.WriteAsJsonAsync(new 
-                    { 
+                    await context.Response.WriteAsJsonAsync(new
+                    {
                         error = "service_unavailable",
                         error_description = "Database is not ready. Please try again later.",
                         timestamp = DateTime.UtcNow
@@ -107,15 +107,15 @@ public static class AuthEndpointHandler
             {
                 logger.LogError(ex, "Database connection check failed for client {ClientId}", request.ClientId);
                 context.Response.StatusCode = 503;
-                await context.Response.WriteAsJsonAsync(new 
-                { 
+                await context.Response.WriteAsJsonAsync(new
+                {
                     error = "service_unavailable",
                     error_description = "Database connection failed. Please try again later.",
                     timestamp = DateTime.UtcNow
                 }, context.RequestAborted);
                 return;
             }
-            
+
             // Use direct lookup if GetClientAsync is not available
             Client? existingClient = null;
             try
@@ -126,15 +126,15 @@ public static class AuthEndpointHandler
             {
                 logger.LogError(ex, "Failed to query Clients table for client {ClientId}. Database may not be fully initialized.", request.ClientId);
                 context.Response.StatusCode = 503;
-                await context.Response.WriteAsJsonAsync(new 
-                { 
+                await context.Response.WriteAsJsonAsync(new
+                {
                     error = "service_unavailable",
                     error_description = "Database is not fully initialized. Please try again later.",
                     timestamp = DateTime.UtcNow
                 }, context.RequestAborted);
                 return;
             }
-            
+
             if (existingClient == null)
             {
                 existingClient = new Client { Id = request.ClientId, LastSeen = DateTime.UtcNow };
@@ -163,9 +163,9 @@ public static class AuthEndpointHandler
                     SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
-            
+
             logger.LogInformation("Successfully issued token for client {ClientId}", request.ClientId);
-            
+
             // Return JSON payload consistent with OAuth conventions and test expectations
             await context.Response.WriteAsJsonAsync(
                 new
@@ -177,4 +177,4 @@ public static class AuthEndpointHandler
                 context.RequestAborted);
         }).AllowAnonymous();
     }
-} 
+}

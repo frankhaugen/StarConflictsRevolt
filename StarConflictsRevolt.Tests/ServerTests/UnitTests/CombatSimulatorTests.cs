@@ -200,4 +200,4 @@ public class CombatSimulatorTests
             }
         };
     }
-} 
+}

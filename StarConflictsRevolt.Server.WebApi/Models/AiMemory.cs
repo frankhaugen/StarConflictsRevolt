@@ -2,6 +2,14 @@ namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public class AiMemory
 {
+    public AiMemory(Guid playerId, MemoryType type, string description, double importance = 0.5)
+    {
+        PlayerId = playerId;
+        Type = type;
+        Description = description;
+        Importance = Math.Clamp(importance, 0.0, 1.0);
+    }
+
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid PlayerId { get; set; }
     public MemoryType Type { get; set; }
@@ -12,14 +20,6 @@ public class AiMemory
     public DateTime LastAccessed { get; set; } = DateTime.UtcNow;
     public int AccessCount { get; set; }
     public bool IsForgotten { get; set; }
-
-    public AiMemory(Guid playerId, MemoryType type, string description, double importance = 0.5)
-    {
-        PlayerId = playerId;
-        Type = type;
-        Description = description;
-        Importance = Math.Clamp(importance, 0.0, 1.0);
-    }
 
     public void AddData(string key, object value)
     {
@@ -33,6 +33,7 @@ public class AiMemory
             Access();
             return typedValue;
         }
+
         return default;
     }
 
@@ -58,7 +59,7 @@ public class AiMemory
         var ageInHours = (DateTime.UtcNow - LastAccessed).TotalHours;
         var recencyFactor = Math.Exp(-ageInHours / 24.0); // Decay over 24 hours
         var frequencyFactor = Math.Min(AccessCount / 10.0, 1.0); // Cap at 10 accesses
-        
+
         return Importance * (0.7 * recencyFactor + 0.3 * frequencyFactor);
     }
 

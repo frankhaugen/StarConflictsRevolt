@@ -26,21 +26,21 @@ public class EconomicAiStrategy : BaseAiStrategy
         // Economic goals
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
-            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build economic structures", 95.0);
             _goals.Add(buildGoal);
         }
 
         if (aiPlanets.Count < 5 && !_goals.Any(g => g.Type == AiGoalType.Expand && !g.IsCompleted))
         {
-            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.MediumTerm, 
+            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.MediumTerm,
                 "Expand to more planets for resources", 80.0);
             _goals.Add(expandGoal);
         }
 
         if (aiFleets.Count < 2 && !_goals.Any(g => g.Type == AiGoalType.Build && g.Description.Contains("fleet") && !g.IsCompleted))
         {
-            var fleetGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var fleetGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build defensive fleets", 70.0);
             _goals.Add(fleetGoal);
         }
@@ -49,7 +49,7 @@ public class EconomicAiStrategy : BaseAiStrategy
     protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
         var enemyFleets = GetEnemyFleets(playerId, world);
@@ -68,13 +68,12 @@ public class EconomicAiStrategy : BaseAiStrategy
         var decisions = new List<AiDecision>();
 
         foreach (var planet in aiPlanets)
-        {
             // Economic AI builds resource-generating structures
             if (_random.Next(100) < 60) // 60% chance to build (high for economic)
             {
                 var economicStructures = new[] { "Mine", "Refinery", "Construction Yard" };
                 var structureType = economicStructures[_random.Next(economicStructures.Length)];
-                
+
                 var score = 80.0 + _random.NextDouble() * 20; // 80-100 score (high priority)
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.High, score,
                     $"Build {structureType} on {planet.Name} for economic growth");
@@ -82,7 +81,6 @@ public class EconomicAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         return decisions;
     }
@@ -96,17 +94,16 @@ public class EconomicAiStrategy : BaseAiStrategy
 
         // Economic AI only attacks if threatened
         foreach (var aiFleet in aiFleets)
-        {
             if (_random.Next(100) < 25) // 25% chance to attack (low for economic)
             {
                 // Only attack if enemy is close to our planets
                 var aiPlanets = GetPlayerPlanets(playerId, world);
-                var nearbyEnemies = enemyFleets.Where(f => 
+                var nearbyEnemies = enemyFleets.Where(f =>
                 {
                     var location = world.Galaxy.StarSystems
                         .SelectMany(s => s.Planets)
                         .FirstOrDefault(p => p.Fleets.Contains(f));
-                    return location != null && aiPlanets.Any(ap => 
+                    return location != null && aiPlanets.Any(ap =>
                         world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
                 }).ToList();
 
@@ -129,7 +126,6 @@ public class EconomicAiStrategy : BaseAiStrategy
                     }
                 }
             }
-        }
 
         return decisions;
     }
@@ -143,7 +139,6 @@ public class EconomicAiStrategy : BaseAiStrategy
 
         // Economic AI moves fleets to unclaimed planets for expansion
         foreach (var fleet in aiFleets)
-        {
             if (_random.Next(100) < 35) // 35% chance to move for expansion
             {
                 var unclaimedPlanets = world.Galaxy.StarSystems
@@ -154,7 +149,7 @@ public class EconomicAiStrategy : BaseAiStrategy
                 if (unclaimedPlanets.Any())
                 {
                     var targetPlanet = unclaimedPlanets[_random.Next(unclaimedPlanets.Count)];
-                    
+
                     if (fleet.LocationPlanetId != targetPlanet.Id)
                     {
                         var score = 65.0 + _random.NextDouble() * 20; // 65-85 score
@@ -167,7 +162,6 @@ public class EconomicAiStrategy : BaseAiStrategy
                     }
                 }
             }
-        }
 
         return decisions;
     }
@@ -182,14 +176,14 @@ public class EconomicAiStrategy : BaseAiStrategy
                 .Where(p => !p.Fleets.Any())
                 .ToList();
 
-            var targetPlanet = unclaimedPlanets.Any() 
+            var targetPlanet = unclaimedPlanets.Any()
                 ? unclaimedPlanets[_random.Next(unclaimedPlanets.Count)]
                 : world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList()[_random.Next(world.Galaxy.StarSystems.SelectMany(s => s.Planets).Count())];
-            
+
             if (fleet.LocationPlanetId != targetPlanet.Id)
             {
                 var score = 50.0 + _random.NextDouble() * 25; // 50-75 score
-                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score, 
+                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score,
                     $"Economic move: fleet {fleet.Id} to {targetPlanet.Name}");
                 decision.AddParameter("FleetId", fleet.Id);
                 decision.AddParameter("FromPlanetId", fleet.LocationPlanetId ?? Guid.Empty);
@@ -197,7 +191,7 @@ public class EconomicAiStrategy : BaseAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
 
@@ -208,7 +202,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         {
             var economicStructures = new[] { "Mine", "Refinery", "Construction Yard", "Shipyard" };
             var structureType = economicStructures[_random.Next(economicStructures.Length)];
-            
+
             var score = 70.0 + _random.NextDouble() * 25; // 70-95 score (high priority)
             var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.High, score,
                 $"Economic build: {structureType} on {planet.Name}");
@@ -216,7 +210,7 @@ public class EconomicAiStrategy : BaseAiStrategy
             decision.AddParameter("StructureType", structureType);
             return decision;
         }
-        
+
         return null;
     }
 
@@ -229,7 +223,7 @@ public class EconomicAiStrategy : BaseAiStrategy
             var location = world.Galaxy.StarSystems
                 .SelectMany(s => s.Planets)
                 .FirstOrDefault(p => p.Fleets.Contains(defender));
-                
+
             if (location != null)
             {
                 var score = 40.0 + _random.NextDouble() * 30; // 40-70 score (lower priority)
@@ -241,7 +235,7 @@ public class EconomicAiStrategy : BaseAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
-} 
+}

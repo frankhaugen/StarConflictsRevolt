@@ -1,13 +1,13 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Services;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class GameContentTests
 {
-    private GameContentService _gameContentService = null!;
+    private readonly GameContentService _gameContentService = null!;
 
     public GameContentTests()
     {
@@ -24,7 +24,7 @@ public class GameContentTests
         // Assert
         technologies.Should().NotBeEmpty();
         technologies.Count.Should().BeGreaterThan(10);
-        
+
         // Check that all technology categories are represented
         var categories = technologies.Select(t => t.Category).Distinct().ToList();
         categories.Should().Contain(TechnologyCategory.Combat);
@@ -68,7 +68,7 @@ public class GameContentTests
 
         // Assert
         available.Should().NotBeEmpty();
-        
+
         // Should only include level 1 technologies (no prerequisites)
         foreach (var tech in available)
         {
@@ -88,7 +88,7 @@ public class GameContentTests
 
         // Assert
         available.Should().NotBeEmpty();
-        
+
         // Should include Advanced Weapons
         var advancedWeapons = available.FirstOrDefault(t => t.Name == "Advanced Weapons");
         advancedWeapons.Should().NotBeNull();
@@ -146,7 +146,7 @@ public class GameContentTests
         // Assert
         victoryConditions.Should().NotBeEmpty();
         victoryConditions.Count.Should().Be(5);
-        
+
         // Check that all victory types are represented
         var types = victoryConditions.Select(v => v.Type).Distinct().ToList();
         types.Should().Contain(VictoryType.Military);
@@ -190,7 +190,7 @@ public class GameContentTests
         // Assert
         resourceDefinitions.Should().NotBeEmpty();
         resourceDefinitions.Count.Should().Be(4);
-        
+
         // Check that all resource types are represented
         resourceDefinitions.Should().ContainKey(ResourceType.Credits);
         resourceDefinitions.Should().ContainKey(ResourceType.Materials);
@@ -275,4 +275,4 @@ public class GameContentTests
         info.Should().Contain("victory conditions");
         info.Should().Contain("resource types");
     }
-} 
+}

@@ -19,7 +19,7 @@ public class SessionTypeStressTests
         for (var i = 0; i < 50; i++)
         {
             var req = new { SessionName = $"stress-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
-            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
     }
@@ -36,7 +36,7 @@ public class SessionTypeStressTests
         for (var i = 0; i < 20; i++)
         {
             var req = new { SessionName = $"join-test-{i}-{Guid.NewGuid()}", SessionType = i % 2 == 0 ? "SinglePlayer" : "Multiplayer" };
-            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
             // Simulate join (would be a GET or SignalR join in real app)
         }
@@ -56,7 +56,7 @@ public class SessionTypeStressTests
         {
             var type = rand.Next(2) == 0 ? "SinglePlayer" : "Multiplayer";
             var req = new { SessionName = $"random-type-{i}-{Guid.NewGuid()}", SessionType = type };
-            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
     }
@@ -73,7 +73,7 @@ public class SessionTypeStressTests
         for (var i = 0; i < 10; i++)
         {
             var req = new { SessionName = new string('X', 200) + i, SessionType = "SinglePlayer" };
-            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
     }
@@ -90,7 +90,7 @@ public class SessionTypeStressTests
         for (var i = 0; i < 10; i++)
         {
             var req = new { SessionName = $"!@#$%^&*()_+-={i}", SessionType = "Multiplayer" };
-            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+            var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
             await Assert.That(resp.IsSuccessStatusCode).IsTrue();
         }
     }

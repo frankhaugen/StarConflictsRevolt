@@ -67,14 +67,14 @@ public class BalancedAiStrategy : BaseAiStrategy
             return AiStrategyPhase.EarlyGame;
 
         // Defensive: Under threat
-        if (enemyFleets.Any(f => 
-        {
-            var location = world.Galaxy.StarSystems
-                .SelectMany(s => s.Planets)
-                .FirstOrDefault(p => p.Fleets.Contains(f));
-            return location != null && aiPlanets.Any(ap => 
-                world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
-        }))
+        if (enemyFleets.Any(f =>
+            {
+                var location = world.Galaxy.StarSystems
+                    .SelectMany(s => s.Planets)
+                    .FirstOrDefault(p => p.Fleets.Contains(f));
+                return location != null && aiPlanets.Any(ap =>
+                    world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
+            }))
             return AiStrategyPhase.Defensive;
 
         // Aggressive: Strong position, can attack
@@ -93,14 +93,14 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
-            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build economic foundation", 90.0);
             _goals.Add(buildGoal);
         }
 
         if (!_goals.Any(g => g.Type == AiGoalType.Expand && !g.IsCompleted))
         {
-            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.ShortTerm, 
+            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.ShortTerm,
                 "Expand to nearby planets", 85.0);
             _goals.Add(expandGoal);
         }
@@ -110,14 +110,14 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
-            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build military and economic structures", 80.0);
             _goals.Add(buildGoal);
         }
 
         if (!_goals.Any(g => g.Type == AiGoalType.Attack && !g.IsCompleted))
         {
-            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.MediumTerm, 
+            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.MediumTerm,
                 "Engage enemy forces", 75.0);
             _goals.Add(attackGoal);
         }
@@ -127,7 +127,7 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Dominate && !g.IsCompleted))
         {
-            var dominateGoal = new AiGoal(AiGoalType.Dominate, GoalTimeframe.ShortTerm, 
+            var dominateGoal = new AiGoal(AiGoalType.Dominate, GoalTimeframe.ShortTerm,
                 "Dominate remaining planets", 95.0);
             _goals.Add(dominateGoal);
         }
@@ -137,14 +137,14 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Defend && !g.IsCompleted))
         {
-            var defendGoal = new AiGoal(AiGoalType.Defend, GoalTimeframe.Immediate, 
+            var defendGoal = new AiGoal(AiGoalType.Defend, GoalTimeframe.Immediate,
                 "Defend against immediate threats", 95.0);
             _goals.Add(defendGoal);
         }
 
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
-            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build defensive structures", 85.0);
             _goals.Add(buildGoal);
         }
@@ -154,14 +154,14 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Attack && !g.IsCompleted))
         {
-            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.ShortTerm, 
+            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.ShortTerm,
                 "Launch offensive operations", 90.0);
             _goals.Add(attackGoal);
         }
 
         if (!_goals.Any(g => g.Type == AiGoalType.Expand && !g.IsCompleted))
         {
-            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.MediumTerm, 
+            var expandGoal = new AiGoal(AiGoalType.Expand, GoalTimeframe.MediumTerm,
                 "Expand into enemy territory", 80.0);
             _goals.Add(expandGoal);
         }
@@ -170,7 +170,7 @@ public class BalancedAiStrategy : BaseAiStrategy
     protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         var currentPhase = _playerPhases.GetValueOrDefault(playerId, AiStrategyPhase.MidGame);
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
@@ -205,12 +205,11 @@ public class BalancedAiStrategy : BaseAiStrategy
 
         // Early game: Focus on building and expansion
         foreach (var planet in aiPlanets)
-        {
             if (_random.Next(100) < 50) // 50% chance to build
             {
                 var earlyStructures = new[] { "Mine", "Refinery", "Construction Yard" };
                 var structureType = earlyStructures[_random.Next(earlyStructures.Length)];
-                
+
                 var score = 70.0 + _random.NextDouble() * 20; // 70-90 score
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.High, score,
                     $"Early game build: {structureType} on {planet.Name}");
@@ -218,11 +217,9 @@ public class BalancedAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         // Move fleets to unclaimed planets
         foreach (var fleet in aiFleets)
-        {
             if (_random.Next(100) < 40) // 40% chance to move
             {
                 var unclaimedPlanets = world.Galaxy.StarSystems
@@ -233,7 +230,7 @@ public class BalancedAiStrategy : BaseAiStrategy
                 if (unclaimedPlanets.Any())
                 {
                     var targetPlanet = unclaimedPlanets[_random.Next(unclaimedPlanets.Count)];
-                    
+
                     if (fleet.LocationPlanetId != targetPlanet.Id)
                     {
                         var score = 60.0 + _random.NextDouble() * 20; // 60-80 score
@@ -246,7 +243,6 @@ public class BalancedAiStrategy : BaseAiStrategy
                     }
                 }
             }
-        }
 
         return decisions;
     }
@@ -257,12 +253,11 @@ public class BalancedAiStrategy : BaseAiStrategy
 
         // Mid game: Balanced approach
         foreach (var planet in aiPlanets)
-        {
             if (_random.Next(100) < 40) // 40% chance to build
             {
                 var midGameStructures = new[] { "Mine", "Refinery", "Training Facility", "Shield Generator" };
                 var structureType = midGameStructures[_random.Next(midGameStructures.Length)];
-                
+
                 var score = 60.0 + _random.NextDouble() * 25; // 60-85 score
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.Medium, score,
                     $"Mid game build: {structureType} on {planet.Name}");
@@ -270,13 +265,10 @@ public class BalancedAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         // Balanced combat
         if (enemyFleets.Any())
-        {
             foreach (var aiFleet in aiFleets)
-            {
                 if (_random.Next(100) < 30) // 30% chance to attack
                 {
                     var defender = enemyFleets[_random.Next(enemyFleets.Count)];
@@ -295,8 +287,6 @@ public class BalancedAiStrategy : BaseAiStrategy
                         decisions.Add(decision);
                     }
                 }
-            }
-        }
 
         return decisions;
     }
@@ -307,9 +297,7 @@ public class BalancedAiStrategy : BaseAiStrategy
 
         // Late game: Aggressive domination
         if (enemyFleets.Any())
-        {
             foreach (var aiFleet in aiFleets)
-            {
                 if (_random.Next(100) < 60) // 60% chance to attack
                 {
                     var defender = enemyFleets[_random.Next(enemyFleets.Count)];
@@ -328,8 +316,6 @@ public class BalancedAiStrategy : BaseAiStrategy
                         decisions.Add(decision);
                     }
                 }
-            }
-        }
 
         return decisions;
     }
@@ -340,12 +326,11 @@ public class BalancedAiStrategy : BaseAiStrategy
 
         // Defensive: Build defensive structures
         foreach (var planet in aiPlanets)
-        {
             if (_random.Next(100) < 60) // 60% chance to build
             {
                 var defensiveStructures = new[] { "Shield Generator", "Training Facility" };
                 var structureType = defensiveStructures[_random.Next(defensiveStructures.Length)];
-                
+
                 var score = 75.0 + _random.NextDouble() * 20; // 75-95 score
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.High, score,
                     $"Defensive build: {structureType} on {planet.Name}");
@@ -353,22 +338,19 @@ public class BalancedAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         // Defensive: Attack only nearby threats
         if (enemyFleets.Any())
-        {
             foreach (var aiFleet in aiFleets)
-            {
                 if (_random.Next(100) < 35) // 35% chance to attack
                 {
                     var playerPlanets = GetPlayerPlanets(playerId, world);
-                    var nearbyEnemies = enemyFleets.Where(f => 
+                    var nearbyEnemies = enemyFleets.Where(f =>
                     {
                         var location = world.Galaxy.StarSystems
                             .SelectMany(s => s.Planets)
                             .FirstOrDefault(p => p.Fleets.Contains(f));
-                        return location != null && playerPlanets.Any(ap => 
+                        return location != null && playerPlanets.Any(ap =>
                             world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
                     }).ToList();
 
@@ -391,8 +373,6 @@ public class BalancedAiStrategy : BaseAiStrategy
                         }
                     }
                 }
-            }
-        }
 
         return decisions;
     }
@@ -403,12 +383,11 @@ public class BalancedAiStrategy : BaseAiStrategy
 
         // Aggressive: Build military structures
         foreach (var planet in aiPlanets)
-        {
             if (_random.Next(100) < 45) // 45% chance to build
             {
                 var militaryStructures = new[] { "Training Facility", "Shield Generator", "Shipyard" };
                 var structureType = militaryStructures[_random.Next(militaryStructures.Length)];
-                
+
                 var score = 65.0 + _random.NextDouble() * 25; // 65-90 score
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.Medium, score,
                     $"Aggressive build: {structureType} on {planet.Name}");
@@ -416,13 +395,10 @@ public class BalancedAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         // Aggressive: Attack frequently
         if (enemyFleets.Any())
-        {
             foreach (var aiFleet in aiFleets)
-            {
                 if (_random.Next(100) < 50) // 50% chance to attack
                 {
                     var defender = enemyFleets[_random.Next(enemyFleets.Count)];
@@ -441,8 +417,6 @@ public class BalancedAiStrategy : BaseAiStrategy
                         decisions.Add(decision);
                     }
                 }
-            }
-        }
 
         return decisions;
     }
@@ -450,7 +424,7 @@ public class BalancedAiStrategy : BaseAiStrategy
     protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
     {
         var currentPhase = _playerPhases.GetValueOrDefault(playerId, AiStrategyPhase.MidGame);
-        
+
         // Adjust movement based on phase
         var moveChance = currentPhase switch
         {
@@ -471,11 +445,11 @@ public class BalancedAiStrategy : BaseAiStrategy
                 AiStrategyPhase.Aggressive => GetEnemyPlanet(playerId, world),
                 _ => GetRandomPlanet(world)
             };
-            
+
             if (fleet.LocationPlanetId != targetPlanet.Id)
             {
                 var score = 55.0 + _random.NextDouble() * 30; // 55-85 score
-                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score, 
+                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score,
                     $"Balanced move ({currentPhase}): fleet {fleet.Id} to {targetPlanet.Name}");
                 decision.AddParameter("FleetId", fleet.Id);
                 decision.AddParameter("FromPlanetId", fleet.LocationPlanetId ?? Guid.Empty);
@@ -483,7 +457,7 @@ public class BalancedAiStrategy : BaseAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
 
@@ -493,8 +467,8 @@ public class BalancedAiStrategy : BaseAiStrategy
             .SelectMany(s => s.Planets)
             .Where(p => !p.Fleets.Any())
             .ToList();
-        
-        return unclaimedPlanets.Any() 
+
+        return unclaimedPlanets.Any()
             ? unclaimedPlanets[_random.Next(unclaimedPlanets.Count)]
             : GetRandomPlanet(world);
     }
@@ -502,7 +476,7 @@ public class BalancedAiStrategy : BaseAiStrategy
     private Planet GetDefensivePlanet(Guid playerId, World world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
-        return aiPlanets.Any() 
+        return aiPlanets.Any()
             ? aiPlanets[_random.Next(aiPlanets.Count)]
             : GetRandomPlanet(world);
     }
@@ -510,7 +484,7 @@ public class BalancedAiStrategy : BaseAiStrategy
     private Planet GetEnemyPlanet(Guid playerId, World world)
     {
         var enemyPlanets = GetEnemyPlanets(playerId, world);
-        return enemyPlanets.Any() 
+        return enemyPlanets.Any()
             ? enemyPlanets[_random.Next(enemyPlanets.Count)]
             : GetRandomPlanet(world);
     }

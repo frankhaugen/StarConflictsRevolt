@@ -1,18 +1,17 @@
+using System.Numerics;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Models;
-using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
-using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Eventing;
+using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
-using System.Numerics;
+using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
 public class AiStrategyTests
 {
-    private readonly AiMemoryBank _memoryBank;
     private readonly ILogger _logger;
+    private readonly AiMemoryBank _memoryBank;
 
     public AiStrategyTests()
     {
@@ -34,7 +33,7 @@ public class AiStrategyTests
         // Assert
         commands.Should().NotBeNull();
         commands.Count.Should().BeGreaterThanOrEqualTo(0);
-        
+
         // Aggressive AI should prioritize attacks
         var attackCommands = commands.OfType<AttackEvent>().ToList();
         attackCommands.Count.Should().BeGreaterThanOrEqualTo(0);
@@ -54,7 +53,7 @@ public class AiStrategyTests
         // Assert
         commands.Should().NotBeNull();
         commands.Count.Should().BeGreaterThanOrEqualTo(0);
-        
+
         // Economic AI should prioritize building
         var buildCommands = commands.OfType<BuildStructureEvent>().ToList();
         buildCommands.Count.Should().BeGreaterThanOrEqualTo(0);
@@ -74,7 +73,7 @@ public class AiStrategyTests
         // Assert
         commands.Should().NotBeNull();
         commands.Count.Should().BeGreaterThanOrEqualTo(0);
-        
+
         // Defensive AI should build defensive structures
         var buildCommands = commands.OfType<BuildStructureEvent>().ToList();
         buildCommands.Count.Should().BeGreaterThanOrEqualTo(0);
@@ -94,12 +93,12 @@ public class AiStrategyTests
         // Assert
         commands.Should().NotBeNull();
         commands.Count.Should().BeGreaterThanOrEqualTo(0);
-        
+
         // Balanced AI should generate a mix of commands
         var moveCommands = commands.OfType<MoveFleetEvent>().ToList();
         var buildCommands = commands.OfType<BuildStructureEvent>().ToList();
         var attackCommands = commands.OfType<AttackEvent>().ToList();
-        
+
         (moveCommands.Count + buildCommands.Count + attackCommands.Count).Should().Be(commands.Count);
     }
 
@@ -117,12 +116,12 @@ public class AiStrategyTests
         // Assert
         commands.Should().NotBeNull();
         commands.Count.Should().BeGreaterThanOrEqualTo(0);
-        
+
         // Random AI should generate various types of commands
         var moveCommands = commands.OfType<MoveFleetEvent>().ToList();
         var buildCommands = commands.OfType<BuildStructureEvent>().ToList();
         var attackCommands = commands.OfType<AttackEvent>().ToList();
-        
+
         (moveCommands.Count + buildCommands.Count + attackCommands.Count).Should().Be(commands.Count);
     }
 
@@ -179,22 +178,22 @@ public class AiStrategyTests
     private World CreateTestWorld(Guid playerId)
     {
         // Create a simple test world with some planets and fleets
-        var planet1 = new Planet("Test Planet 1", 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>(), null, 0, 0, 0, 0, 0, 0, 0, PlanetType.Terran, 0, 0, 0)
+        var planet1 = new Planet("Test Planet 1", 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>(), null, 0, 0, 0, 0, 0, 0, 0, PlanetType.Terran)
         {
             Id = Guid.NewGuid()
         };
 
-        var planet2 = new Planet("Test Planet 2", 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>(), null, 0, 0, 0, 0, 0, 0, 0, PlanetType.Terran, 0, 0, 0)
+        var planet2 = new Planet("Test Planet 2", 0, 0, 0, 0, 0, new List<Fleet>(), new List<Structure>(), null, 0, 0, 0, 0, 0, 0, 0, PlanetType.Terran)
         {
             Id = Guid.NewGuid()
         };
 
-        var fleet1 = new Fleet(playerId, "Test Fleet 1", new List<Ship>(), planet1.Id, playerId, FleetStatus.Idle, null, null, null)
+        var fleet1 = new Fleet(playerId, "Test Fleet 1", new List<Ship>(), planet1.Id, playerId)
         {
             LocationPlanetId = planet1.Id
         };
 
-        var fleet2 = new Fleet(Guid.NewGuid(), "Enemy Fleet", new List<Ship>(), planet2.Id, Guid.NewGuid(), FleetStatus.Idle, null, null, null)
+        var fleet2 = new Fleet(Guid.NewGuid(), "Enemy Fleet", new List<Ship>(), planet2.Id, Guid.NewGuid())
         {
             LocationPlanetId = planet2.Id
         };
@@ -212,4 +211,4 @@ public class AiStrategyTests
             Galaxy = galaxy
         };
     }
-} 
+}

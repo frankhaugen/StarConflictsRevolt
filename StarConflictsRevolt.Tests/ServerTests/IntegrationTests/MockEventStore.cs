@@ -5,7 +5,7 @@ namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 public class MockEventStore : IEventStore
 {
     private readonly List<EventEnvelope> _events = new();
-    
+
     public Task PublishAsync(Guid worldId, IGameEvent gameEvent)
     {
         _events.Add(new EventEnvelope(worldId, gameEvent, DateTime.UtcNow));
@@ -16,12 +16,9 @@ public class MockEventStore : IEventStore
     {
         // For testing, we can just simulate subscription by invoking the handler immediately
         foreach (var gameEvent in _events)
-        {
             if (!cancellationToken.IsCancellationRequested)
-            {
                 handler(gameEvent).GetAwaiter().GetResult();
-            }
-        }
+
         return Task.CompletedTask;
     }
 
@@ -30,9 +27,12 @@ public class MockEventStore : IEventStore
         // No resources to dispose in this mock
         return ValueTask.CompletedTask;
     }
-    
-    public IEnumerable<EventEnvelope> GetEvents(Guid worldId) => _events.Where(e => e.WorldId == worldId);
-    
+
+    public IEnumerable<EventEnvelope> GetEvents(Guid worldId)
+    {
+        return _events.Where(e => e.WorldId == worldId);
+    }
+
     public Task ClearEventsAsync(Guid worldId)
     {
         _events.RemoveAll(e => e.WorldId == worldId);

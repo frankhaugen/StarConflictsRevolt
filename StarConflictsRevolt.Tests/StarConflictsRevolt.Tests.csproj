@@ -11,7 +11,7 @@
     <ItemGroup>
         <PackageReference Include="FluentAssertions-apache-2.0" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.7"/>
-        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2"/>
         <PackageReference Include="RavenDB.Embedded" Version="7.1.0"/>
         <PackageReference Include="RavenDB.TestDriver" Version="7.1.0"/>
         <PackageReference Include="TUnit" Version="0.25.21"/>

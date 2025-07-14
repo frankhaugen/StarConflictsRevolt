@@ -15,14 +15,11 @@ public class AttackResolver : IAttackResolver
     {
         // Calculate hit chance
         var hitChance = CalculateHitChance(attacker, target, state);
-        
+
         // Determine if attack hits
         var hit = Random.Shared.NextDouble() < hitChance;
-        
-        if (!hit)
-        {
-            return AttackResult.Miss;
-        }
+
+        if (!hit) return AttackResult.Miss;
 
         // Calculate damage
         var damageModifiers = CalculateDamageModifiers(attacker, target, state);
@@ -32,11 +29,8 @@ public class AttackResolver : IAttackResolver
         // Determine critical hit
         var criticalChance = CalculateCriticalChance(attacker, target, state);
         var isCritical = Random.Shared.NextDouble() < criticalChance;
-        
-        if (isCritical)
-        {
-            totalDamage = (int)(totalDamage * 1.5); // 50% bonus for critical hits
-        }
+
+        if (isCritical) totalDamage = (int)(totalDamage * 1.5); // 50% bonus for critical hits
 
         // Split damage between shields and hull
         var (shieldDamage, hullDamage) = CalculateDamageSplit(totalDamage, target);
@@ -50,19 +44,19 @@ public class AttackResolver : IAttackResolver
     public double CalculateHitChance(CombatShip attacker, CombatShip target, CombatState state)
     {
         var baseAccuracy = attacker.Stats.Accuracy;
-        
+
         // Defender evasion based on speed and effectiveness
         var evasion = target.Stats.Speed * 0.1 * target.Stats.GetCombatEffectiveness();
-        
+
         // Environmental modifiers
         var environmentalModifier = state.Environment.GetAccuracyModifier();
-        
+
         // Range penalty (simplified)
         var rangePenalty = CalculateRangePenalty(attacker, target);
-        
+
         // Final hit chance calculation
         var hitChance = (baseAccuracy - evasion) * environmentalModifier * rangePenalty;
-        
+
         // Clamp between 0.05 and 0.95
         return Math.Max(0.05, Math.Min(0.95, hitChance));
     }
@@ -92,26 +86,26 @@ public class AttackResolver : IAttackResolver
         // Simple range penalty - could be enhanced with actual positioning
         var maxRange = Math.Max(attacker.Stats.Range, target.Stats.Range);
         var effectiveRange = Math.Min(attacker.Stats.Range, maxRange);
-        
+
         // Penalty increases with range
-        return Math.Max(0.5, 1.0 - (effectiveRange * 0.1));
+        return Math.Max(0.5, 1.0 - effectiveRange * 0.1);
     }
 
     private double CalculateCriticalChance(CombatShip attacker, CombatShip target, CombatState state)
     {
         var baseCriticalChance = 0.05; // 5% base chance
-        
+
         // Attacker accuracy bonus
         var accuracyBonus = (attacker.Stats.Accuracy - 0.5) * 0.1;
-        
+
         // Target size penalty (larger targets are easier to hit critically)
         var sizePenalty = target.Stats.Hull > 50 ? 0.02 : 0.0;
-        
+
         // Environmental bonus
         var environmentalBonus = state.Environment.Visibility > 0.8 ? 0.01 : 0.0;
-        
+
         var totalChance = baseCriticalChance + accuracyBonus + sizePenalty + environmentalBonus;
-        
+
         return Math.Max(0.01, Math.Min(0.25, totalChance)); // Clamp between 1% and 25%
     }
 
@@ -141,9 +135,7 @@ public class AttackResolver : IAttackResolver
 
         // Check attacker abilities
         foreach (var ability in attacker.Stats.Abilities)
-        {
             if (ability.IsActive)
-            {
                 switch (ability.Type)
                 {
                     case AbilityType.IonCannon:
@@ -156,23 +148,17 @@ public class AttackResolver : IAttackResolver
                         modifier *= 1.1; // 10% accuracy bonus
                         break;
                 }
-            }
-        }
 
         // Check target abilities
         foreach (var ability in target.Stats.Abilities)
-        {
             if (ability.IsActive)
-            {
                 switch (ability.Type)
                 {
                     case AbilityType.Stealth:
                         modifier *= 0.8; // 20% damage reduction
                         break;
                 }
-            }
-        }
 
         return modifier;
     }
-} 
+}

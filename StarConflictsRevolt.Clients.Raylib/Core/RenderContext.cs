@@ -9,21 +9,20 @@ public class RenderContext
 {
     private readonly IOptions<GameClientConfiguration> _configurationOptions;
     private readonly ILogger<RenderContext> _logger;
-    private readonly IClientWorldStore _worldStore;
 
     public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore)
     {
         _logger = logger;
         _configurationOptions = configurationOptions;
-        _worldStore = worldStore;
+        WorldStore = worldStore;
     }
 
     public GameClientConfiguration Configuration => _configurationOptions.Value;
 
-    public WorldDto? World => _worldStore.GetCurrent();
+    public WorldDto? World => WorldStore.GetCurrent();
 
     // World store access
-    public IClientWorldStore WorldStore => _worldStore;
+    public IClientWorldStore WorldStore { get; }
 
     // Game state management
     public GameState GameState { get; } = new();

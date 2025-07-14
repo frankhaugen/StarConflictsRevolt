@@ -119,9 +119,9 @@ public class MenuViewSessionTypeTests
     // Minimal fake for SignalRService
     private class TestSignalRService : SignalRService
     {
-        public TestSignalRService(IOptions<GameClientConfiguration> gameClientConfiguration, 
-            IClientWorldStore worldStore, 
-            ILogger<SignalRService> logger) 
+        public TestSignalRService(IOptions<GameClientConfiguration> gameClientConfiguration,
+            IClientWorldStore worldStore,
+            ILogger<SignalRService> logger)
             : base(gameClientConfiguration, worldStore, logger)
         {
         }

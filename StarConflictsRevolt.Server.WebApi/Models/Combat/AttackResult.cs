@@ -7,9 +7,9 @@ public class AttackResult
     public int HullDamage { get; set; }
     public bool Critical { get; set; }
     public string Description { get; set; } = string.Empty;
-    
+
     public static AttackResult Miss => new() { Hit = false, Description = "Attack missed" };
-    
+
     public static AttackResult CreateHit(int shieldDamage, int hullDamage, bool critical = false)
     {
         return new AttackResult

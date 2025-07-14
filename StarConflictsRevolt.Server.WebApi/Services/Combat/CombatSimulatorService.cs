@@ -5,11 +5,11 @@ namespace StarConflictsRevolt.Server.WebApi.Services.Combat;
 
 public class CombatSimulatorService : ICombatSimulator
 {
-    private readonly IFleetCombatSimulator _fleetCombatSimulator;
-    private readonly IPlanetaryCombatSimulator _planetaryCombatSimulator;
     private readonly IDeathStarRunSimulator _deathStarRunSimulator;
-    private readonly IMissionSimulator _missionSimulator;
+    private readonly IFleetCombatSimulator _fleetCombatSimulator;
     private readonly ILogger<CombatSimulatorService> _logger;
+    private readonly IMissionSimulator _missionSimulator;
+    private readonly IPlanetaryCombatSimulator _planetaryCombatSimulator;
 
     public CombatSimulatorService(
         IFleetCombatSimulator fleetCombatSimulator,
@@ -33,7 +33,7 @@ public class CombatSimulatorService : ICombatSimulator
         try
         {
             var result = _fleetCombatSimulator.SimulateFleetCombat(attacker, defender, location);
-            
+
             _logger.LogInformation("Fleet combat simulation completed. Result: {AttackerVictory}, Rounds: {Rounds}, Duration: {Duration}",
                 result.AttackerVictory, result.RoundsFought, result.Duration);
 
@@ -54,7 +54,7 @@ public class CombatSimulatorService : ICombatSimulator
         try
         {
             var result = _planetaryCombatSimulator.SimulatePlanetaryCombat(attacker, defender);
-            
+
             _logger.LogInformation("Planetary combat simulation completed. Result: {AttackerVictory}, Rounds: {Rounds}, Duration: {Duration}",
                 result.AttackerVictory, result.RoundsFought, result.Duration);
 
@@ -75,7 +75,7 @@ public class CombatSimulatorService : ICombatSimulator
         try
         {
             var result = _deathStarRunSimulator.SimulateDeathStarRun(attacker, defender);
-            
+
             _logger.LogInformation("Death Star run simulation completed. Result: {AttackerVictory}, Duration: {Duration}",
                 result.AttackerVictory, result.Duration);
 
@@ -96,7 +96,7 @@ public class CombatSimulatorService : ICombatSimulator
         try
         {
             var result = _missionSimulator.SimulateMission(mission, agent, target);
-            
+
             _logger.LogInformation("Mission simulation completed. Result: {AttackerVictory}, Duration: {Duration}",
                 result.AttackerVictory, result.Duration);
 
@@ -108,4 +108,4 @@ public class CombatSimulatorService : ICombatSimulator
             throw;
         }
     }
-} 
+}

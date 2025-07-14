@@ -6,9 +6,9 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 public class MockEventStore : IEventStore
 {
     private readonly ConcurrentQueue<EventEnvelope> _events = new();
-    private readonly List<Func<EventEnvelope, Task>> _subscribers = new();
     private readonly object _lock = new();
-    private bool _disposed = false;
+    private readonly List<Func<EventEnvelope, Task>> _subscribers = new();
+    private bool _disposed;
 
     public Task PublishAsync(Guid worldId, IGameEvent @event)
     {
@@ -23,10 +23,7 @@ public class MockEventStore : IEventStore
         var notifyTasks = new List<Task>();
         lock (_lock)
         {
-            foreach (var subscriber in _subscribers)
-            {
-                notifyTasks.Add(subscriber(envelope));
-            }
+            foreach (var subscriber in _subscribers) notifyTasks.Add(subscriber(envelope));
         }
 
         return Task.WhenAll(notifyTasks);
@@ -54,6 +51,24 @@ public class MockEventStore : IEventStore
         return Task.CompletedTask;
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
+        // Wait a bit for any pending operations to complete
+        await Task.Delay(100);
+
+        lock (_lock)
+        {
+            _subscribers.Clear();
+        }
+
+        Clear();
+    }
+
     public List<EventEnvelope> GetAllEvents()
     {
         return _events.ToList();
@@ -66,24 +81,8 @@ public class MockEventStore : IEventStore
 
     public void Clear()
     {
-        while (_events.TryDequeue(out _)) { }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed)
-            return;
-
-        _disposed = true;
-        
-        // Wait a bit for any pending operations to complete
-        await Task.Delay(100);
-        
-        lock (_lock)
+        while (_events.TryDequeue(out _))
         {
-            _subscribers.Clear();
         }
-        
-        Clear();
     }
-} 
+}

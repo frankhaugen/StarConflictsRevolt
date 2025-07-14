@@ -7,11 +7,11 @@ using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
+using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
 using StarConflictsRevolt.Server.WebApi.Services.Combat;
-using StarConflictsRevolt.Server.WebApi.Models;
 
 namespace StarConflictsRevolt.Server.WebApi.Helpers;
 
@@ -29,14 +29,14 @@ public static class StartupHelper
         builder.Services.AddSingleton<WorldFactory>();
         // Register AI memory bank
         builder.Services.AddSingleton<AiMemoryBank>();
-        
+
         // Register AI strategies
         builder.Services.AddSingleton<DefaultAiStrategy>();
         builder.Services.AddSingleton<AggressiveAiStrategy>();
         builder.Services.AddSingleton<EconomicAiStrategy>();
         builder.Services.AddSingleton<DefensiveAiStrategy>();
         builder.Services.AddSingleton<BalancedAiStrategy>();
-        
+
         // Register default AI strategy
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddScoped<GameSetupService>();
@@ -148,14 +148,14 @@ public static class StartupHelper
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            
+
             var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
             if (pendingMigrations.Any())
             {
                 // Clean the database if it exists
                 await dbContext.Database.EnsureDeletedAsync();
                 // await dbContext.Database.EnsureCreatedAsync();
-                
+
                 Console.WriteLine("Applying pending migrations...");
                 await dbContext.Database.MigrateAsync();
                 Console.WriteLine("Migrations applied successfully.");
@@ -165,7 +165,7 @@ public static class StartupHelper
                 Console.WriteLine("No pending migrations found.");
             }
         }
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
         ApiEndpointHandler.MapAllEndpoints(app);

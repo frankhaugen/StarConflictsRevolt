@@ -51,23 +51,22 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
 
         modelBuilder.Entity<Session>()
             .HasKey(s => s.Id);
-        
+
         modelBuilder.Entity<Session>()
             .HasOne(s => s.Client)
             .WithMany(c => c.Sessions)
             .HasForeignKey(s => s.ClientId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<Client>()
             .HasKey(c => c.Id);
-        
+
         modelBuilder.Entity<Client>()
             .Property(c => c.Id)
             .IsRequired()
             .HasMaxLength(100)
             .ValueGeneratedNever();
-        
-        
+
 
         // --- Static Data Seeding ---
         modelBuilder.Entity<Ship>().HasData(

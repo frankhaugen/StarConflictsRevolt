@@ -32,9 +32,9 @@ public class GalaxyView : IView
         Graphics.ClearBackground(UIHelper.Colors.Background);
 
         var currentWorld = _renderContext.World;
-        _logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}", 
+        _logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
             currentWorld?.Id, currentWorld?.Galaxy != null, currentWorld?.Galaxy?.StarSystems?.Count() ?? 0);
-        
+
         if (currentWorld == null)
         {
             UIHelper.DrawText("No world data available", 400, 300, UIHelper.FontSizes.Large, Color.White, true);
@@ -184,13 +184,13 @@ public class GalaxyView : IView
 
     private void HandleKeyboardInput()
     {
-        if (Input.IsKeyPressed(KeyboardKey.Escape)) 
+        if (Input.IsKeyPressed(KeyboardKey.Escape))
         {
             _logger.LogDebug("Escape key pressed - navigating to menu");
             _renderContext.GameState.NavigateTo(GameView.Menu);
         }
 
-        if (Input.IsKeyPressed(KeyboardKey.Backspace)) 
+        if (Input.IsKeyPressed(KeyboardKey.Backspace))
         {
             _logger.LogDebug("Backspace key pressed - navigating to menu");
             _renderContext.GameState.NavigateTo(GameView.Menu);

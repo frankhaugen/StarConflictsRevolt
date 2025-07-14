@@ -4,26 +4,26 @@ public class ShipTemplate
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    
+
     // Combat stats
     public int Attack { get; set; }
     public int Health { get; set; }
     public int Speed { get; set; }
     public int Cargo { get; set; }
-    
+
     // Costs
     public int CreditsCost { get; set; }
     public int MaterialsCost { get; set; }
     public int FuelCost { get; set; }
-    
+
     // Build time in seconds
     public int BuildTimeSeconds { get; set; }
-    
+
     // Special abilities
     public bool CanTransportTroops { get; set; }
     public bool CanBombardPlanets { get; set; }
     public bool IsStealth { get; set; }
-    
+
     public static ShipTemplate Scout => new()
     {
         Name = "Scout",
@@ -40,7 +40,7 @@ public class ShipTemplate
         CanBombardPlanets = false,
         IsStealth = true
     };
-    
+
     public static ShipTemplate Fighter => new()
     {
         Name = "Fighter",
@@ -57,7 +57,7 @@ public class ShipTemplate
         CanBombardPlanets = false,
         IsStealth = false
     };
-    
+
     public static ShipTemplate Destroyer => new()
     {
         Name = "Destroyer",
@@ -74,7 +74,7 @@ public class ShipTemplate
         CanBombardPlanets = true,
         IsStealth = false
     };
-    
+
     public static ShipTemplate Cruiser => new()
     {
         Name = "Cruiser",
@@ -91,7 +91,7 @@ public class ShipTemplate
         CanBombardPlanets = true,
         IsStealth = false
     };
-    
+
     public static ShipTemplate Transport => new()
     {
         Name = "Transport",
@@ -108,4 +108,4 @@ public class ShipTemplate
         CanBombardPlanets = false,
         IsStealth = false
     };
-} 
+}

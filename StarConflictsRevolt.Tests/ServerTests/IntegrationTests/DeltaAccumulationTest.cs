@@ -16,7 +16,7 @@ public class DeltaAccumulationTest
     [Timeout(60_000)] // Increased timeout for more complex interactions
     public async Task Should_Not_Accumulate_Deltas_Repeatedly(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
         await testHost.StartServerAsync(CancellationToken.None);
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();

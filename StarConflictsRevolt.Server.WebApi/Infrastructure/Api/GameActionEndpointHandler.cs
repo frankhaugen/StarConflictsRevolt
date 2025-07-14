@@ -5,7 +5,7 @@ using StarConflictsRevolt.Server.WebApi.Services;
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>
-/// Handles game action endpoints (move fleet, build structure, attack, diplomacy)
+///     Handles game action endpoints (move fleet, build structure, attack, diplomacy)
 /// </summary>
 public static class GameActionEndpointHandler
 {
@@ -196,4 +196,4 @@ public static class GameActionEndpointHandler
             context.Response.StatusCode = 202;
         }).RequireAuthorization();
     }
-} 
+}

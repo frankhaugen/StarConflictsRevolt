@@ -5,12 +5,12 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class GameUpdateService : BackgroundService
 {
+    private readonly List<Task> _activeOperations = new();
     private readonly SessionAggregateManager _aggregateManager;
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly IEventStore _eventStore;
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
-    private readonly List<Task> _activeOperations = new();
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
 
     public GameUpdateService(
@@ -33,7 +33,6 @@ public class GameUpdateService : BackgroundService
         try
         {
             while (!stoppingToken.IsCancellationRequested)
-            {
                 try
                 {
                     await ProcessAggregatesWithTimeoutAsync(stoppingToken);
@@ -49,7 +48,6 @@ public class GameUpdateService : BackgroundService
                     _logger.LogError(ex, "Error in GameUpdateService main loop");
                     await Task.Delay(1000, stoppingToken);
                 }
-            }
         }
         finally
         {
@@ -70,9 +68,9 @@ public class GameUpdateService : BackgroundService
             {
                 var operationTask = ProcessAggregatesAsync(timeoutCts.Token);
                 _activeOperations.Add(operationTask);
-                
+
                 await operationTask;
-                
+
                 _activeOperations.Remove(operationTask);
             }
             finally
@@ -90,7 +88,7 @@ public class GameUpdateService : BackgroundService
     {
         var aggregates = _aggregateManager.GetAllAggregates();
         _logger.LogDebug("Processing {AggregateCount} aggregates", aggregates.Count());
-        
+
         foreach (var sessionAggregate in aggregates)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -104,7 +102,7 @@ public class GameUpdateService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         _logger.LogDebug("Processing session {SessionId}", sessionId);
-        
+
         var commandsProcessed = 0;
         while (_commandQueue.TryDequeue(sessionId, out var command))
         {
@@ -116,13 +114,9 @@ public class GameUpdateService : BackgroundService
         }
 
         if (commandsProcessed > 0)
-        {
             await SendDeltasAsync(sessionAggregate, cancellationToken);
-        }
         else
-        {
             _logger.LogDebug("No commands processed for session {SessionId}, skipping delta computation", sessionId);
-        }
 
         // Handle snapshots
         await HandleSnapshotAsync(sessionAggregate, cancellationToken);
@@ -132,15 +126,15 @@ public class GameUpdateService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         _logger.LogInformation("Processing command {CommandType} for session {SessionId}", command.GetType().Name, sessionId);
-        
+
         try
         {
             var oldWorld = sessionAggregate.World;
             sessionAggregate.Apply(command);
-            
+
             // Publish event
             await _eventStore.PublishAsync(sessionId, command);
-            
+
             _aggregateManager.IncrementEventCount(sessionId);
             _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}",
                 command.GetType().Name, sessionId, _aggregateManager.GetEventCount(sessionId));
@@ -161,20 +155,19 @@ public class GameUpdateService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         var previousWorld = _aggregateManager.GetPreviousWorldState(sessionId);
-        
+
         if (previousWorld != null)
         {
             var deltas = ChangeTracker.ComputeDeltas(previousWorld, sessionAggregate.World);
             _logger.LogInformation("Computed {DeltaCount} deltas for session {SessionId}", deltas.Count, sessionId);
-            
+
             if (deltas.Count > 0)
-            {
                 try
                 {
                     // Send deltas with timeout
                     using var sendTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     sendTimeoutCts.CancelAfter(TimeSpan.FromSeconds(10));
-                    
+
                     _logger.LogInformation("Sending {DeltaCount} deltas to session {SessionId} group", deltas.Count, sessionId);
                     await _hubContext.Clients.Group(sessionId.ToString()).SendAsync("ReceiveUpdates", deltas, sendTimeoutCts.Token);
                     _logger.LogInformation("Successfully sent {DeltaCount} deltas to session {SessionId}", deltas.Count, sessionId);
@@ -189,12 +182,9 @@ public class GameUpdateService : BackgroundService
                     _logger.LogError(ex, "Error sending deltas to session {SessionId}", sessionId);
                     throw;
                 }
-            }
             else
-            {
                 _logger.LogDebug("No deltas to send for session {SessionId} (no changes detected)", sessionId);
-            }
-            
+
             _aggregateManager.SetPreviousWorldState(sessionId, sessionAggregate.World);
         }
         else
@@ -208,16 +198,14 @@ public class GameUpdateService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         var eventCount = _aggregateManager.GetEventCount(sessionId);
-        
+
         if (eventCount > 0 && eventCount % 100 == 0)
-        {
             if (_eventStore is RavenEventStore raven)
-            {
                 try
                 {
                     using var snapshotTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     snapshotTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
-                    
+
                     raven.SnapshotWorld(sessionId, sessionAggregate.World);
                     _logger.LogInformation("Created snapshot for session {SessionId} at event {EventCount}", sessionId, eventCount);
                 }
@@ -229,22 +217,19 @@ public class GameUpdateService : BackgroundService
                 {
                     _logger.LogError(ex, "Error creating snapshot for session {SessionId}", sessionId);
                 }
-            }
-        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("GameUpdateService stopping...");
-        
+
         // Wait for active operations to complete with timeout
         if (_activeOperations.Count > 0)
-        {
             try
             {
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(10)); // 10-second timeout for shutdown
-                
+
                 await Task.WhenAll(_activeOperations).WaitAsync(timeoutCts.Token);
                 _logger.LogInformation("All active operations completed during shutdown");
             }
@@ -252,8 +237,7 @@ public class GameUpdateService : BackgroundService
             {
                 _logger.LogWarning("Some operations did not complete during shutdown timeout");
             }
-        }
-        
+
         await base.StopAsync(cancellationToken);
     }
 

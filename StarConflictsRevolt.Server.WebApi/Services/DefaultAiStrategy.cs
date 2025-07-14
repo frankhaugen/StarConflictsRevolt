@@ -28,19 +28,18 @@ public class DefaultAiStrategy : BaseAiStrategy
     protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         var aiFleets = GetPlayerFleets(playerId, world);
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var enemyFleets = GetEnemyFleets(playerId, world);
 
         // Random behavior (original implementation)
         foreach (var fleet in aiFleets)
-        {
             if (_random.Next(100) < 30)
             {
                 var allPlanets = world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList();
                 var targetPlanet = allPlanets[_random.Next(allPlanets.Count)];
-                
+
                 if (fleet.LocationPlanetId != targetPlanet.Id)
                 {
                     var score = _random.NextDouble() * 50 + 25; // 25-75 score
@@ -52,15 +51,13 @@ public class DefaultAiStrategy : BaseAiStrategy
                     decisions.Add(decision);
                 }
             }
-        }
 
         foreach (var planet in aiPlanets)
-        {
             if (_random.Next(100) < 20)
             {
                 var structureTypes = Enum.GetValues<StructureVariant>();
                 var structureType = structureTypes[_random.Next(structureTypes.Length)];
-                
+
                 var score = _random.NextDouble() * 40 + 30; // 30-70 score
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.Medium, score,
                     $"Random build: {structureType} on {planet.Name}");
@@ -68,7 +65,6 @@ public class DefaultAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType.ToString());
                 decisions.Add(decision);
             }
-        }
 
         if (enemyFleets.Any() && aiFleets.Any() && _random.Next(100) < 15)
         {
@@ -77,7 +73,7 @@ public class DefaultAiStrategy : BaseAiStrategy
             var location = world.Galaxy.StarSystems
                 .SelectMany(s => s.Planets)
                 .FirstOrDefault(p => p.Fleets.Contains(defender));
-                
+
             if (location != null)
             {
                 var score = _random.NextDouble() * 60 + 40; // 40-100 score

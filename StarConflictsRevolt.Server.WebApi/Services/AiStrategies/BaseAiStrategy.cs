@@ -6,10 +6,10 @@ namespace StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
 
 public abstract class BaseAiStrategy : IAiStrategy
 {
-    protected readonly Random _random = new();
-    protected readonly AiMemoryBank _memoryBank;
     protected readonly List<AiGoal> _goals = new();
     protected readonly Dictionary<Guid, DateTime> _lastActionTime = new();
+    protected readonly AiMemoryBank _memoryBank;
+    protected readonly Random _random = new();
 
     protected BaseAiStrategy(AiMemoryBank memoryBank)
     {
@@ -21,14 +21,14 @@ public abstract class BaseAiStrategy : IAiStrategy
     protected virtual List<IGameEvent> GenerateCommandsInternal(Guid playerId, World world, ILogger logger)
     {
         var commands = new List<IGameEvent>();
-        
+
         // Update goals and remove expired ones
         UpdateGoals(playerId, world);
         CleanupExpiredGoals();
-        
+
         // Generate decisions based on current goals
         var decisions = GenerateDecisions(playerId, world);
-        
+
         // Convert decisions to game events
         foreach (var decision in decisions.OrderByDescending(d => d.Score).Take(5)) // Limit to top 5 decisions
         {
@@ -37,7 +37,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             {
                 commands.Add(gameEvent);
                 decision.MarkExecuted();
-                
+
                 // Remember this decision
                 var memory = new AiMemory(playerId, MemoryType.Decision, decision.Description, decision.Score / 100.0);
                 memory.AddData("DecisionType", decision.Type);
@@ -63,7 +63,7 @@ public abstract class BaseAiStrategy : IAiStrategy
     protected virtual List<AiDecision> GenerateDecisions(Guid playerId, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         // Get AI's assets
         var aiFleets = GetPlayerFleets(playerId, world);
         var aiPlanets = GetPlayerPlanets(playerId, world);
@@ -81,15 +81,12 @@ public abstract class BaseAiStrategy : IAiStrategy
     protected virtual List<AiDecision> GenerateFleetDecisions(Guid playerId, List<Fleet> aiFleets, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         foreach (var fleet in aiFleets)
         {
             // Check if fleet should move
             var moveDecision = EvaluateFleetMovement(playerId, fleet, world);
-            if (moveDecision != null)
-            {
-                decisions.Add(moveDecision);
-            }
+            if (moveDecision != null) decisions.Add(moveDecision);
         }
 
         return decisions;
@@ -98,15 +95,12 @@ public abstract class BaseAiStrategy : IAiStrategy
     protected virtual List<AiDecision> GenerateBuildingDecisions(Guid playerId, List<Planet> aiPlanets, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         foreach (var planet in aiPlanets)
         {
             // Check if planet should build something
             var buildDecision = EvaluateBuilding(playerId, planet, world);
-            if (buildDecision != null)
-            {
-                decisions.Add(buildDecision);
-            }
+            if (buildDecision != null) decisions.Add(buildDecision);
         }
 
         return decisions;
@@ -115,7 +109,7 @@ public abstract class BaseAiStrategy : IAiStrategy
     protected virtual List<AiDecision> GenerateCombatDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         if (!aiFleets.Any() || !enemyFleets.Any())
             return decisions;
 
@@ -123,10 +117,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         foreach (var aiFleet in aiFleets)
         {
             var combatDecision = EvaluateCombatOpportunity(playerId, aiFleet, enemyFleets, world);
-            if (combatDecision != null)
-            {
-                decisions.Add(combatDecision);
-            }
+            if (combatDecision != null) decisions.Add(combatDecision);
         }
 
         return decisions;
@@ -139,11 +130,11 @@ public abstract class BaseAiStrategy : IAiStrategy
         {
             var allPlanets = world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList();
             var targetPlanet = allPlanets[_random.Next(allPlanets.Count)];
-            
+
             if (fleet.LocationPlanetId != targetPlanet.Id)
             {
                 var score = _random.NextDouble() * 50 + 25; // 25-75 score
-                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score, 
+                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score,
                     $"Move fleet {fleet.Id} to {targetPlanet.Name}");
                 decision.AddParameter("FleetId", fleet.Id);
                 decision.AddParameter("FromPlanetId", fleet.LocationPlanetId ?? Guid.Empty);
@@ -151,7 +142,7 @@ public abstract class BaseAiStrategy : IAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
 
@@ -162,7 +153,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         {
             var structureTypes = Enum.GetValues<StructureVariant>();
             var structureType = structureTypes[_random.Next(structureTypes.Length)];
-            
+
             var score = _random.NextDouble() * 40 + 30; // 30-70 score
             var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.Medium, score,
                 $"Build {structureType} on {planet.Name}");
@@ -170,7 +161,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             decision.AddParameter("StructureType", structureType.ToString());
             return decision;
         }
-        
+
         return null;
     }
 
@@ -183,7 +174,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             var location = world.Galaxy.StarSystems
                 .SelectMany(s => s.Planets)
                 .FirstOrDefault(p => p.Fleets.Contains(defender));
-                
+
             if (location != null)
             {
                 var score = _random.NextDouble() * 60 + 40; // 40-100 score
@@ -195,7 +186,7 @@ public abstract class BaseAiStrategy : IAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
 
@@ -208,18 +199,18 @@ public abstract class BaseAiStrategy : IAiStrategy
                 decision.GetParameter<Guid>("FleetId"),
                 decision.GetParameter<Guid>("FromPlanetId"),
                 decision.GetParameter<Guid>("ToPlanetId")),
-                
+
             AiDecisionType.BuildStructure => new BuildStructureEvent(
                 playerId,
                 decision.GetParameter<Guid>("PlanetId"),
                 decision.GetParameter<string>("StructureType") ?? "Mine"),
-                
+
             AiDecisionType.Attack => new AttackEvent(
                 playerId,
                 decision.GetParameter<Guid>("AttackerFleetId"),
                 decision.GetParameter<Guid>("DefenderFleetId"),
                 decision.GetParameter<Guid>("LocationPlanetId")),
-                
+
             _ => null
         };
     }
@@ -270,4 +261,4 @@ public abstract class BaseAiStrategy : IAiStrategy
     {
         _lastActionTime[playerId] = DateTime.UtcNow;
     }
-} 
+}

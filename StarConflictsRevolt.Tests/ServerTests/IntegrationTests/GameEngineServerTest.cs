@@ -21,7 +21,7 @@ public class GameEngineServerTest
     [Timeout(30_000)]
     public async Task GameEngineServer_ShouldStartAndRespond(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
@@ -36,9 +36,9 @@ public class GameEngineServerTest
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";
-        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest() { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken: cancellationToken);
+        var tokenResponse = await httpClient.PostAsJsonAsync("/token", new TokenRequest { ClientId = testClientId, ClientSecret = Constants.Secret }, cancellationToken);
         tokenResponse.EnsureSuccessStatusCode();
-        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
+        var tokenObj = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
         if (tokenObj == null || string.IsNullOrEmpty(tokenObj.AccessToken))
             throw new Exception("Failed to obtain JWT token for test user");
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenObj.AccessToken);

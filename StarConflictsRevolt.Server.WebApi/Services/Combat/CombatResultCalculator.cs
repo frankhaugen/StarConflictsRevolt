@@ -83,7 +83,7 @@ public class CombatResultCalculator : ICombatResultCalculator
         if (activeDefenderShips.Count == 0 && activeAttackerShips.Count > 0)
         {
             // Attacker victory
-            var victoryBonus = 100 + (state.DefenderShips.Count * 25);
+            var victoryBonus = 100 + state.DefenderShips.Count * 25;
             rewards.Add(new CombatReward
             {
                 Type = RewardType.Experience,
@@ -102,7 +102,7 @@ public class CombatResultCalculator : ICombatResultCalculator
         else if (activeAttackerShips.Count == 0 && activeDefenderShips.Count > 0)
         {
             // Defender victory
-            var victoryBonus = 100 + (state.AttackerShips.Count * 25);
+            var victoryBonus = 100 + state.AttackerShips.Count * 25;
             rewards.Add(new CombatReward
             {
                 Type = RewardType.Experience,
@@ -114,14 +114,12 @@ public class CombatResultCalculator : ICombatResultCalculator
         // Special rewards for exceptional performance
         var criticalHits = state.Rounds.Sum(r => r.Actions.Count(a => a.AttackResult?.Critical == true));
         if (criticalHits > 0)
-        {
             rewards.Add(new CombatReward
             {
                 Type = RewardType.Experience,
                 Description = $"Bonus for {criticalHits} critical hits",
                 Value = criticalHits * 5
             });
-        }
 
         return rewards;
     }
@@ -133,47 +131,39 @@ public class CombatResultCalculator : ICombatResultCalculator
         // Morale loss for heavy casualties
         var totalLosses = state.AttackerShips.Count(s => s.Stats.IsDestroyed) + state.DefenderShips.Count(s => s.Stats.IsDestroyed);
         if (totalLosses > 5)
-        {
             consequences.Add(new CombatConsequence
             {
                 Type = ConsequenceType.MoraleLoss,
                 Description = $"Heavy casualties ({totalLosses} ships lost) have affected morale",
                 Value = totalLosses * 5
             });
-        }
 
         // Resource loss for destroyed ships
         var resourceLoss = totalLosses * 25;
         if (resourceLoss > 0)
-        {
             consequences.Add(new CombatConsequence
             {
                 Type = ConsequenceType.ResourceLoss,
-                Description = $"Resources lost with destroyed ships",
+                Description = "Resources lost with destroyed ships",
                 Value = resourceLoss
             });
-        }
 
         // Strategic consequences for complete destruction
         if (state.AttackerShips.All(s => s.Stats.IsDestroyed))
-        {
             consequences.Add(new CombatConsequence
             {
                 Type = ConsequenceType.StrategicDisadvantage,
                 Description = "Complete fleet destruction has strategic implications",
                 Value = 50
             });
-        }
 
         if (state.DefenderShips.All(s => s.Stats.IsDestroyed))
-        {
             consequences.Add(new CombatConsequence
             {
                 Type = ConsequenceType.StrategicDisadvantage,
                 Description = "Defender's complete fleet destruction",
                 Value = 50
             });
-        }
 
         return consequences;
     }
@@ -190,18 +180,12 @@ public class CombatResultCalculator : ICombatResultCalculator
             {
                 var attacker = state.GetAllShips().FirstOrDefault(s => s.Id == action.ActorId);
                 var target = action.TargetId.HasValue ? state.GetAllShips().FirstOrDefault(s => s.Id == action.TargetId.Value) : null;
-                
-                if (attacker != null && target != null)
-                {
-                    cinematicData.Highlights.Add($"Round {round.RoundNumber}: {attacker.Name} scores a critical hit on {target.Name}!");
-                }
+
+                if (attacker != null && target != null) cinematicData.Highlights.Add($"Round {round.RoundNumber}: {attacker.Name} scores a critical hit on {target.Name}!");
             }
 
             // Check for ship destructions
-            foreach (var destroyedShip in round.DestroyedShips)
-            {
-                cinematicData.CriticalMoments.Add($"Round {round.RoundNumber}: {destroyedShip.Name} is destroyed!");
-            }
+            foreach (var destroyedShip in round.DestroyedShips) cinematicData.CriticalMoments.Add($"Round {round.RoundNumber}: {destroyedShip.Name} is destroyed!");
         }
 
         // Generate final narrative
@@ -209,21 +193,13 @@ public class CombatResultCalculator : ICombatResultCalculator
         var activeDefenderShips = state.DefenderShips.Where(s => !s.Stats.IsDestroyed).ToList();
 
         if (activeDefenderShips.Count == 0 && activeAttackerShips.Count > 0)
-        {
             cinematicData.FinalNarrative = $"The attackers have achieved a decisive victory, destroying all enemy ships while preserving {activeAttackerShips.Count} of their own vessels.";
-        }
         else if (activeAttackerShips.Count == 0 && activeDefenderShips.Count > 0)
-        {
             cinematicData.FinalNarrative = $"The defenders have successfully repelled the attack, destroying all enemy ships while maintaining {activeDefenderShips.Count} vessels.";
-        }
         else if (activeAttackerShips.Count == 0 && activeDefenderShips.Count == 0)
-        {
             cinematicData.FinalNarrative = "The battle has ended in mutual destruction, with no ships remaining on either side.";
-        }
         else
-        {
             cinematicData.FinalNarrative = $"The battle has ended with {activeAttackerShips.Count} attacker ships and {activeDefenderShips.Count} defender ships remaining.";
-        }
 
         // Add custom data
         cinematicData.CustomData["TotalRounds"] = state.CurrentRound;
@@ -240,8 +216,8 @@ public class CombatResultCalculator : ICombatResultCalculator
 
         var totalEffectiveness = ships.Sum(s => s.Stats.GetCombatEffectiveness());
         var averageEffectiveness = totalEffectiveness / ships.Count;
-        
+
         // Factor in the number of ships (more ships = more effectiveness)
         return averageEffectiveness * Math.Sqrt(ships.Count);
     }
-} 
+}

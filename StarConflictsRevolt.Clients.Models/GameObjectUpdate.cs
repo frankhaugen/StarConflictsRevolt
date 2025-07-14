@@ -17,7 +17,7 @@ public record GameObjectUpdate(Guid Id, UpdateType Type, JsonElement? Data)
         Converters =
         {
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, true)
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         },
         NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
         PropertyNameCaseInsensitive = true,

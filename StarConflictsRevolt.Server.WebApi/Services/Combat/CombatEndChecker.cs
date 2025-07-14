@@ -57,36 +57,21 @@ public class CombatEndChecker : ICombatEndChecker
     public string? GetEndReason(CombatState state)
     {
         // Check if maximum rounds reached
-        if (state.CurrentRound >= state.MaxRounds)
-        {
-            return "Maximum rounds reached";
-        }
+        if (state.CurrentRound >= state.MaxRounds) return "Maximum rounds reached";
 
         // Check if all ships of one side are destroyed
         var activeAttackerShips = state.AttackerShips.Where(s => !s.Stats.IsDestroyed).ToList();
         var activeDefenderShips = state.DefenderShips.Where(s => !s.Stats.IsDestroyed).ToList();
 
-        if (activeAttackerShips.Count == 0)
-        {
-            return "All attacker ships destroyed";
-        }
+        if (activeAttackerShips.Count == 0) return "All attacker ships destroyed";
 
-        if (activeDefenderShips.Count == 0)
-        {
-            return "All defender ships destroyed";
-        }
+        if (activeDefenderShips.Count == 0) return "All defender ships destroyed";
 
         // Check for retreat conditions
-        if (ShouldRetreat(activeAttackerShips, activeDefenderShips, state))
-        {
-            return "Retreat conditions met";
-        }
+        if (ShouldRetreat(activeAttackerShips, activeDefenderShips, state)) return "Retreat conditions met";
 
         // Check for stalemate conditions
-        if (IsStalemate(activeAttackerShips, activeDefenderShips, state))
-        {
-            return "Stalemate conditions met";
-        }
+        if (IsStalemate(activeAttackerShips, activeDefenderShips, state)) return "Stalemate conditions met";
 
         return null;
     }
@@ -99,13 +84,13 @@ public class CombatEndChecker : ICombatEndChecker
 
         // Check if one side is significantly outmatched
         var effectivenessRatio = attackerEffectiveness / defenderEffectiveness;
-        
+
         if (effectivenessRatio < 0.2) // Attacker is severely outmatched
         {
             _logger.LogDebug("Attacker should retreat: Effectiveness ratio {Ratio}", effectivenessRatio);
             return true;
         }
-        
+
         if (effectivenessRatio > 5.0) // Defender is severely outmatched
         {
             _logger.LogDebug("Defender should retreat: Effectiveness ratio {Ratio}", effectivenessRatio);
@@ -151,11 +136,9 @@ public class CombatEndChecker : ICombatEndChecker
         {
             // Check if this has been the case for several rounds
             var roundsWithSimilarEffectiveness = 0;
-            for (int i = Math.Max(0, state.Rounds.Count - 5); i < state.Rounds.Count; i++)
-            {
+            for (var i = Math.Max(0, state.Rounds.Count - 5); i < state.Rounds.Count; i++)
                 // This is a simplified check - in a real implementation, you'd track effectiveness over time
                 roundsWithSimilarEffectiveness++;
-            }
 
             if (roundsWithSimilarEffectiveness >= 3)
             {
@@ -173,8 +156,8 @@ public class CombatEndChecker : ICombatEndChecker
 
         var totalEffectiveness = ships.Sum(s => s.Stats.GetCombatEffectiveness());
         var averageEffectiveness = totalEffectiveness / ships.Count;
-        
+
         // Factor in the number of ships (more ships = more effectiveness)
         return averageEffectiveness * Math.Sqrt(ships.Count);
     }
-} 
+}

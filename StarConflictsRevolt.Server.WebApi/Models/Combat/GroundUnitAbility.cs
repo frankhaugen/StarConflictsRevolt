@@ -5,12 +5,15 @@ public class GroundUnitAbility
     public string Name { get; set; } = string.Empty;
     public AbilityType Type { get; set; }
     public int Cooldown { get; set; }
-    public int CurrentCooldown { get; set; } = 0;
+    public int CurrentCooldown { get; set; }
     public double EffectValue { get; set; }
-    public bool IsActive { get; set; } = false;
-    
-    public bool CanActivate() => CurrentCooldown <= 0 && !IsActive;
-    
+    public bool IsActive { get; set; }
+
+    public bool CanActivate()
+    {
+        return CurrentCooldown <= 0 && !IsActive;
+    }
+
     public void Activate()
     {
         if (CanActivate())
@@ -19,7 +22,7 @@ public class GroundUnitAbility
             CurrentCooldown = Cooldown;
         }
     }
-    
+
     public void UpdateCooldown()
     {
         if (CurrentCooldown > 0)

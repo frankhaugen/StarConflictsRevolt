@@ -5,11 +5,11 @@ namespace StarConflictsRevolt.Server.WebApi.Services.Combat;
 
 public class FleetCombatSimulator : IFleetCombatSimulator
 {
-    private readonly ITargetSelector _targetSelector;
     private readonly IAttackResolver _attackResolver;
     private readonly ICombatEndChecker _combatEndChecker;
-    private readonly ICombatResultCalculator _resultCalculator;
     private readonly ILogger<FleetCombatSimulator> _logger;
+    private readonly ICombatResultCalculator _resultCalculator;
+    private readonly ITargetSelector _targetSelector;
 
     public FleetCombatSimulator(
         ITargetSelector targetSelector,
@@ -44,10 +44,7 @@ public class FleetCombatSimulator : IFleetCombatSimulator
             }
         }
 
-        if (state.FinalResult == null)
-        {
-            state.FinalResult = FinalizeCombat(state);
-        }
+        if (state.FinalResult == null) state.FinalResult = FinalizeCombat(state);
 
         state.FinalResult.Duration = DateTime.UtcNow - startTime;
         return state.FinalResult;
@@ -67,10 +64,7 @@ public class FleetCombatSimulator : IFleetCombatSimulator
         state.DefenderShips = ConvertFleetToCombatShips(defender, false);
 
         // Initialize all ships
-        foreach (var ship in state.GetAllShips())
-        {
-            ship.InitializeCombat();
-        }
+        foreach (var ship in state.GetAllShips()) ship.InitializeCombat();
 
         _logger.LogInformation("Combat initialized with {AttackerShips} attacker ships and {DefenderShips} defender ships",
             state.AttackerShips.Count, state.DefenderShips.Count);
@@ -112,10 +106,7 @@ public class FleetCombatSimulator : IFleetCombatSimulator
     public List<CombatShip> DetermineInitiativeOrder(List<CombatShip> ships)
     {
         // Update initiative for all ships
-        foreach (var ship in ships)
-        {
-            ship.UpdateInitiative();
-        }
+        foreach (var ship in ships) ship.UpdateInitiative();
 
         // Sort by initiative (highest first)
         return ships.OrderByDescending(s => s.Initiative).ToList();
@@ -136,7 +127,7 @@ public class FleetCombatSimulator : IFleetCombatSimulator
         if (attackResult.Hit)
         {
             target.Stats.ApplyDamage(attackResult.ShieldDamage, attackResult.HullDamage);
-            
+
             _logger.LogDebug("Applied damage to ship {ShipId}: Shield={ShieldDamage}, Hull={HullDamage}",
                 target.Id, attackResult.ShieldDamage, attackResult.HullDamage);
         }
@@ -179,10 +170,7 @@ public class FleetCombatSimulator : IFleetCombatSimulator
             round.Actions.Add(action);
 
             // Check if ship was destroyed
-            if (ship.Stats.IsDestroyed)
-            {
-                round.DestroyedShips.Add(ship);
-            }
+            if (ship.Stats.IsDestroyed) round.DestroyedShips.Add(ship);
         }
 
         // Check if combat should end
@@ -201,26 +189,22 @@ public class FleetCombatSimulator : IFleetCombatSimulator
         var activeEnemies = enemies.Where(e => !e.Stats.IsDestroyed).ToList();
 
         if (activeEnemies.Count == 0)
-        {
             return new CombatAction
             {
                 ActorId = ship.Id,
                 Type = ActionType.NoAction,
                 Description = "No enemies to attack"
             };
-        }
 
         // Select target
         var target = SelectTarget(ship, activeEnemies, state);
         if (target == null)
-        {
             return new CombatAction
             {
                 ActorId = ship.Id,
                 Type = ActionType.NoAction,
                 Description = "No suitable target found"
             };
-        }
 
         // Resolve attack
         var attackResult = ResolveAttack(ship, target, state);
@@ -239,7 +223,6 @@ public class FleetCombatSimulator : IFleetCombatSimulator
     private CombatEnvironment CreateCombatEnvironment(Planet? location)
     {
         if (location == null)
-        {
             return new CombatEnvironment
             {
                 Terrain = TerrainType.Space,
@@ -248,7 +231,6 @@ public class FleetCombatSimulator : IFleetCombatSimulator
                 Gravity = 0.0,
                 HasAtmosphere = false
             };
-        }
 
         return new CombatEnvironment
         {
@@ -259,4 +241,4 @@ public class FleetCombatSimulator : IFleetCombatSimulator
             HasAtmosphere = true
         };
     }
-} 
+}

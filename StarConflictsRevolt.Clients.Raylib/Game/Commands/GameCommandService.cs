@@ -90,7 +90,7 @@ public class GameCommandService
         try
         {
             var sessionResponse = await _httpApiClient.CreateNewSessionAsync(sessionName, sessionType);
-            
+
             if (sessionResponse != null)
             {
                 _logger.LogInformation("Session created successfully. SessionId: {SessionId}", sessionResponse.SessionId);
@@ -150,10 +150,8 @@ public class GameCommandService
             {
                 _logger.LogInformation("Retrieved {SessionCount} available sessions", sessions.Count);
                 foreach (var session in sessions)
-                {
-                    _logger.LogDebug("Session: {SessionId} - {SessionName} ({SessionType})", 
+                    _logger.LogDebug("Session: {SessionId} - {SessionName} ({SessionType})",
                         session.Id, session.SessionName, session.SessionType);
-                }
             }
             else
             {
@@ -176,7 +174,7 @@ public class GameCommandService
         try
         {
             var sessionResponse = await _httpApiClient.JoinSessionAsync(sessionId, playerName);
-            
+
             if (sessionResponse != null)
             {
                 _logger.LogInformation("Successfully joined session {SessionId}", sessionId);

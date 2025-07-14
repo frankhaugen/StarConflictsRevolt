@@ -7,11 +7,11 @@ public class CombatEnvironment
     public double Visibility { get; set; } = 1.0;
     public double Gravity { get; set; } = 1.0;
     public bool HasAtmosphere { get; set; } = false;
-    
+
     public double GetAccuracyModifier()
     {
         var modifier = 1.0;
-        
+
         // Weather effects
         modifier *= Weather switch
         {
@@ -20,10 +20,10 @@ public class CombatEnvironment
             WeatherCondition.Clear => 1.0,
             _ => 1.0
         };
-        
+
         // Visibility effects
         modifier *= Visibility;
-        
+
         return modifier;
     }
 }

@@ -62,7 +62,7 @@ public class TargetSelector : ITargetSelector
         baseScore *= environmentalModifier;
 
         // Random factor to add unpredictability
-        var randomFactor = 0.8 + (Random.Shared.NextDouble() * 0.4); // 0.8 to 1.2
+        var randomFactor = 0.8 + Random.Shared.NextDouble() * 0.4; // 0.8 to 1.2
         baseScore *= randomFactor;
 
         return baseScore;
@@ -73,23 +73,19 @@ public class TargetSelector : ITargetSelector
         // Simple range calculation - could be enhanced with actual positioning
         var maxRange = Math.Max(attacker.Stats.Range, enemy.Stats.Range);
         var effectiveRange = Math.Min(attacker.Stats.Range, maxRange);
-        
+
         // Closer targets are easier to hit
-        return 1.0 + (effectiveRange * 0.1);
+        return 1.0 + effectiveRange * 0.1;
     }
 
     private double CalculateAbilityThreat(CombatShip enemy)
     {
         var threat = 0.0;
-        
+
         foreach (var ability in enemy.Stats.Abilities)
-        {
             if (ability.CanActivate())
-            {
                 threat += ability.EffectValue;
-            }
-        }
-        
+
         return threat;
     }
 
@@ -97,20 +93,15 @@ public class TargetSelector : ITargetSelector
     {
         // Simple strategy: target the highest threat enemy
         // This could be enhanced with different AI strategies
-        
+
         if (targetScores.Count == 0) return null;
-        
+
         // 80% chance to target highest threat, 20% chance to target random high-threat enemy
-        if (Random.Shared.NextDouble() < 0.8)
-        {
-            return targetScores[0].Ship;
-        }
-        else
-        {
-            // Select from top 3 threats randomly
-            var topThreats = targetScores.Take(Math.Min(3, targetScores.Count)).ToList();
-            var randomIndex = Random.Shared.Next(topThreats.Count);
-            return topThreats[randomIndex].Ship;
-        }
+        if (Random.Shared.NextDouble() < 0.8) return targetScores[0].Ship;
+
+        // Select from top 3 threats randomly
+        var topThreats = targetScores.Take(Math.Min(3, targetScores.Count)).ToList();
+        var randomIndex = Random.Shared.Next(topThreats.Count);
+        return topThreats[randomIndex].Ship;
     }
-} 
+}

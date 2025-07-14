@@ -5,8 +5,8 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class GameSetupService
 {
-    private readonly WorldFactory _worldFactory;
     private readonly ILogger<GameSetupService> _logger;
+    private readonly WorldFactory _worldFactory;
 
     public GameSetupService(WorldFactory worldFactory, ILogger<GameSetupService> logger)
     {
@@ -16,7 +16,7 @@ public class GameSetupService
 
     public async Task<World> CreateNewGameSession(GameSetup setup)
     {
-        _logger.LogInformation("Creating new game session: {SessionName} with {PlayerCount} players", 
+        _logger.LogInformation("Creating new game session: {SessionName} with {PlayerCount} players",
             setup.SessionName, setup.Players.Count);
 
         // Validate setup
@@ -33,7 +33,7 @@ public class GameSetupService
         AddStartingFleets(world, setup);
         AddStartingStructures(world, setup);
 
-        _logger.LogInformation("Game session created successfully with {PlanetCount} planets", 
+        _logger.LogInformation("Game session created successfully with {PlanetCount} planets",
             world.Galaxy.StarSystems.Sum(s => s.Planets.Count));
 
         return world;
@@ -69,7 +69,7 @@ public class GameSetupService
         var random = new Random();
         var playerCount = setup.Players.Count;
         var positions = new List<int>();
-        int totalPlanets = planets.Count;
+        var totalPlanets = planets.Count;
 
         switch (setup.Mode)
         {
@@ -79,11 +79,11 @@ public class GameSetupService
                 break;
             case GameMode.TwoVsTwo:
                 // Four corners (spread evenly)
-                positions = new List<int> { 0, totalPlanets / 3, (2 * totalPlanets) / 3, totalPlanets - 1 };
+                positions = new List<int> { 0, totalPlanets / 3, 2 * totalPlanets / 3, totalPlanets - 1 };
                 break;
             case GameMode.FreeForAll:
                 // Evenly distributed
-                for (int i = 0; i < playerCount; i++)
+                for (var i = 0; i < playerCount; i++)
                     positions.Add(i * totalPlanets / playerCount);
                 break;
             case GameMode.HumanVsAI:
@@ -97,7 +97,7 @@ public class GameSetupService
         // Shuffle planets for randomness
         planets = planets.OrderBy(x => random.Next()).ToList();
 
-        for (int i = 0; i < playerCount && i < planets.Count; i++)
+        for (var i = 0; i < playerCount && i < planets.Count; i++)
         {
             var player = setup.Players[i];
             var planet = planets[positions[i] % planets.Count];
@@ -124,7 +124,7 @@ public class GameSetupService
     private Fleet CreateStartingFleet(PlayerSetup player, GameMode mode, Guid planetId)
     {
         var ships = new List<Ship>();
-        
+
         // Add ships based on game mode
         switch (mode)
         {
@@ -133,20 +133,20 @@ public class GameSetupService
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Scout", false, 10, 10, 1, 3, 3.0));
                 break;
-                
+
             case GameMode.TwoVsTwo:
                 // Larger fleet for team games
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Scout", false, 10, 10, 1, 3, 3.0));
                 break;
-                
+
             case GameMode.FreeForAll:
                 // Smaller fleet for FFA
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Scout", false, 10, 10, 1, 3, 3.0));
                 break;
-                
+
             default:
                 // Default fleet
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
@@ -169,6 +169,4 @@ public class GameSetupService
         // Structures will be created with proper planet references
         return new List<Structure>();
     }
-
-
-} 
+}

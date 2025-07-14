@@ -3,7 +3,7 @@ using StarConflictsRevolt.Server.WebApi.Services;
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>
-/// Handles leaderboard endpoints
+///     Handles leaderboard endpoints
 /// </summary>
 public static class LeaderboardEndpointHandler
 {
@@ -29,4 +29,4 @@ public static class LeaderboardEndpointHandler
             return Results.Ok(topPlayers);
         }).RequireAuthorization();
     }
-} 
+}

@@ -27,52 +27,52 @@ public class WorldFactory
     {
         var random = new Random();
         var planets = new List<Planet>();
-        
+
         // Create planets based on galaxy size
-        for (int i = 0; i < setup.GalaxySize; i++)
+        for (var i = 0; i < setup.GalaxySize; i++)
         {
             var planetName = GeneratePlanetName(i);
             var planetType = GetRandomPlanetType(random);
-            
+
             var planet = new Planet(
                 planetName,
-                Radius: random.Next(3000, 8000),
-                Mass: random.NextDouble() * 1e25,
-                RotationSpeed: random.Next(500, 2000),
-                OrbitSpeed: random.Next(20, 40),
-                DistanceFromSun: random.Next(50, 300) * 1e6,
+                random.Next(3000, 8000),
+                random.NextDouble() * 1e25,
+                random.Next(500, 2000),
+                random.Next(20, 40),
+                random.Next(50, 300) * 1e6,
                 new List<Fleet>(),
                 new List<Structure>(),
                 PlanetType: GetRandomPlanetType(random)
             );
-            
+
             planets.Add(planet);
         }
 
         // Create star systems
         var systems = new List<StarSystem>();
         var planetsPerSystem = setup.GalaxySize / setup.StarSystemCount;
-        
-        for (int i = 0; i < setup.StarSystemCount; i++)
+
+        for (var i = 0; i < setup.StarSystemCount; i++)
         {
             var systemPlanets = planets
                 .Skip(i * planetsPerSystem)
                 .Take(planetsPerSystem)
                 .ToList();
-                
+
             var systemName = GenerateSystemName(i);
             var coordinates = new Vector2(
                 random.Next(-1000, 1000),
                 random.Next(-1000, 1000)
             );
-            
+
             var system = new StarSystem(Guid.NewGuid(), systemName, systemPlanets, coordinates);
             systems.Add(system);
         }
 
         var galaxy = new Galaxy(systems);
         var world = new World(Guid.NewGuid(), galaxy);
-        
+
         // Add player controllers
         foreach (var playerSetup in setup.Players)
         {
@@ -87,7 +87,6 @@ public class WorldFactory
 
         // Assign starting resources to each player's starting planet
         foreach (var player in setup.Players)
-        {
             if (player.StartingPlanetId.HasValue)
             {
                 var planet = galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == player.StartingPlanetId.Value);
@@ -102,16 +101,11 @@ public class WorldFactory
                     var updatedPlanet = planet with { Credits = credits, Materials = materials, Fuel = fuel };
                     // Replace in star system
                     foreach (var system in galaxy.StarSystems)
-                    {
-                        for (int i = 0; i < system.Planets.Count; i++)
-                        {
+                        for (var i = 0; i < system.Planets.Count; i++)
                             if (system.Planets[i].Id == updatedPlanet.Id)
                                 system.Planets[i] = updatedPlanet;
-                        }
-                    }
                 }
             }
-        }
 
         return world;
     }
@@ -124,7 +118,7 @@ public class WorldFactory
             "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi",
             "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"
         };
-        
+
         return index < planetNames.Length ? planetNames[index] : $"Planet-{index + 1}";
     }
 
@@ -135,7 +129,7 @@ public class WorldFactory
             "Sol", "Proxima", "Alpha Centauri", "Sirius", "Vega", "Arcturus",
             "Rigel", "Betelgeuse", "Antares", "Aldebaran", "Fomalhaut", "Deneb"
         };
-        
+
         return index < systemNames.Length ? systemNames[index] : $"System-{index + 1}";
     }
 

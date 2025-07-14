@@ -6,30 +6,30 @@ public class Character
     public string Name { get; set; } = string.Empty;
     public CharacterType Type { get; set; }
     public int Level { get; set; } = 1;
-    public int Experience { get; set; } = 0;
+    public int Experience { get; set; }
     public Guid OwnerId { get; set; }
-    
+
     // Core stats
     public int Leadership { get; set; } = 10;
     public int Combat { get; set; } = 10;
     public int Diplomacy { get; set; } = 10;
     public int Espionage { get; set; } = 10;
     public int Intelligence { get; set; } = 10;
-    
+
     // Special abilities
     public List<CharacterAbility> Abilities { get; set; } = new();
     public bool IsForceSensitive { get; set; } = false;
     public ForceAlignment ForceAlignment { get; set; } = ForceAlignment.None;
-    
+
     // Current state
     public bool IsAlive { get; set; } = true;
     public bool IsAvailable { get; set; } = true;
     public Guid? CurrentMissionId { get; set; }
     public int Loyalty { get; set; } = 100;
-    
+
     // Relationships
     public List<CharacterRelationship> Relationships { get; set; } = new();
-    
+
     public int GetSkillForMission(MissionType missionType)
     {
         return missionType switch
@@ -47,22 +47,22 @@ public class Character
             _ => (Leadership + Combat + Diplomacy + Espionage + Intelligence) / 5
         };
     }
-    
+
     public void GainExperience(int amount)
     {
         Experience += amount;
         var experienceForNextLevel = Level * 100;
-        
+
         if (Experience >= experienceForNextLevel)
         {
             Level++;
             Experience -= experienceForNextLevel;
-            
+
             // Increase stats based on character type
             IncreaseStatsOnLevelUp();
         }
     }
-    
+
     private void IncreaseStatsOnLevelUp()
     {
         switch (Type)
@@ -94,6 +94,7 @@ public class Character
                     Leadership += 1;
                     Intelligence += 1;
                 }
+
                 break;
             case CharacterType.Sith:
                 if (IsForceSensitive)
@@ -102,6 +103,7 @@ public class Character
                     Espionage += 1;
                     Intelligence += 1;
                 }
+
                 break;
         }
     }

@@ -1,4 +1,6 @@
+using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Models;
+using VictoryCondition = StarConflictsRevolt.Server.WebApi.Models.VictoryCondition;
 
 namespace StarConflictsRevolt.Server.WebApi.Services;
 
@@ -67,46 +69,46 @@ public class GameContentService
     public Fleet CreateFleetFromTemplate(string templateName, Guid ownerId, Guid locationPlanetId)
     {
         var ships = new List<Ship>();
-        
+
         switch (templateName.ToLower())
         {
             case "scout":
                 ships.Add(new Ship(Guid.NewGuid(), "Scout", false, 10, 10, 1, 3, 3.0));
                 break;
-                
+
             case "fighter":
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 break;
-                
+
             case "destroyer":
-                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8, 1.0));
+                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8));
                 break;
-                
+
             case "cruiser":
-                ships.Add(new Ship(Guid.NewGuid(), "Cruiser", false, 60, 60, 6, 10, 1.0));
+                ships.Add(new Ship(Guid.NewGuid(), "Cruiser", false, 60, 60, 6, 10));
                 break;
-                
+
             case "transport":
-                ships.Add(new Ship(Guid.NewGuid(), "Transport", false, 30, 30, 1, 4, 1.0));
+                ships.Add(new Ship(Guid.NewGuid(), "Transport", false, 30, 30, 1, 4));
                 break;
-                
+
             case "balanced":
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Scout", false, 10, 10, 1, 3, 3.0));
                 break;
-                
+
             case "combat":
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
-                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8, 1.0));
+                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8));
                 break;
-                
+
             case "invasion":
-                ships.Add(new Ship(Guid.NewGuid(), "Cruiser", false, 60, 60, 6, 10, 1.0));
-                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8, 1.0));
-                ships.Add(new Ship(Guid.NewGuid(), "Transport", false, 30, 30, 1, 4, 1.0));
+                ships.Add(new Ship(Guid.NewGuid(), "Cruiser", false, 60, 60, 6, 10));
+                ships.Add(new Ship(Guid.NewGuid(), "Destroyer", false, 40, 40, 4, 8));
+                ships.Add(new Ship(Guid.NewGuid(), "Transport", false, 30, 30, 1, 4));
                 break;
-                
+
             default:
                 ships.Add(new Ship(Guid.NewGuid(), "Fighter", false, 20, 20, 2, 5, 2.0));
                 break;
@@ -119,13 +121,13 @@ public class GameContentService
     {
         var variant = templateName.ToLower() switch
         {
-            "mine" => Enums.StructureVariant.Mine,
-            "refinery" => Enums.StructureVariant.Refinery,
-            "shipyard" => Enums.StructureVariant.Shipyard,
-            "training facility" => Enums.StructureVariant.TrainingFacility,
-            "shield generator" => Enums.StructureVariant.ShieldGenerator,
-            "construction yard" => Enums.StructureVariant.ConstructionYard,
-            _ => Enums.StructureVariant.Mine
+            "mine" => StructureVariant.Mine,
+            "refinery" => StructureVariant.Refinery,
+            "shipyard" => StructureVariant.Shipyard,
+            "training facility" => StructureVariant.TrainingFacility,
+            "shield generator" => StructureVariant.ShieldGenerator,
+            "construction yard" => StructureVariant.ConstructionYard,
+            _ => StructureVariant.Mine
         };
 
         return new Structure(variant, planet, ownerId);
@@ -156,10 +158,9 @@ public class GameContentService
     public bool CanBuildShip(string shipName, Planet planet)
     {
         // Check if planet has a shipyard
-        var hasShipyard = planet.Structures.Any(s => s.Variant == Enums.StructureVariant.Shipyard);
+        var hasShipyard = planet.Structures.Any(s => s.Variant == StructureVariant.Shipyard);
         return hasShipyard;
     }
-
 
 
     public IEnumerable<StructureTemplate> GetStartingStructureSet(string setType)
@@ -214,10 +215,7 @@ public class GameContentService
 
             // Check if all prerequisites are met
             var prerequisitesMet = tech.Prerequisites.All(prereq => researchedTechnologies.Contains(prereq));
-            if (prerequisitesMet)
-            {
-                available.Add(tech);
-            }
+            if (prerequisitesMet) available.Add(tech);
         }
 
         return available;
@@ -321,12 +319,12 @@ public class GameContentService
             ["Technologies"] = GetAllTechnologies().Count(),
             ["VictoryConditions"] = GetAllVictoryConditions().Count(),
             ["ResourceTypes"] = GetResourceDefinitions().Count(),
-            ["TotalContentItems"] = GetAllShipTemplates().Count() + 
-                                   GetAllStructureTemplates().Count() + 
-                                   GetAllPlanetTypes().Count() + 
-                                   GetAllTechnologies().Count() + 
-                                   GetAllVictoryConditions().Count() + 
-                                   GetResourceDefinitions().Count()
+            ["TotalContentItems"] = GetAllShipTemplates().Count() +
+                                    GetAllStructureTemplates().Count() +
+                                    GetAllPlanetTypes().Count() +
+                                    GetAllTechnologies().Count() +
+                                    GetAllVictoryConditions().Count() +
+                                    GetResourceDefinitions().Count()
         };
     }
-} 
+}

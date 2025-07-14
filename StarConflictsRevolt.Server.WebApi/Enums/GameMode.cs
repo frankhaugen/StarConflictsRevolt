@@ -7,4 +7,4 @@ public enum GameMode
     FreeForAll,
     HumanVsAI,
     AIvsAI
-} 
+}

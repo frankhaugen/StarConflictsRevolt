@@ -18,7 +18,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "", SessionType = "SinglePlayer" };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
     }
 
@@ -35,7 +35,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = (string?)null, SessionType = "SinglePlayer" };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsFalse();
     }
 
@@ -52,7 +52,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "null-type-test-" + Guid.NewGuid(), SessionType = (string?)null };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
     }
 
@@ -69,7 +69,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "ws-type-test-" + Guid.NewGuid(), SessionType = "   " };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
     }
 
@@ -86,7 +86,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = new string('A', 100), SessionType = "SinglePlayer" };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
     }
 
@@ -103,7 +103,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "!@#$%^&*()_+-=", SessionType = "Multiplayer" };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
     }
 
@@ -138,7 +138,7 @@ public class SessionTypeEdgeCaseTests
         var httpClient = testHost.GetHttpClient();
 
         var req = new { SessionName = "empty-type-test-" + Guid.NewGuid(), SessionType = "" };
-        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken: cancellationToken);
+        var resp = await httpClient.PostAsJsonAsync("/game/session", req, cancellationToken);
         await Assert.That(resp.IsSuccessStatusCode).IsTrue();
     }
 }

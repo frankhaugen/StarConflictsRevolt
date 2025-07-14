@@ -4,30 +4,30 @@ public class StructureTemplate
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    
+
     // Resource generation per turn
     public int CreditsPerTurn { get; set; }
     public int MaterialsPerTurn { get; set; }
     public int FuelPerTurn { get; set; }
-    
+
     // Costs
     public int CreditsCost { get; set; }
     public int MaterialsCost { get; set; }
     public int FuelCost { get; set; }
-    
+
     // Build time in seconds
     public int BuildTimeSeconds { get; set; }
-    
+
     // Effects
     public int DefenseBonus { get; set; }
     public int HealthBonus { get; set; }
     public double CostReductionPercent { get; set; }
-    
+
     // Capabilities
     public bool CanBuildShips { get; set; }
     public bool CanTrainTroops { get; set; }
     public bool CanResearch { get; set; }
-    
+
     public static StructureTemplate Mine => new()
     {
         Name = "Mine",
@@ -44,7 +44,7 @@ public class StructureTemplate
         CanTrainTroops = false,
         CanResearch = false
     };
-    
+
     public static StructureTemplate Refinery => new()
     {
         Name = "Refinery",
@@ -61,7 +61,7 @@ public class StructureTemplate
         CanTrainTroops = false,
         CanResearch = false
     };
-    
+
     public static StructureTemplate Shipyard => new()
     {
         Name = "Shipyard",
@@ -80,7 +80,7 @@ public class StructureTemplate
         CanTrainTroops = false,
         CanResearch = false
     };
-    
+
     public static StructureTemplate TrainingFacility => new()
     {
         Name = "Training Facility",
@@ -99,7 +99,7 @@ public class StructureTemplate
         CanTrainTroops = true,
         CanResearch = false
     };
-    
+
     public static StructureTemplate ShieldGenerator => new()
     {
         Name = "Shield Generator",
@@ -118,7 +118,7 @@ public class StructureTemplate
         CanTrainTroops = false,
         CanResearch = false
     };
-    
+
     public static StructureTemplate ConstructionYard => new()
     {
         Name = "Construction Yard",
@@ -137,4 +137,4 @@ public class StructureTemplate
         CanTrainTroops = false,
         CanResearch = false
     };
-} 
+}

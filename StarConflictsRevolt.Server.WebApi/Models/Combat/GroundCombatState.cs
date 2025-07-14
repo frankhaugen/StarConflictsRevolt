@@ -8,7 +8,7 @@ public class GroundCombatState
     public WeatherCondition Weather { get; set; } = WeatherCondition.Clear;
     public bool IsNight { get; set; } = false;
     public bool HasCover { get; set; } = false;
-    
+
     public double GetTerrainModifier()
     {
         return Terrain switch
@@ -21,7 +21,7 @@ public class GroundCombatState
             _ => 1.0
         };
     }
-    
+
     public double GetWeatherModifier()
     {
         return Weather switch
@@ -33,14 +33,14 @@ public class GroundCombatState
             _ => 1.0
         };
     }
-    
+
     public double GetVisibilityModifier()
     {
         var modifier = 1.0;
-        
+
         if (IsNight) modifier *= 0.5;
         if (HasCover) modifier *= 0.8;
-        
+
         return modifier * GetWeatherModifier();
     }
 }

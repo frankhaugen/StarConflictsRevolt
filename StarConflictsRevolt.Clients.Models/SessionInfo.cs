@@ -7,4 +7,4 @@ public class SessionInfo
     public DateTime Created { get; set; }
     public string SessionType { get; set; } = string.Empty;
     public int PlayerCount { get; set; }
-} 
+}

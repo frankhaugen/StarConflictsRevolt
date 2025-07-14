@@ -52,10 +52,10 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
                 StarSystems = new List<StarSystemDto>(world.Galaxy.StarSystems)
             }
         };
-        
+
         logger.LogInformation("World applied successfully. Current world: {WorldId}, StarSystems: {StarSystemCount}",
             _current.Id, _current.Galaxy?.StarSystems?.Count() ?? 0);
-            
+
         Snapshot();
     }
 
@@ -98,7 +98,7 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
     {
         logger.LogDebug("GetCurrent called. Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
             _current?.Id, _current?.Galaxy != null, _current?.Galaxy?.StarSystems?.Count() ?? 0);
-            
+
         if (_current is null)
             return null;
         return _current with

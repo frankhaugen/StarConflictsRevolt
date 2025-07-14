@@ -18,7 +18,7 @@ public class FullStackIntegrationTest
     [Timeout(30_000)]
     public async Task EndToEnd_Session_Creation_Command_And_SignalR_Delta(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
 
         // Start the test host application
         await testHost.StartServerAsync(CancellationToken.None);
@@ -65,7 +65,7 @@ public class FullStackIntegrationTest
             await Context.Current.OutputWriter.WriteLineAsync($"Received {deltas.Count} deltas via SignalR");
         });
         await hubConnection.StartAsync(cancellationToken);
-        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken: cancellationToken);
+        await hubConnection.SendAsync("JoinWorld", sessionId.ToString(), cancellationToken);
 
         // 3. Get the world state to find a valid planet ID
         var worldResponse = await httpClient.GetAsync("/game/state", cancellationToken);
@@ -76,7 +76,7 @@ public class FullStackIntegrationTest
             throw new Exception($"Failed to get world state: {worldResponse.StatusCode}");
         }
 
-        var world = await worldResponse.Content.ReadFromJsonAsync<World>(cancellationToken: cancellationToken);
+        var world = await worldResponse.Content.ReadFromJsonAsync<World>(cancellationToken);
         await Context.Current.OutputWriter.WriteLineAsync($"World state retrieved: {world?.Id}");
         await Context.Current.OutputWriter.WriteLineAsync($"World before build command: {JsonSerializer.Serialize(world)}");
 

@@ -2,6 +2,14 @@ namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public class AiDecision
 {
+    public AiDecision(AiDecisionType type, AiPriority priority, double score, string description)
+    {
+        Type = type;
+        Priority = priority;
+        Score = score;
+        Description = description;
+    }
+
     public Guid Id { get; set; } = Guid.NewGuid();
     public AiDecisionType Type { get; set; }
     public AiPriority Priority { get; set; }
@@ -13,14 +21,6 @@ public class AiDecision
     public DateTime? ExecutedAt { get; set; }
     public bool IsSuccessful { get; set; }
 
-    public AiDecision(AiDecisionType type, AiPriority priority, double score, string description)
-    {
-        Type = type;
-        Priority = priority;
-        Score = score;
-        Description = description;
-    }
-
     public void AddParameter(string key, object value)
     {
         Parameters[key] = value;
@@ -28,10 +28,7 @@ public class AiDecision
 
     public T? GetParameter<T>(string key)
     {
-        if (Parameters.TryGetValue(key, out var value) && value is T typedValue)
-        {
-            return typedValue;
-        }
+        if (Parameters.TryGetValue(key, out var value) && value is T typedValue) return typedValue;
         return default;
     }
 
@@ -46,4 +43,4 @@ public class AiDecision
     {
         return $"{Type} ({Priority}) - {Description} [Score: {Score:F2}]";
     }
-} 
+}

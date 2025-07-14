@@ -27,21 +27,21 @@ public class DefensiveAiStrategy : BaseAiStrategy
         // Defensive goals
         if (!_goals.Any(g => g.Type == AiGoalType.Defend && !g.IsCompleted))
         {
-            var defendGoal = new AiGoal(AiGoalType.Defend, GoalTimeframe.Immediate, 
+            var defendGoal = new AiGoal(AiGoalType.Defend, GoalTimeframe.Immediate,
                 "Fortify planets and protect assets", 95.0);
             _goals.Add(defendGoal);
         }
 
         if (aiPlanets.Any(p => p.Structures.Count < 2) && !_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
-            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm, 
+            var buildGoal = new AiGoal(AiGoalType.Build, GoalTimeframe.ShortTerm,
                 "Build defensive structures", 90.0);
             _goals.Add(buildGoal);
         }
 
         if (enemyFleets.Any() && !_goals.Any(g => g.Type == AiGoalType.Attack && !g.IsCompleted))
         {
-            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.Immediate, 
+            var attackGoal = new AiGoal(AiGoalType.Attack, GoalTimeframe.Immediate,
                 "Eliminate threats to our planets", 85.0);
             _goals.Add(attackGoal);
         }
@@ -50,7 +50,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
     protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
     {
         var decisions = new List<AiDecision>();
-        
+
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
         var enemyFleets = GetEnemyFleets(playerId, world);
@@ -69,13 +69,12 @@ public class DefensiveAiStrategy : BaseAiStrategy
         var decisions = new List<AiDecision>();
 
         foreach (var planet in aiPlanets)
-        {
             // Defensive AI builds defensive structures
             if (_random.Next(100) < 70) // 70% chance to build (very high for defensive)
             {
                 var defensiveStructures = new[] { "Shield Generator", "Training Facility", "Shield Generator" };
                 var structureType = defensiveStructures[_random.Next(defensiveStructures.Length)];
-                
+
                 var score = 85.0 + _random.NextDouble() * 15; // 85-100 score (very high priority)
                 var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.Critical, score,
                     $"Build {structureType} on {planet.Name} for defense");
@@ -83,7 +82,6 @@ public class DefensiveAiStrategy : BaseAiStrategy
                 decision.AddParameter("StructureType", structureType);
                 decisions.Add(decision);
             }
-        }
 
         return decisions;
     }
@@ -97,17 +95,16 @@ public class DefensiveAiStrategy : BaseAiStrategy
 
         // Defensive AI attacks only when threatened
         foreach (var aiFleet in aiFleets)
-        {
             if (_random.Next(100) < 40) // 40% chance to attack (moderate for defensive)
             {
                 // Find enemies near our planets
                 var aiPlanets = GetPlayerPlanets(playerId, world);
-                var threateningEnemies = enemyFleets.Where(f => 
+                var threateningEnemies = enemyFleets.Where(f =>
                 {
                     var location = world.Galaxy.StarSystems
                         .SelectMany(s => s.Planets)
                         .FirstOrDefault(p => p.Fleets.Contains(f));
-                    return location != null && aiPlanets.Any(ap => 
+                    return location != null && aiPlanets.Any(ap =>
                         world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
                 }).ToList();
 
@@ -130,7 +127,6 @@ public class DefensiveAiStrategy : BaseAiStrategy
                     }
                 }
             }
-        }
 
         return decisions;
     }
@@ -144,15 +140,14 @@ public class DefensiveAiStrategy : BaseAiStrategy
 
         // Defensive AI positions fleets to protect planets
         foreach (var fleet in aiFleets)
-        {
             if (_random.Next(100) < 45) // 45% chance to move for defense
             {
                 // Move to protect our most vulnerable planet
                 var vulnerablePlanets = aiPlanets.Where(p => p.Structures.Count < 2).ToList();
-                var targetPlanet = vulnerablePlanets.Any() 
+                var targetPlanet = vulnerablePlanets.Any()
                     ? vulnerablePlanets[_random.Next(vulnerablePlanets.Count)]
                     : aiPlanets[_random.Next(aiPlanets.Count)];
-                
+
                 if (fleet.LocationPlanetId != targetPlanet.Id)
                 {
                     var score = 70.0 + _random.NextDouble() * 20; // 70-90 score
@@ -164,7 +159,6 @@ public class DefensiveAiStrategy : BaseAiStrategy
                     decisions.Add(decision);
                 }
             }
-        }
 
         return decisions;
     }
@@ -175,14 +169,14 @@ public class DefensiveAiStrategy : BaseAiStrategy
         if (_random.Next(100) < 35) // 35% chance (moderate)
         {
             var aiPlanets = GetPlayerPlanets(playerId, world);
-            var targetPlanet = aiPlanets.Any() 
+            var targetPlanet = aiPlanets.Any()
                 ? aiPlanets[_random.Next(aiPlanets.Count)]
                 : world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList()[_random.Next(world.Galaxy.StarSystems.SelectMany(s => s.Planets).Count())];
-            
+
             if (fleet.LocationPlanetId != targetPlanet.Id)
             {
                 var score = 60.0 + _random.NextDouble() * 25; // 60-85 score
-                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score, 
+                var decision = new AiDecision(AiDecisionType.MoveFleet, AiPriority.Medium, score,
                     $"Defensive move: fleet {fleet.Id} to protect {targetPlanet.Name}");
                 decision.AddParameter("FleetId", fleet.Id);
                 decision.AddParameter("FromPlanetId", fleet.LocationPlanetId ?? Guid.Empty);
@@ -190,7 +184,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
                 return decision;
             }
         }
-        
+
         return null;
     }
 
@@ -201,7 +195,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         {
             var defensiveStructures = new[] { "Shield Generator", "Training Facility", "Shield Generator" };
             var structureType = defensiveStructures[_random.Next(defensiveStructures.Length)];
-            
+
             var score = 75.0 + _random.NextDouble() * 20; // 75-95 score (high priority)
             var decision = new AiDecision(AiDecisionType.BuildStructure, AiPriority.High, score,
                 $"Defensive build: {structureType} on {planet.Name}");
@@ -209,7 +203,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
             decision.AddParameter("StructureType", structureType);
             return decision;
         }
-        
+
         return null;
     }
 
@@ -220,12 +214,12 @@ public class DefensiveAiStrategy : BaseAiStrategy
         {
             // Only attack if enemy is near our planets
             var aiPlanets = GetPlayerPlanets(playerId, world);
-            var nearbyEnemies = enemyFleets.Where(f => 
+            var nearbyEnemies = enemyFleets.Where(f =>
             {
                 var location = world.Galaxy.StarSystems
                     .SelectMany(s => s.Planets)
                     .FirstOrDefault(p => p.Fleets.Contains(f));
-                return location != null && aiPlanets.Any(ap => 
+                return location != null && aiPlanets.Any(ap =>
                     world.Galaxy.StarSystems.Any(ss => ss.Planets.Contains(ap) && ss.Planets.Contains(location)));
             }).ToList();
 
@@ -235,7 +229,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
                 var location = world.Galaxy.StarSystems
                     .SelectMany(s => s.Planets)
                     .FirstOrDefault(p => p.Fleets.Contains(defender));
-                    
+
                 if (location != null)
                 {
                     var score = 65.0 + _random.NextDouble() * 25; // 65-90 score (moderate priority)
@@ -248,7 +242,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
                 }
             }
         }
-        
+
         return null;
     }
-} 
+}

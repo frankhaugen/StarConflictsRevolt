@@ -4,18 +4,18 @@ public class Technology
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    
+
     // Research requirements
     public int ResearchCost { get; set; }
     public int ResearchTimeSeconds { get; set; }
     public List<string> Prerequisites { get; set; } = new();
-    
+
     // Technology level (1-5)
     public int Level { get; set; }
-    
+
     // Category
     public TechnologyCategory Category { get; set; }
-    
+
     // Effects when researched
     public int ShipAttackBonus { get; set; }
     public int ShipHealthBonus { get; set; }
@@ -23,12 +23,12 @@ public class Technology
     public int StructureEfficiencyBonus { get; set; }
     public int ResourceProductionBonus { get; set; }
     public double CostReductionPercent { get; set; }
-    
+
     // Special abilities unlocked
     public bool UnlocksStealth { get; set; }
     public bool UnlocksBombardment { get; set; }
     public bool UnlocksAdvancedShips { get; set; }
-    
+
     // Static technology definitions
     public static Technology BasicWeapons => new()
     {
@@ -41,7 +41,7 @@ public class Technology
         ShipAttackBonus = 1,
         Prerequisites = new List<string>()
     };
-    
+
     public static Technology AdvancedWeapons => new()
     {
         Name = "Advanced Weapons",
@@ -53,7 +53,7 @@ public class Technology
         ShipAttackBonus = 2,
         Prerequisites = new List<string> { "Basic Weapons" }
     };
-    
+
     public static Technology HeavyWeapons => new()
     {
         Name = "Heavy Weapons",
@@ -66,7 +66,7 @@ public class Technology
         UnlocksBombardment = true,
         Prerequisites = new List<string> { "Advanced Weapons" }
     };
-    
+
     public static Technology BasicArmor => new()
     {
         Name = "Basic Armor",
@@ -78,7 +78,7 @@ public class Technology
         ShipHealthBonus = 10,
         Prerequisites = new List<string>()
     };
-    
+
     public static Technology AdvancedArmor => new()
     {
         Name = "Advanced Armor",
@@ -90,7 +90,7 @@ public class Technology
         ShipHealthBonus = 20,
         Prerequisites = new List<string> { "Basic Armor" }
     };
-    
+
     public static Technology ReinforcedHull => new()
     {
         Name = "Reinforced Hull",
@@ -102,7 +102,7 @@ public class Technology
         ShipHealthBonus = 30,
         Prerequisites = new List<string> { "Advanced Armor" }
     };
-    
+
     public static Technology BasicEngines => new()
     {
         Name = "Basic Engines",
@@ -114,7 +114,7 @@ public class Technology
         ShipSpeedBonus = 1,
         Prerequisites = new List<string>()
     };
-    
+
     public static Technology AdvancedEngines => new()
     {
         Name = "Advanced Engines",
@@ -126,7 +126,7 @@ public class Technology
         ShipSpeedBonus = 2,
         Prerequisites = new List<string> { "Basic Engines" }
     };
-    
+
     public static Technology Hyperdrive => new()
     {
         Name = "Hyperdrive",
@@ -139,7 +139,7 @@ public class Technology
         UnlocksStealth = true,
         Prerequisites = new List<string> { "Advanced Engines" }
     };
-    
+
     public static Technology BasicMining => new()
     {
         Name = "Basic Mining",
@@ -151,7 +151,7 @@ public class Technology
         ResourceProductionBonus = 10,
         Prerequisites = new List<string>()
     };
-    
+
     public static Technology AdvancedMining => new()
     {
         Name = "Advanced Mining",
@@ -163,7 +163,7 @@ public class Technology
         ResourceProductionBonus = 20,
         Prerequisites = new List<string> { "Basic Mining" }
     };
-    
+
     public static Technology AutomatedMining => new()
     {
         Name = "Automated Mining",
@@ -176,7 +176,7 @@ public class Technology
         CostReductionPercent = 10,
         Prerequisites = new List<string> { "Advanced Mining" }
     };
-    
+
     public static Technology BasicConstruction => new()
     {
         Name = "Basic Construction",
@@ -188,7 +188,7 @@ public class Technology
         StructureEfficiencyBonus = 10,
         Prerequisites = new List<string>()
     };
-    
+
     public static Technology AdvancedConstruction => new()
     {
         Name = "Advanced Construction",
@@ -200,7 +200,7 @@ public class Technology
         StructureEfficiencyBonus = 20,
         Prerequisites = new List<string> { "Basic Construction" }
     };
-    
+
     public static Technology MegaConstruction => new()
     {
         Name = "Mega Construction",

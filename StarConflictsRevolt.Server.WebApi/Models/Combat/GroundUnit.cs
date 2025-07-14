@@ -7,7 +7,7 @@ public class GroundUnit
     public UnitType Type { get; set; }
     public Guid OwnerId { get; set; }
     public bool IsAttacker { get; set; }
-    
+
     // Combat stats
     public int Attack { get; set; }
     public int Defense { get; set; }
@@ -16,16 +16,16 @@ public class GroundUnit
     public int Speed { get; set; }
     public int Range { get; set; }
     public double Accuracy { get; set; }
-    
+
     // Special abilities
     public List<GroundUnitAbility> Abilities { get; set; } = new();
-    
+
     // Current state
     public bool IsDestroyed => CurrentHealth <= 0;
-    public bool IsSuppressed { get; set; } = false;
-    public int SuppressionRounds { get; set; } = 0;
+    public bool IsSuppressed { get; set; }
+    public int SuppressionRounds { get; set; }
     public GroundUnit? CurrentTarget { get; set; }
-    
+
     public void InitializeCombat()
     {
         CurrentHealth = Health;
@@ -33,11 +33,11 @@ public class GroundUnit
         SuppressionRounds = 0;
         CurrentTarget = null;
     }
-    
+
     public void ApplyDamage(int damage)
     {
         CurrentHealth = Math.Max(0, CurrentHealth - damage);
-        
+
         // Check for suppression (damage > 50% of max health)
         if (damage > Health / 2 && !IsDestroyed)
         {
@@ -45,26 +45,23 @@ public class GroundUnit
             SuppressionRounds = 2;
         }
     }
-    
+
     public void UpdateSuppression()
     {
         if (IsSuppressed && SuppressionRounds > 0)
         {
             SuppressionRounds--;
-            if (SuppressionRounds <= 0)
-            {
-                IsSuppressed = false;
-            }
+            if (SuppressionRounds <= 0) IsSuppressed = false;
         }
     }
-    
+
     public double GetCombatEffectiveness()
     {
         if (IsDestroyed) return 0.0;
-        
+
         var healthEffectiveness = CurrentHealth / (double)Health;
         var suppressionPenalty = IsSuppressed ? 0.5 : 1.0;
-        
+
         return healthEffectiveness * suppressionPenalty;
     }
 }

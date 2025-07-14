@@ -3,7 +3,7 @@ using StarConflictsRevolt.Server.WebApi.Eventing;
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>
-/// Handles event store and snapshot endpoints
+///     Handles event store and snapshot endpoints
 /// </summary>
 public static class EventEndpointHandler
 {
@@ -54,4 +54,4 @@ public static class EventEndpointHandler
             context.Response.StatusCode = 201;
         }).RequireAuthorization();
     }
-} 
+}

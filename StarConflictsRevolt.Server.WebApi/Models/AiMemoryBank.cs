@@ -2,21 +2,18 @@
 
 public class AiMemoryBank
 {
-    private readonly List<AiMemory> _memories = new();
-    private readonly int _maxMemories = 1000;
     private readonly object _lock = new();
+    private readonly int _maxMemories = 1000;
+    private readonly List<AiMemory> _memories = new();
 
     public void AddMemory(AiMemory memory)
     {
         lock (_lock)
         {
             _memories.Add(memory);
-            
+
             // Clean up old memories if we exceed the limit
-            if (_memories.Count > _maxMemories)
-            {
-                CleanupOldMemories();
-            }
+            if (_memories.Count > _maxMemories) CleanupOldMemories();
         }
     }
 
@@ -27,10 +24,7 @@ public class AiMemoryBank
             var query = _memories
                 .Where(m => m.PlayerId == playerId && !m.IsForgotten);
 
-            if (type.HasValue)
-            {
-                query = query.Where(m => m.Type == type.Value);
-            }
+            if (type.HasValue) query = query.Where(m => m.Type == type.Value);
 
             return query
                 .OrderByDescending(m => m.GetRelevance())
@@ -44,8 +38,8 @@ public class AiMemoryBank
         lock (_lock)
         {
             return _memories
-                .Where(m => m.PlayerId == playerId && 
-                            !m.IsForgotten && 
+                .Where(m => m.PlayerId == playerId &&
+                            !m.IsForgotten &&
                             DateTime.UtcNow - m.Created <= maxAge)
                 .OrderByDescending(m => m.Created)
                 .Take(limit)
@@ -58,10 +52,7 @@ public class AiMemoryBank
         lock (_lock)
         {
             var cutoff = DateTime.UtcNow - maxAge;
-            foreach (var memory in _memories.Where(m => m.Created < cutoff))
-            {
-                memory.Forget();
-            }
+            foreach (var memory in _memories.Where(m => m.Created < cutoff)) memory.Forget();
         }
     }
 
@@ -73,10 +64,7 @@ public class AiMemoryBank
             .OrderBy(m => m.GetRelevance())
             .Take(_memories.Count - _maxMemories + 100); // Remove extra to make room
 
-        foreach (var memory in memoriesToRemove)
-        {
-            memory.Forget();
-        }
+        foreach (var memory in memoriesToRemove) memory.Forget();
     }
 
     public int GetMemoryCount(Guid playerId)
@@ -91,10 +79,7 @@ public class AiMemoryBank
     {
         lock (_lock)
         {
-            foreach (var memory in _memories.Where(m => m.PlayerId == playerId))
-            {
-                memory.Forget();
-            }
+            foreach (var memory in _memories.Where(m => m.PlayerId == playerId)) memory.Forget();
         }
     }
 }

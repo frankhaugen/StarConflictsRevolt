@@ -9,7 +9,7 @@ using StarConflictsRevolt.Server.WebApi.Services;
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 
 /// <summary>
-/// Handles session management endpoints
+///     Handles session management endpoints
 /// </summary>
 public static class SessionEndpointHandler
 {
@@ -74,7 +74,7 @@ public static class SessionEndpointHandler
                 var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
                 var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
-                
+
                 // Check if session exists
                 var session = await dbContext.GetSessionAsync(sessionId, context.RequestAborted);
                 if (session == null)
@@ -87,12 +87,9 @@ public static class SessionEndpointHandler
                 // Get the world for this session
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
                 var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
-                
+
                 // Ensure session aggregate exists
-                if (!sessionManagerService.HasAggregate(sessionId))
-                {
-                    sessionManagerService.CreateSession(sessionId, world);
-                }
+                if (!sessionManagerService.HasAggregate(sessionId)) sessionManagerService.CreateSession(sessionId, world);
 
                 context.Response.StatusCode = 200;
                 await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
@@ -156,4 +153,4 @@ public static class SessionEndpointHandler
             .WithName("GetGameSession")
             .RequireAuthorization();
     }
-} 
+}

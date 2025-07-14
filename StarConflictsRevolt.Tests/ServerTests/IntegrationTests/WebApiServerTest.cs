@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
+using FluentAssertions;
 using StarConflictsRevolt.Server.WebApi;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -48,12 +48,12 @@ public class WebApiServerTest
         // Test the token endpoint directly
         var tokenRequest = new { ClientId = "test-client", ClientSecret = Constants.Secret };
         var tokenResponse = await rawHttpClient.PostAsJsonAsync("/token", tokenRequest, cancellationToken);
-        
+
         tokenResponse.IsSuccessStatusCode.Should().BeTrue("because the token endpoint should work without authentication");
-        
+
         var tokenContent = await tokenResponse.Content.ReadAsStringAsync(cancellationToken);
         await Context.Current.OutputWriter.WriteLineAsync($"Token response: {tokenContent}");
-        
+
         tokenContent.Should().Contain("access_token", "because the response should contain an access token");
     }
 }

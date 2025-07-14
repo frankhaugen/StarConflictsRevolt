@@ -26,7 +26,7 @@ public class SessionJoinWorldIntegrationTest
 
         // Create session
         var sessionName = $"test-session-{Guid.NewGuid()}";
-        var createSessionRequest = new CreateSessionRequest() { SessionName = sessionName, SessionType = "Multiplayer" };
+        var createSessionRequest = new CreateSessionRequest { SessionName = sessionName, SessionType = "Multiplayer" };
         var createSessionResponse = await httpClient.PostAsJsonAsync("/game/session", createSessionRequest, cancellationToken);
         createSessionResponse.EnsureSuccessStatusCode();
         var sessionObj = await createSessionResponse.Content.ReadFromJsonAsync<SessionResponse>(cancellationToken);

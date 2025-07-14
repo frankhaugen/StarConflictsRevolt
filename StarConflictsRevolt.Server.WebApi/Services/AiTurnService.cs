@@ -4,12 +4,12 @@ namespace StarConflictsRevolt.Server.WebApi.Services;
 
 public class AiTurnService : BackgroundService
 {
+    private readonly List<Task> _activeOperations = new();
     private readonly SessionAggregateManager _aggregateManager;
+    private readonly IAiStrategy _aiStrategy;
     private readonly CommandQueue<IGameEvent> _commandQueue;
     private readonly IEventStore _eventStore;
-    private readonly IAiStrategy _aiStrategy;
     private readonly ILogger<AiTurnService> _logger;
-    private readonly List<Task> _activeOperations = new();
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
 
     public AiTurnService(
@@ -32,7 +32,6 @@ public class AiTurnService : BackgroundService
         try
         {
             while (!stoppingToken.IsCancellationRequested)
-            {
                 try
                 {
                     await ProcessAiTurnsWithTimeoutAsync(stoppingToken);
@@ -48,7 +47,6 @@ public class AiTurnService : BackgroundService
                     _logger.LogError(ex, "Error in AiTurnService main loop");
                     await Task.Delay(5000, stoppingToken);
                 }
-            }
         }
         finally
         {
@@ -69,9 +67,9 @@ public class AiTurnService : BackgroundService
             {
                 var operationTask = ProcessAiTurnsAsync(timeoutCts.Token);
                 _activeOperations.Add(operationTask);
-                
+
                 await operationTask;
-                
+
                 _activeOperations.Remove(operationTask);
             }
             finally
@@ -89,7 +87,7 @@ public class AiTurnService : BackgroundService
     {
         var aggregates = _aggregateManager.GetAllAggregates();
         _logger.LogDebug("Processing AI turns for {AggregateCount} aggregates", aggregates.Count());
-        
+
         foreach (var sessionAggregate in aggregates)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -103,10 +101,10 @@ public class AiTurnService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         var world = sessionAggregate.World;
-        
+
         // Only process AI turns for AI players (those with AiStrategy)
         var aiPlayers = world.Players.Where(p => p.AiStrategy != null).ToList();
-        
+
         if (!aiPlayers.Any())
         {
             _logger.LogDebug("No AI players in session {SessionId}, skipping AI turn", sessionId);
@@ -114,7 +112,7 @@ public class AiTurnService : BackgroundService
         }
 
         _logger.LogDebug("Processing AI turn for {AiPlayerCount} AI players in session {SessionId}", aiPlayers.Count, sessionId);
-        
+
         foreach (var aiPlayer in aiPlayers)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -128,26 +126,26 @@ public class AiTurnService : BackgroundService
     {
         var sessionId = sessionAggregate.SessionId;
         var playerId = aiPlayer.PlayerId;
-        
+
         try
         {
             _logger.LogDebug("Processing AI turn for player {PlayerId} in session {SessionId}", playerId, sessionId);
-            
+
             // Generate AI commands using the player's AI strategy
             var commands = aiPlayer.GenerateCommands(sessionAggregate.World);
-            
+
             if (commands.Any())
             {
-                _logger.LogInformation("AI player {PlayerId} generated {CommandCount} commands in session {SessionId}", 
+                _logger.LogInformation("AI player {PlayerId} generated {CommandCount} commands in session {SessionId}",
                     playerId, commands.Count, sessionId);
-                
+
                 foreach (var command in commands)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         break;
 
                     _commandQueue.Enqueue(sessionId, command);
-                    _logger.LogDebug("Queued AI command {CommandType} for player {PlayerId} in session {SessionId}", 
+                    _logger.LogDebug("Queued AI command {CommandType} for player {PlayerId} in session {SessionId}",
                         command.GetType().Name, playerId, sessionId);
                 }
             }
@@ -171,15 +169,14 @@ public class AiTurnService : BackgroundService
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("AiTurnService stopping...");
-        
+
         // Wait for active operations to complete with timeout
         if (_activeOperations.Count > 0)
-        {
             try
             {
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(10)); // 10-second timeout for shutdown
-                
+
                 await Task.WhenAll(_activeOperations).WaitAsync(timeoutCts.Token);
                 _logger.LogInformation("All active operations completed during shutdown");
             }
@@ -187,8 +184,7 @@ public class AiTurnService : BackgroundService
             {
                 _logger.LogWarning("Some operations did not complete during shutdown timeout");
             }
-        }
-        
+
         await base.StopAsync(cancellationToken);
     }
 

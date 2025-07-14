@@ -11,8 +11,8 @@ public class SignalRService : IAsyncDisposable
     private readonly ILogger<SignalRService> _logger;
     private readonly IClientWorldStore _worldStore;
     private CancellationTokenSource _cts = new();
-    private HubConnection? _hubConnection;
     private Guid? _currentSessionId;
+    private HubConnection? _hubConnection;
 
     public SignalRService(IOptions<GameClientConfiguration> gameClientConfiguration,
         IClientWorldStore worldStore,

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Eventing;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Api;
 using StarConflictsRevolt.Server.WebApi.Models;
+using StarConflictsRevolt.Server.WebApi.Security;
 using StarConflictsRevolt.Server.WebApi.Services;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
@@ -106,7 +108,7 @@ public class TestHostApplication : IDisposable
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
-        
+
         // Register AI strategy for AiTurnService
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddSingleton<AiMemoryBank>();
@@ -133,7 +135,7 @@ public class TestHostApplication : IDisposable
         builder.Services.AddOpenApi();
 
         // Add JWT authentication matching standard "Bearer" scheme
-        builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -143,7 +145,7 @@ public class TestHostApplication : IDisposable
                     ValidateLifetime = false,
                     RequireExpirationTime = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = StarConflictsRevolt.Server.WebApi.Security.JwtConfig.GetSymmetricSecurityKey()
+                    IssuerSigningKey = JwtConfig.GetSymmetricSecurityKey()
                 };
             });
 
@@ -242,7 +244,7 @@ public class TestHostApplication : IDisposable
     {
         app.UseAuthentication();
         app.UseAuthorization();
-                    ApiEndpointHandler.MapAllEndpoints(app);
+        ApiEndpointHandler.MapAllEndpoints(app);
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();

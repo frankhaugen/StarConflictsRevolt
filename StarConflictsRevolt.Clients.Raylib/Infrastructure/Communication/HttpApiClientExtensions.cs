@@ -7,7 +7,7 @@ namespace StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
 public static class HttpApiClientExtensions
 {
     /// <summary>
-    /// Creates a new game session
+    ///     Creates a new game session
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionName">Name of the session</param>
@@ -27,32 +27,30 @@ public static class HttpApiClientExtensions
         };
 
         var response = await client.PostAsync("/game/session", request, cancellationToken);
-        
+
         if (response.IsSuccessStatusCode)
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
             Console.WriteLine($"Session creation response JSON: {responseJson}");
-            
+
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
             var sessionResponse = JsonSerializer.Deserialize<SessionResponse>(responseJson, jsonOptions);
             Console.WriteLine($"Deserialized SessionResponse: SessionId={sessionResponse?.SessionId}, World={sessionResponse?.World != null}");
-            
+
             return sessionResponse;
         }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            Console.WriteLine($"Session creation failed: {response.StatusCode} - {errorContent}");
-        }
+
+        var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        Console.WriteLine($"Session creation failed: {response.StatusCode} - {errorContent}");
 
         return null;
     }
 
     /// <summary>
-    /// Joins an existing game session
+    ///     Joins an existing game session
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionId">Session ID to join</param>
@@ -71,7 +69,7 @@ public static class HttpApiClientExtensions
         };
 
         var response = await client.PostAsync($"/game/session/{sessionId}/join", request, cancellationToken);
-        
+
         if (response.IsSuccessStatusCode)
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -86,7 +84,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Gets the current world state
+    ///     Gets the current world state
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -99,7 +97,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Gets a list of available sessions
+    ///     Gets a list of available sessions
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -112,7 +110,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Moves a fleet from one planet to another
+    ///     Moves a fleet from one planet to another
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="fleetId">Fleet ID to move</param>
@@ -142,7 +140,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Builds a structure on a planet
+    ///     Builds a structure on a planet
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="planetId">Planet ID to build on</param>
@@ -169,7 +167,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Initiates an attack between fleets
+    ///     Initiates an attack between fleets
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="attackerFleetId">Attacking fleet ID</param>
@@ -199,7 +197,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Initiates a diplomacy action
+    ///     Initiates a diplomacy action
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="targetPlayerId">Target player ID</param>
@@ -229,7 +227,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Gets leaderboard for a session
+    ///     Gets leaderboard for a session
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionId">Session ID</param>
@@ -244,7 +242,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Gets player stats for a session
+    ///     Gets player stats for a session
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionId">Session ID</param>
@@ -261,7 +259,7 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
-    /// Gets top players across all sessions
+    ///     Gets top players across all sessions
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="count">Number of top players to return</param>
@@ -274,4 +272,4 @@ public static class HttpApiClientExtensions
     {
         return await client.GetAsync<TopPlayersDto>($"/leaderboard/top?count={count}", cancellationToken);
     }
-} 
+}

@@ -69,13 +69,9 @@ public static class UIHelper
 
             // Handle Backspace - only if there's text to delete
             if (currentText.Length > 0)
-            {
                 // Check if Backspace was pressed this frame
                 if (Input.IsKeyPressed(KeyboardKey.Backspace))
-                {
                     currentText = currentText[..^1];
-                }
-            }
         }
 
         // Draw text or placeholder

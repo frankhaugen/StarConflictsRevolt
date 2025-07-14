@@ -12,9 +12,9 @@ public class PlayerSetup
     public string Color { get; set; } = "#FFFFFF";
     public Guid? StartingPlanetId { get; set; }
     public IAiStrategy? AiStrategy { get; set; }
-    
+
     // Starting resources
     public int StartingCredits { get; set; } = 1000;
     public int StartingMaterials { get; set; } = 500;
     public int StartingFuel { get; set; } = 200;
-} 
+}

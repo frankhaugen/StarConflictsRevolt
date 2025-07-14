@@ -2,6 +2,14 @@ namespace StarConflictsRevolt.Server.WebApi.Models;
 
 public class AiGoal
 {
+    public AiGoal(AiGoalType type, GoalTimeframe timeframe, string description, double priority)
+    {
+        Type = type;
+        Timeframe = timeframe;
+        Description = description;
+        Priority = priority;
+    }
+
     public Guid Id { get; set; } = Guid.NewGuid();
     public AiGoalType Type { get; set; }
     public GoalTimeframe Timeframe { get; set; }
@@ -15,21 +23,10 @@ public class AiGoal
     public Dictionary<string, object> Parameters { get; set; } = new();
     public List<AiDecision> RelatedDecisions { get; set; } = new();
 
-    public AiGoal(AiGoalType type, GoalTimeframe timeframe, string description, double priority)
-    {
-        Type = type;
-        Timeframe = timeframe;
-        Description = description;
-        Priority = priority;
-    }
-
     public void UpdateProgress(double newProgress)
     {
         Progress = Math.Clamp(newProgress, 0.0, 1.0);
-        if (Progress >= 1.0 && !IsCompleted)
-        {
-            Complete();
-        }
+        if (Progress >= 1.0 && !IsCompleted) Complete();
     }
 
     public void Complete()
@@ -51,10 +48,7 @@ public class AiGoal
 
     public T? GetParameter<T>(string key)
     {
-        if (Parameters.TryGetValue(key, out var value) && value is T typedValue)
-        {
-            return typedValue;
-        }
+        if (Parameters.TryGetValue(key, out var value) && value is T typedValue) return typedValue;
         return default;
     }
 
@@ -82,4 +76,4 @@ public class AiGoal
         var status = IsCompleted ? "COMPLETED" : IsAbandoned ? "ABANDONED" : $"PROGRESS: {Progress:P0}";
         return $"{Type} ({Timeframe}) - {Description} [{status}] [Priority: {Priority:F2}]";
     }
-} 
+}

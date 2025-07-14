@@ -27,7 +27,7 @@ public class GameServerIntegrationTests
     [Timeout(30_000)]
     public async Task GameServer_CanCreateSessionAndJoinViaSignalR(CancellationToken cancellationToken)
     {
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
@@ -60,11 +60,11 @@ public class GameServerIntegrationTests
         if (sessionObj?.World?.Galaxy?.StarSystems?.FirstOrDefault()?.Planets?.FirstOrDefault() is PlanetDto planet)
         {
             var buildCommand = new BuildStructureEvent(
-                PlayerId: Guid.NewGuid(),
-                PlanetId: planet.Id,
-                StructureType: "Mine"
+                Guid.NewGuid(),
+                planet.Id,
+                "Mine"
             );
-            
+
             var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand, cancellationToken);
             buildResponse.EnsureSuccessStatusCode();
             await Context.Current.OutputWriter.WriteLineAsync($"[TEST] Build command sent for planet {planet.Id}");
@@ -95,7 +95,6 @@ public class GameServerIntegrationTests
         await Assert.That(loaded!.Name).IsEqualTo("Test");
         await Assert.That(loaded.Value).IsEqualTo(42);
     }
-
 
 
     private class TestEntity

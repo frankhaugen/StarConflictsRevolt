@@ -7,9 +7,9 @@ public class GroundAttackResult
     public bool Critical { get; set; }
     public bool Suppressed { get; set; }
     public string Description { get; set; } = string.Empty;
-    
+
     public static GroundAttackResult Miss => new() { Hit = false, Description = "Attack missed" };
-    
+
     public static GroundAttackResult CreateHit(int damage, bool critical = false, bool suppressed = false)
     {
         return new GroundAttackResult

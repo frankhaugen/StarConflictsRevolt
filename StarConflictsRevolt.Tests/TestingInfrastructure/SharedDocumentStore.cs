@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Raven.Client.Documents;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -5,7 +6,7 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 internal static class SharedDocumentStore
 {
     private static readonly RavenTUnitDriver Driver = new();
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, IDocumentStore> Stores = new();
+    private static readonly ConcurrentDictionary<string, IDocumentStore> Stores = new();
 
     public static IDocumentStore CreateStore(string database)
     {

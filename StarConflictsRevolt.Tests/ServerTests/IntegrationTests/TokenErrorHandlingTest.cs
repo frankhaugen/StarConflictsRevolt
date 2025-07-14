@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,6 +6,7 @@ using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi.Datastore;
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
+using Session = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Session;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -15,7 +17,7 @@ public class TokenErrorHandlingTest
     public async Task TokenEndpoint_ShouldReturnDetailedError_WhenSecretIsWrong(CancellationToken cancellationToken)
     {
         // Arrange
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
@@ -24,7 +26,7 @@ public class TokenErrorHandlingTest
         var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
-        var testSession1 = new StarConflictsRevolt.Server.WebApi.Datastore.Entities.Session
+        var testSession1 = new Session
         {
             Id = Guid.NewGuid(),
             SessionName = "Test Session 1",
@@ -33,7 +35,7 @@ public class TokenErrorHandlingTest
             SessionType = SessionType.Multiplayer
         };
 
-        var testSession2 = new StarConflictsRevolt.Server.WebApi.Datastore.Entities.Session
+        var testSession2 = new Session
         {
             Id = Guid.NewGuid(),
             SessionName = "Test Session 2",
@@ -56,11 +58,11 @@ public class TokenErrorHandlingTest
         var response = await httpClient.PostAsJsonAsync("/token", tokenRequest, cancellationToken);
 
         // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-        
-        var errorResponse = await response.Content.ReadAsStringAsync(cancellationToken: cancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var errorResponse = await response.Content.ReadAsStringAsync(cancellationToken);
         errorResponse.Should().NotBeNull();
-        
+
         // Check error details
         errorResponse.Should().Contain("Invalid client secret");
     }
@@ -70,7 +72,7 @@ public class TokenErrorHandlingTest
     public async Task TokenEndpoint_ShouldReturnDetailedError_WhenRequestIsInvalid(CancellationToken cancellationToken)
     {
         // Arrange
-        var testHost = new TestHostApplication(true);
+        var testHost = new TestHostApplication();
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
@@ -84,12 +86,12 @@ public class TokenErrorHandlingTest
         var response = await httpClient.PostAsJsonAsync("/token", tokenRequest, cancellationToken);
 
         // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        
-        var errorResponse = await response.Content.ReadAsStringAsync(cancellationToken: cancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadAsStringAsync(cancellationToken);
         errorResponse.Should().NotBeNull();
-        
+
         // Check error details
         errorResponse.Should().Contain("ClientId and ClientSecret are required");
     }
-} 
+}
