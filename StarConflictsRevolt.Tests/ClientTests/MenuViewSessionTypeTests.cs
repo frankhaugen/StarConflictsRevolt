@@ -117,15 +117,11 @@ public class MenuViewSessionTypeTests
     }
 
     // Minimal fake for SignalRService
-    private class TestSignalRService : SignalRService
+    private class TestSignalRService(
+        IOptions<GameClientConfiguration> gameClientConfiguration,
+        IClientWorldStore worldStore,
+        ILogger<SignalRService> logger) : SignalRService(gameClientConfiguration, worldStore, logger)
     {
-        public TestSignalRService(IOptions<GameClientConfiguration> gameClientConfiguration,
-            IClientWorldStore worldStore,
-            ILogger<SignalRService> logger)
-            : base(gameClientConfiguration, worldStore, logger)
-        {
-        }
-
         public override Task StartAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;

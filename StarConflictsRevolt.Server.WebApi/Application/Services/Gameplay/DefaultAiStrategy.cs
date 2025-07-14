@@ -6,12 +6,8 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class DefaultAiStrategy : BaseAiStrategy
+public class DefaultAiStrategy(AiMemoryBank memoryBank) : BaseAiStrategy(memoryBank)
 {
-    public DefaultAiStrategy(AiMemoryBank memoryBank) : base(memoryBank)
-    {
-    }
-
     public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
     {
         if (!CanAct(playerId, TimeSpan.FromSeconds(3)))

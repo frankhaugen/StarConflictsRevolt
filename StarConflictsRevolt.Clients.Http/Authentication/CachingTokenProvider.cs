@@ -6,47 +6,37 @@ using StarConflictsRevolt.Clients.Models.Authentication;
 
 namespace StarConflictsRevolt.Clients.Http.Authentication;
 
-public class CachingTokenProvider : ITokenProvider
+public class CachingTokenProvider(
+    IHttpClientFactory httpClientFactory,
+    IOptions<TokenProviderOptions> options,
+    ILogger<CachingTokenProvider> logger) : ITokenProvider
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<CachingTokenProvider> _logger;
-    private readonly IOptions<TokenProviderOptions> _options;
     private string? _cachedToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
-
-    public CachingTokenProvider(
-        IHttpClientFactory httpClientFactory,
-        IOptions<TokenProviderOptions> options,
-        ILogger<CachingTokenProvider> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _options = options;
-        _logger = logger;
-    }
 
     public async Task<string> GetTokenAsync(CancellationToken ct = default)
     {
         // Check if we have a valid cached token
         if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
         {
-            _logger.LogDebug("Using cached token");
+            logger.LogDebug("Using cached token");
             return _cachedToken;
         }
 
-        _logger.LogInformation("Requesting new token from {TokenEndpoint}", _options.Value.TokenEndpoint);
-        _logger.LogInformation("Using ClientId: {ClientId}, Secret: {Secret}", _options.Value.ClientId, _options.Value.Secret);
+        logger.LogInformation("Requesting new token from {TokenEndpoint}", options.Value.TokenEndpoint);
+        logger.LogInformation("Using ClientId: {ClientId}, Secret: {Secret}", options.Value.ClientId, options.Value.Secret);
 
         try
         {
-            var httpClient = _httpClientFactory.CreateClient("TokenProvider");
+            var httpClient = httpClientFactory.CreateClient("TokenProvider");
 
             var request = new TokenRequest
             {
-                ClientId = _options.Value.ClientId,
-                ClientSecret = _options.Value.Secret
+                ClientId = options.Value.ClientId,
+                ClientSecret = options.Value.Secret
             };
 
-            var response = await httpClient.PostAsJsonAsync(_options.Value.TokenEndpoint, request, ct);
+            var response = await httpClient.PostAsJsonAsync(options.Value.TokenEndpoint, request, ct);
             response.EnsureSuccessStatusCode();
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
@@ -55,17 +45,17 @@ public class CachingTokenProvider : ITokenProvider
             _cachedToken = tokenResponse.AccessToken;
             _tokenExpiry = tokenResponse.ExpiresAt;
 
-            _logger.LogInformation("Successfully obtained new token");
+            logger.LogInformation("Successfully obtained new token");
             return _cachedToken;
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "HTTP request failed when obtaining token from {TokenEndpoint}", _options.Value.TokenEndpoint);
+            logger.LogError(ex, "HTTP request failed when obtaining token from {TokenEndpoint}", options.Value.TokenEndpoint);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to obtain token from {TokenEndpoint}", _options.Value.TokenEndpoint);
+            logger.LogError(ex, "Failed to obtain token from {TokenEndpoint}", options.Value.TokenEndpoint);
             throw;
         }
     }

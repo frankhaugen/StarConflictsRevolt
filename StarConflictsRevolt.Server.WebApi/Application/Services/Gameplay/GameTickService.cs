@@ -2,23 +2,14 @@ using Frank.PulseFlow;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class GameTickService : BackgroundService
+public class GameTickService(ILogger<GameTickService> logger, IConduit conduit) : BackgroundService
 {
-    private readonly ILogger<GameTickService> _logger;
-    private readonly IConduit _conduit;
-    
     // Game timing configuration
     private const int TICKS_PER_SECOND = 10; // 10 ticks per second = 100ms per tick
 
-    public GameTickService(ILogger<GameTickService> logger, IConduit conduit)
-    {
-        _logger = logger;
-        _conduit = conduit;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("GameTickService starting with {TicksPerSecond} ticks per second", TICKS_PER_SECOND);
+        logger.LogInformation("GameTickService starting with {TicksPerSecond} ticks per second", TICKS_PER_SECOND);
         
         var tickInterval = TimeSpan.FromMilliseconds(1000.0 / TICKS_PER_SECOND);
         var tickNumber = 0L;
@@ -43,22 +34,22 @@ public class GameTickService : BackgroundService
                 }
                 else
                 {
-                    _logger.LogWarning("Tick {TickNumber} took {TickDuration}ms, exceeding target interval of {TargetInterval}ms", 
+                    logger.LogWarning("Tick {TickNumber} took {TickDuration}ms, exceeding target interval of {TargetInterval}ms", 
                         tickNumber, tickDuration.TotalMilliseconds, tickInterval.TotalMilliseconds);
                 }
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("GameTickService cancellation requested after {TickCount} ticks", tickNumber);
+            logger.LogInformation("GameTickService cancellation requested after {TickCount} ticks", tickNumber);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error in GameTickService main loop");
+            logger.LogError(ex, "Unexpected error in GameTickService main loop");
         }
         finally
         {
-            _logger.LogInformation("GameTickService exiting");
+            logger.LogInformation("GameTickService exiting");
         }
     }
 
@@ -72,19 +63,19 @@ public class GameTickService : BackgroundService
                 Timestamp = new GameTimestamp(DateTime.UtcNow)
             };
 
-            await _conduit.SendAsync(tick, stoppingToken);
+            await conduit.SendAsync(tick, stoppingToken);
             
-            _logger.LogDebug("Published tick {TickNumber}", tickNumber);
+            logger.LogDebug("Published tick {TickNumber}", tickNumber);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to publish tick {TickNumber}", tickNumber);
+            logger.LogError(ex, "Failed to publish tick {TickNumber}", tickNumber);
         }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("GameTickService stopping...");
+        logger.LogInformation("GameTickService stopping...");
         
         // Complete the channel writer
         // _pulse.Complete(); // Removed as per edit hint

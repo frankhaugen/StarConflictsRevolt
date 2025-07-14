@@ -2,25 +2,17 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class ProjectionService : BackgroundService
+public class ProjectionService(IEventStore eventStore, ILogger<ProjectionService> logger) : BackgroundService
 {
     private readonly List<Task> _activeOperations = new();
-    private readonly IEventStore _eventStore;
-    private readonly ILogger<ProjectionService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-
-    public ProjectionService(IEventStore eventStore, ILogger<ProjectionService> logger)
-    {
-        _eventStore = eventStore;
-        _logger = logger;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("ProjectionService starting...");
+        logger.LogInformation("ProjectionService starting...");
         try
         {
-            await _eventStore.SubscribeAsync(async envelope => { await ProcessEventWithTimeoutAsync(envelope, stoppingToken); }, stoppingToken);
+            await eventStore.SubscribeAsync(async envelope => { await ProcessEventWithTimeoutAsync(envelope, stoppingToken); }, stoppingToken);
 
             // Wait until cancellation is requested, then exit promptly
             var tcs = new TaskCompletionSource();
@@ -31,11 +23,11 @@ public class ProjectionService : BackgroundService
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("ProjectionService cancellation requested.");
+            logger.LogInformation("ProjectionService cancellation requested.");
         }
         finally
         {
-            _logger.LogInformation("ProjectionService exiting.");
+            logger.LogInformation("ProjectionService exiting.");
         }
     }
 
@@ -64,19 +56,19 @@ public class ProjectionService : BackgroundService
         }
         catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
         {
-            _logger.LogWarning("Event processing timed out for event {EventType} in world {WorldId}",
+            logger.LogWarning("Event processing timed out for event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing event {EventType} in world {WorldId}",
+            logger.LogError(ex, "Error processing event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
         }
     }
 
     private async Task ProcessEventAsync(EventEnvelope envelope, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Processing projection for event {EventType} in world {WorldId}",
+        logger.LogInformation("Processing projection for event {EventType} in world {WorldId}",
             envelope.Event.GetType().Name, envelope.WorldId);
 
         try
@@ -97,22 +89,22 @@ public class ProjectionService : BackgroundService
                     await ProcessDiplomacyProjectionAsync(diplo, cancellationToken);
                     break;
                 default:
-                    _logger.LogDebug("No projection handler for event type {EventType}", envelope.Event.GetType().Name);
+                    logger.LogDebug("No projection handler for event type {EventType}", envelope.Event.GetType().Name);
                     break;
             }
 
-            _logger.LogInformation("Successfully processed projection for event {EventType} in world {WorldId}",
+            logger.LogInformation("Successfully processed projection for event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("Projection processing cancelled for event {EventType} in world {WorldId}",
+            logger.LogWarning("Projection processing cancelled for event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to process projection for event {EventType} in world {WorldId}",
+            logger.LogError(ex, "Failed to process projection for event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
             throw;
         }
@@ -120,7 +112,7 @@ public class ProjectionService : BackgroundService
 
     private async Task ProcessFleetMoveProjectionAsync(MoveFleetEvent move, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Processing fleet move projection: Fleet {FleetId} from {FromPlanet} to {ToPlanet}",
+        logger.LogDebug("Processing fleet move projection: Fleet {FleetId} from {FromPlanet} to {ToPlanet}",
             move.FleetId, move.FromPlanetId, move.ToPlanetId);
 
         // Add projection logic here (e.g., updating leaderboards, statistics, etc.)
@@ -129,7 +121,7 @@ public class ProjectionService : BackgroundService
 
     private async Task ProcessStructureBuildProjectionAsync(BuildStructureEvent build, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Processing structure build projection: {StructureType} on planet {PlanetId}",
+        logger.LogDebug("Processing structure build projection: {StructureType} on planet {PlanetId}",
             build.StructureType, build.PlanetId);
 
         // Add projection logic here
@@ -138,7 +130,7 @@ public class ProjectionService : BackgroundService
 
     private async Task ProcessAttackProjectionAsync(AttackEvent attack, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Processing attack projection: {AttackerFleet} vs {DefenderFleet} at {Location}",
+        logger.LogDebug("Processing attack projection: {AttackerFleet} vs {DefenderFleet} at {Location}",
             attack.AttackerFleetId, attack.DefenderFleetId, attack.LocationPlanetId);
 
         // Add projection logic here
@@ -147,7 +139,7 @@ public class ProjectionService : BackgroundService
 
     private async Task ProcessDiplomacyProjectionAsync(DiplomacyEvent diplo, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Processing diplomacy projection: {ProposalType} from {PlayerId} to {TargetPlayerId}",
+        logger.LogDebug("Processing diplomacy projection: {ProposalType} from {PlayerId} to {TargetPlayerId}",
             diplo.ProposalType, diplo.PlayerId, diplo.TargetPlayerId);
 
         // Add projection logic here
@@ -156,7 +148,7 @@ public class ProjectionService : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("ProjectionService stopping...");
+        logger.LogInformation("ProjectionService stopping...");
 
         // Wait for active operations to complete with timeout
         if (_activeOperations.Count > 0)
@@ -166,11 +158,11 @@ public class ProjectionService : BackgroundService
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(10)); // 10-second timeout for shutdown
 
                 await Task.WhenAll(_activeOperations).WaitAsync(timeoutCts.Token);
-                _logger.LogInformation("All active operations completed during shutdown");
+                logger.LogInformation("All active operations completed during shutdown");
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("Some operations did not complete during shutdown timeout");
+                logger.LogWarning("Some operations did not complete during shutdown timeout");
             }
 
         await base.StopAsync(cancellationToken);

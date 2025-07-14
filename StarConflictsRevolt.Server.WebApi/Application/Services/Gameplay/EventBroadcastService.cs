@@ -4,27 +4,17 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class EventBroadcastService : BackgroundService
+public class EventBroadcastService(IEventStore eventStore, IHubContext<WorldHub> hubContext, ILogger<EventBroadcastService> logger) : BackgroundService
 {
     private readonly List<Task> _activeOperations = new();
-    private readonly IEventStore _eventStore;
-    private readonly IHubContext<WorldHub> _hubContext;
-    private readonly ILogger<EventBroadcastService> _logger;
     private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-
-    public EventBroadcastService(IEventStore eventStore, IHubContext<WorldHub> hubContext, ILogger<EventBroadcastService> logger)
-    {
-        _eventStore = eventStore;
-        _hubContext = hubContext;
-        _logger = logger;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("EventBroadcastService starting...");
+        logger.LogInformation("EventBroadcastService starting...");
         try
         {
-            await _eventStore.SubscribeAsync(async envelope => { await ProcessEventWithTimeoutAsync(envelope, stoppingToken); }, stoppingToken);
+            await eventStore.SubscribeAsync(async envelope => { await ProcessEventWithTimeoutAsync(envelope, stoppingToken); }, stoppingToken);
 
             // Wait until cancellation is requested, then exit promptly
             var tcs = new TaskCompletionSource();
@@ -35,11 +25,11 @@ public class EventBroadcastService : BackgroundService
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("EventBroadcastService cancellation requested.");
+            logger.LogInformation("EventBroadcastService cancellation requested.");
         }
         finally
         {
-            _logger.LogInformation("EventBroadcastService exiting.");
+            logger.LogInformation("EventBroadcastService exiting.");
         }
     }
 
@@ -68,19 +58,19 @@ public class EventBroadcastService : BackgroundService
         }
         catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
         {
-            _logger.LogWarning("Event processing timed out for event {EventType} in world {WorldId}",
+            logger.LogWarning("Event processing timed out for event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing event {EventType} in world {WorldId}",
+            logger.LogError(ex, "Error processing event {EventType} in world {WorldId}",
                 envelope.Event.GetType().Name, envelope.WorldId);
         }
     }
 
     private async Task ProcessEventAsync(EventEnvelope envelope, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Broadcasting event {EventType} for world {WorldId}", envelope.Event.GetType().Name, envelope.WorldId);
+        logger.LogInformation("Broadcasting event {EventType} for world {WorldId}", envelope.Event.GetType().Name, envelope.WorldId);
 
         List<GameObjectUpdate> updates = new();
         switch (envelope.Event)
@@ -125,7 +115,7 @@ public class EventBroadcastService : BackgroundService
                 }));
                 break;
             default:
-                _logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
+                logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
                 break;
         }
 
@@ -133,19 +123,19 @@ public class EventBroadcastService : BackgroundService
             try
             {
                 // Broadcast to the world group with timeout
-                await _hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken);
-                _logger.LogInformation("Successfully broadcast {UpdateCount} updates for event {EventType} in world {WorldId}",
+                await hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken);
+                logger.LogInformation("Successfully broadcast {UpdateCount} updates for event {EventType} in world {WorldId}",
                     updates.Count, envelope.Event.GetType().Name, envelope.WorldId);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("SignalR broadcast cancelled for event {EventType} in world {WorldId}",
+                logger.LogWarning("SignalR broadcast cancelled for event {EventType} in world {WorldId}",
                     envelope.Event.GetType().Name, envelope.WorldId);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to broadcast updates for event {EventType} in world {WorldId}",
+                logger.LogError(ex, "Failed to broadcast updates for event {EventType} in world {WorldId}",
                     envelope.Event.GetType().Name, envelope.WorldId);
                 throw;
             }
@@ -153,7 +143,7 @@ public class EventBroadcastService : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("EventBroadcastService stopping...");
+        logger.LogInformation("EventBroadcastService stopping...");
 
         // Wait for active operations to complete with timeout
         if (_activeOperations.Count > 0)
@@ -163,11 +153,11 @@ public class EventBroadcastService : BackgroundService
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(10)); // 10-second timeout for shutdown
 
                 await Task.WhenAll(_activeOperations).WaitAsync(timeoutCts.Token);
-                _logger.LogInformation("All active operations completed during shutdown");
+                logger.LogInformation("All active operations completed during shutdown");
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("Some operations did not complete during shutdown timeout");
+                logger.LogWarning("Some operations did not complete during shutdown timeout");
             }
 
         await base.StopAsync(cancellationToken);

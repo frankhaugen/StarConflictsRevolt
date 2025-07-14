@@ -4,25 +4,13 @@ using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
-using StarConflictsRevolt.Clients.Raylib.Game.Commands;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 using StarConflictsRevolt.Clients.Raylib.Rendering.UI;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Views;
 
-public class GalaxyView : IView
+public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger) : IView
 {
-    private readonly GameCommandService _commandService;
-    private readonly ILogger<GalaxyView> _logger;
-    private readonly RenderContext _renderContext;
-
-    public GalaxyView(RenderContext renderContext, GameCommandService commandService, ILogger<GalaxyView> logger)
-    {
-        _renderContext = renderContext;
-        _commandService = commandService;
-        _logger = logger;
-    }
-
     /// <inheritdoc />
     public GameView ViewType => GameView.Galaxy;
 
@@ -31,11 +19,13 @@ public class GalaxyView : IView
     {
         Graphics.ClearBackground(UIHelper.Colors.Background);
 
-        // Draw resource bar (HUD)
-        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, _renderContext.GameState.PlayerState);
+        var currentWorld = renderContext.World;
+        // Update player state for HUD
+        renderContext.GameState.PlayerState = currentWorld?.PlayerState;
 
-        var currentWorld = _renderContext.World;
-        _logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
+        UIHelper.DrawResourceBar(0, 0, Window.GetScreenWidth(), 48, renderContext.GameState.PlayerState);
+
+        logger.LogDebug("GalaxyView Draw - Current world: {WorldId}, Has Galaxy: {HasGalaxy}, StarSystems: {StarSystemCount}",
             currentWorld?.Id, currentWorld?.Galaxy != null, currentWorld?.Galaxy?.StarSystems?.Count() ?? 0);
 
         if (currentWorld == null)
@@ -61,7 +51,7 @@ public class GalaxyView : IView
         UIHelper.DrawMinimap(Window.GetScreenWidth() - 200, 50, 180, 120, currentWorld);
 
         // Draw status bar
-        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {_renderContext.GameState.SelectedObject?.GetType().Name ?? "None"} | ESC/Backspace: Menu");
+        UIHelper.DrawStatusBar(Window.GetScreenHeight() - 30, $"Systems: {currentWorld.Galaxy?.StarSystems?.Count() ?? 0} | Selected: {renderContext.GameState.SelectedObject?.GetType().Name ?? "None"} | ESC/Backspace: Menu");
 
         // Handle keyboard input
         HandleKeyboardInput();
@@ -95,7 +85,7 @@ public class GalaxyView : IView
                     var py = (int)(system.Coordinates.Y + Math.Sin(i * angleStep) * radius);
 
                     // Highlight selected planet
-                    var planetColor = _renderContext.GameState.SelectedObject?.Id == planet.Id ? Color.Red : Color.Blue;
+                    var planetColor = renderContext.GameState.SelectedObject?.Id == planet.Id ? Color.Red : Color.Blue;
                     Graphics.DrawCircle(px, py, 6, planetColor);
                     Graphics.DrawText(planet.Name, px + 8, py - 8, 10, Color.SkyBlue);
                     i++;
@@ -117,8 +107,8 @@ public class GalaxyView : IView
             var dist = Math.Sqrt(Math.Pow(mouse.X - system.Coordinates.X, 2) + Math.Pow(mouse.Y - system.Coordinates.Y, 2));
             if (dist < 16)
             {
-                _renderContext.GameState.SelectedObject = system;
-                _renderContext.GameState.SetFeedback($"Selected system: {system.Name}", TimeSpan.FromSeconds(2));
+                renderContext.GameState.SelectedObject = system;
+                renderContext.GameState.SetFeedback($"Selected system: {system.Name}", TimeSpan.FromSeconds(2));
                 return;
             }
 
@@ -134,8 +124,8 @@ public class GalaxyView : IView
                     var pdist = Math.Sqrt(Math.Pow(mouse.X - px, 2) + Math.Pow(mouse.Y - py, 2));
                     if (pdist < 6)
                     {
-                        _renderContext.GameState.SelectedObject = planet;
-                        _renderContext.GameState.SetFeedback($"Selected planet: {planet.Name}", TimeSpan.FromSeconds(2));
+                        renderContext.GameState.SelectedObject = planet;
+                        renderContext.GameState.SetFeedback($"Selected planet: {planet.Name}", TimeSpan.FromSeconds(2));
                         return;
                     }
 
@@ -147,7 +137,7 @@ public class GalaxyView : IView
 
     private void DrawActionPanel()
     {
-        var selected = _renderContext.GameState.SelectedObject;
+        var selected = renderContext.GameState.SelectedObject;
         if (selected == null) return;
 
         // Draw info panel
@@ -189,42 +179,42 @@ public class GalaxyView : IView
     {
         if (Input.IsKeyPressed(KeyboardKey.Escape))
         {
-            _logger.LogDebug("Escape key pressed - navigating to menu");
-            _renderContext.GameState.NavigateTo(GameView.Menu);
+            logger.LogDebug("Escape key pressed - navigating to menu");
+            renderContext.GameState.NavigateTo(GameView.Menu);
         }
 
         if (Input.IsKeyPressed(KeyboardKey.Backspace))
         {
-            _logger.LogDebug("Backspace key pressed - navigating to menu");
-            _renderContext.GameState.NavigateTo(GameView.Menu);
+            logger.LogDebug("Backspace key pressed - navigating to menu");
+            renderContext.GameState.NavigateTo(GameView.Menu);
         }
 
-        if (Input.IsKeyPressed(KeyboardKey.F1)) _renderContext.GameState.NavigateTo(GameView.Menu);
+        if (Input.IsKeyPressed(KeyboardKey.F1)) renderContext.GameState.NavigateTo(GameView.Menu);
 
-        if (Input.IsKeyPressed(KeyboardKey.F2)) _renderContext.GameState.NavigateTo(GameView.FleetFinder);
+        if (Input.IsKeyPressed(KeyboardKey.F2)) renderContext.GameState.NavigateTo(GameView.FleetFinder);
 
-        if (Input.IsKeyPressed(KeyboardKey.F3)) _renderContext.GameState.NavigateTo(GameView.GameOptions);
+        if (Input.IsKeyPressed(KeyboardKey.F3)) renderContext.GameState.NavigateTo(GameView.GameOptions);
 
-        if (Input.IsKeyPressed(KeyboardKey.F4)) _renderContext.GameState.NavigateTo(GameView.PlanetaryFinder);
+        if (Input.IsKeyPressed(KeyboardKey.F4)) renderContext.GameState.NavigateTo(GameView.PlanetaryFinder);
     }
 
     private void ShowMoveFleetDialog()
     {
-        _renderContext.GameState.SetFeedback("Move fleet dialog not implemented yet", TimeSpan.FromSeconds(3));
+        renderContext.GameState.SetFeedback("Move fleet dialog not implemented yet", TimeSpan.FromSeconds(3));
     }
 
     private void ShowBuildStructureDialog()
     {
-        _renderContext.GameState.SetFeedback("Build structure dialog not implemented yet", TimeSpan.FromSeconds(3));
+        renderContext.GameState.SetFeedback("Build structure dialog not implemented yet", TimeSpan.FromSeconds(3));
     }
 
     private void ShowAttackDialog()
     {
-        _renderContext.GameState.SetFeedback("Attack dialog not implemented yet", TimeSpan.FromSeconds(3));
+        renderContext.GameState.SetFeedback("Attack dialog not implemented yet", TimeSpan.FromSeconds(3));
     }
 
     private void ShowDiplomacyDialog()
     {
-        _renderContext.GameState.SetFeedback("Diplomacy dialog not implemented yet", TimeSpan.FromSeconds(3));
+        renderContext.GameState.SetFeedback("Diplomacy dialog not implemented yet", TimeSpan.FromSeconds(3));
     }
 }
