@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi.Datastore;
+using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 using StarConflictsRevolt.Server.WebApi.Datastore.Extensions;
 using StarConflictsRevolt.Server.WebApi.Enums;
 using StarConflictsRevolt.Server.WebApi.Eventing;

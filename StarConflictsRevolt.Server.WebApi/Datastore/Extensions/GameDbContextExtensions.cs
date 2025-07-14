@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 using StarConflictsRevolt.Server.WebApi.Models;
 using Galaxy = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Galaxy;
 using Planet = StarConflictsRevolt.Server.WebApi.Datastore.Entities.Planet;

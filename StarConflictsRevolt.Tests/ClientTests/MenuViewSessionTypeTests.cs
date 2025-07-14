@@ -4,8 +4,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Renderers;
-using StarConflictsRevolt.Clients.Raylib.Services;
+using StarConflictsRevolt.Clients.Raylib.Core;
+using StarConflictsRevolt.Clients.Raylib.Game.Commands;
+using StarConflictsRevolt.Clients.Raylib.Game.World;
+using StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
+using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
+using StarConflictsRevolt.Clients.Raylib.Rendering.Views;
 
 namespace StarConflictsRevolt.Tests.ClientTests;
 

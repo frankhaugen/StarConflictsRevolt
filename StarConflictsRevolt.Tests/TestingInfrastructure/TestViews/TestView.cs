@@ -1,4 +1,4 @@
-﻿using StarConflictsRevolt.Clients.Raylib.Renderers;
+﻿using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 

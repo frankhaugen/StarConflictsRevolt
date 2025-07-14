@@ -1,5 +1,6 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
-using StarConflictsRevolt.Clients.Raylib.Services;
+using StarConflictsRevolt.Clients.Raylib.Infrastructure.Configuration;
+using StarConflictsRevolt.Clients.Raylib.Infrastructure.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 

@@ -1,6 +1,4 @@
-﻿using StarConflictsRevolt.Server.WebApi.Datastore.Entities;
-
-namespace StarConflictsRevolt.Server.WebApi.Datastore;
+﻿namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
 
 public class Client
 {
