@@ -13,11 +13,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/TokenErrorHandlingTest.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/CachingTokenProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/CachingTokenProvider.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/JwtTokenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Http/Authentication/JwtTokenHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,7 +219,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="12621000" />
+      <workItem from="1752432073576" duration="12913000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -512,7 +508,14 @@
       <option name="presentableId" value="LOCAL−00041" />
       <updated>1752482689547</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL−00042" summary="Enhance error handling and logging in token management and session creation">
+      <option name="closed" value="true" />
+      <created>1752484074678</created>
+      <option name="number" value="LOCAL−00042" />
+      <option name="presentableId" value="LOCAL−00042" />
+      <updated>1752484074678</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -532,7 +535,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
     <MESSAGE value="Refactor integration tests to use TestHostApplication with cancellation token and improve token response handling" />
     <MESSAGE value="Refactor authentication setup to use standard Bearer scheme and add JSON serialization for TokenType enum" />
     <MESSAGE value="Refactor integration tests to utilize TestHostApplication for improved HTTP client handling and remove manual token acquisition" />
@@ -557,7 +559,8 @@
     <MESSAGE value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
     <MESSAGE value="Add game setup and content services, including AI difficulty, player setup, and various templates for ships, structures, and planets" />
     <MESSAGE value="Add starting structure templates and implement balanced starting positions for players" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add starting structure templates and implement balanced starting positions for players" />
+    <MESSAGE value="Enhance error handling and logging in token management and session creation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enhance error handling and logging in token management and session creation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

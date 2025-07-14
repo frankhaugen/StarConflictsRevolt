@@ -1,5 +1,6 @@
 using StarConflictsRevolt.Server.WebApi.Models;
 using StarConflictsRevolt.Server.WebApi.Services;
+using StarConflictsRevolt.Server.WebApi.Services.AiStrategies;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
@@ -27,7 +28,7 @@ public class AiTurnServiceSessionTypeTests
         var player = new PlayerController { AiStrategy = null };
         var sessionType = SessionType.SinglePlayer;
         if (sessionType == SessionType.SinglePlayer)
-            player.AiStrategy = new DefaultAiStrategy();
+            player.AiStrategy = new DefaultAiStrategy(new AiMemoryBank());
         await Assert.That(player.AiStrategy).IsNotNull();
     }
 
@@ -37,7 +38,7 @@ public class AiTurnServiceSessionTypeTests
         var player = new PlayerController { AiStrategy = null };
         var sessionType = SessionType.Multiplayer;
         if (sessionType == SessionType.SinglePlayer)
-            player.AiStrategy = new DefaultAiStrategy();
+            player.AiStrategy = new DefaultAiStrategy(new AiMemoryBank());
         await Assert.That(player.AiStrategy).IsNull();
     }
 
@@ -46,7 +47,7 @@ public class AiTurnServiceSessionTypeTests
     {
         var player = new PlayerController { AiStrategy = null };
         if (player.AiStrategy == null)
-            player.AiStrategy = new DefaultAiStrategy();
+            player.AiStrategy = new DefaultAiStrategy(new AiMemoryBank());
         await Assert.That(player.AiStrategy).IsNotNull();
     }
 
