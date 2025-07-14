@@ -24,6 +24,8 @@ public static class StartupHelper
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
+        builder.Services.AddScoped<GameSetupService>();
+        builder.Services.AddScoped<GameContentService>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();

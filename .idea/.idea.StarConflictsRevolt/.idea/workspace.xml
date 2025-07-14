@@ -12,55 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StarConflictsRevolt/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/FleetFinderView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GalaxyView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GameOptionsView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/GameView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/IGameRenderer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/IView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/IViewFactory.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/MenuView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/PlanetaryFinderView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/RayLibHelper.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/RaylibRenderer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/RenderContext.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/TacticalBattleView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Renderers/ViewFactory.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientIdentityService.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientInitializer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientServiceHost.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ClientWorldStore.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/FileLoggerProvider.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/GameCommandService.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/GameSpeed.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/GameState.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/HttpApiClientExtensions.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/IClientIdentityService.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/IClientInitializer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/IClientWorldStore.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/ServiceCollectionExtensions.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/SignalRService.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/UIHelper.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Clients.Raylib/Services/UserProfile.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Client.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Entities/Client.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Extensions/GameDbContextExtensions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Datastore/Extensions/GameDbContextExtensions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Server.WebApi/Helpers/MinimalApiHelper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ClientTests/MenuViewSessionTypeTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/ServerTests/IntegrationTests/GameEngineServerTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestHostApplication.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestFleetFinderView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestFleetFinderView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestGalaxyView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestGalaxyView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestGameOptionsView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestGameOptionsView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestMenuView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestMenuView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestPlanetaryFinderView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestPlanetaryFinderView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestRenderer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestRenderer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestTacticalBattleView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestTacticalBattleView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestViewFactory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StarConflictsRevolt.Tests/TestingInfrastructure/TestViews/TestViewFactory.cs" afterDir="false" />
-    </list>
+    <list default="true" id="6d7238c2-7fe6-4bce-8f63-7d607fc7d4d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -261,7 +213,7 @@
       <updated>1752358373288</updated>
       <workItem from="1752358375234" duration="1147000" />
       <workItem from="1752401395411" duration="16086000" />
-      <workItem from="1752432073576" duration="11433000" />
+      <workItem from="1752432073576" duration="11761000" />
     </task>
     <task id="LOCAL−00001" summary="Add tests for MinimalHost lifecycle and handle empty requests; update RavenDB TestDriver configuration">
       <option name="closed" value="true" />
@@ -515,7 +467,28 @@
       <option name="presentableId" value="LOCAL−00036" />
       <updated>1752479999369</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL−00037" summary="Refactor namespaces in Client, GameDbContextExtensions, and various test files for improved organization and clarity">
+      <option name="closed" value="true" />
+      <created>1752481399315</created>
+      <option name="number" value="LOCAL−00037" />
+      <option name="presentableId" value="LOCAL−00037" />
+      <updated>1752481399315</updated>
+    </task>
+    <task id="LOCAL−00038" summary="Add interfaces and implementations for game rendering and client initialization">
+      <option name="closed" value="true" />
+      <created>1752481413179</created>
+      <option name="number" value="LOCAL−00038" />
+      <option name="presentableId" value="LOCAL−00038" />
+      <updated>1752481413179</updated>
+    </task>
+    <task id="LOCAL−00039" summary="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content">
+      <option name="closed" value="true" />
+      <created>1752481985447</created>
+      <option name="number" value="LOCAL−00039" />
+      <option name="presentableId" value="LOCAL−00039" />
+      <updated>1752481985447</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -535,9 +508,6 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Refactor authentication token handling in integration tests to use ClientSecret" />
-    <MESSAGE value="Refactor integration tests to remove TestHostApplication parameter and instantiate it directly" />
-    <MESSAGE value="Refactor workspace configuration to update last commit message and improve integration test handling" />
     <MESSAGE value="Refactor integration tests to use TokenRequest and update token response handling" />
     <MESSAGE value="Refactor health check integration test to include cancellation token" />
     <MESSAGE value="Refactor code to improve formatting and consistency across multiple files" />
@@ -560,7 +530,10 @@
     <MESSAGE value="Refactor views to enhance status bar messages and add Backspace key navigation for menu access" />
     <MESSAGE value="Refactor ClientWorldStore, GalaxyView, MenuView, and UIHelper to improve logging, handle null cases, and enhance Backspace key navigation" />
     <MESSAGE value="Refactor GameCommandService and add HttpApiClientExtensions for improved session management and command handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor GameCommandService and add HttpApiClientExtensions for improved session management and command handling" />
+    <MESSAGE value="Refactor namespaces in Client, GameDbContextExtensions, and various test files for improved organization and clarity" />
+    <MESSAGE value="Add interfaces and implementations for game rendering and client initialization" />
+    <MESSAGE value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add TODO list for game mechanics implementation, including starting conditions, AI strategy, and game content" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

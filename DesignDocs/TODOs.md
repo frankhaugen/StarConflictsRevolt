@@ -13,30 +13,30 @@ This document outlines the implementation plan for adding essential game mechani
 ## 🎯 **1. Starting Conditions for New Games**
 
 ### **High Priority**
-- [ ] **Create `GameSetupService`** to handle session initialization
-  - [ ] Add method `CreateNewGameSession(string sessionName, List<PlayerSetup> players)`
-  - [ ] Support different game modes (1v1, 2v2, FFA, Human vs AI)
-  - [ ] Add session configuration options (galaxy size, starting resources, etc.)
+- [x] **Create `GameSetupService`** to handle session initialization
+  - [x] Add method `CreateNewGameSession(string sessionName, List<PlayerSetup> players)`
+  - [x] Support different game modes (1v1, 2v2, FFA, Human vs AI)
+  - [x] Add session configuration options (galaxy size, starting resources, etc.)
 
-- [ ] **Enhance `WorldFactory`** with proper starting conditions
-  - [ ] Add `CreateStartingWorld(GameSetup setup)` method
-  - [ ] Create multiple star systems with strategic positioning
-  - [ ] Add starting fleets for each player (3-5 ships per player)
-  - [ ] Add starting structures (1-2 per starting planet)
-  - [ ] Add starting resources (credits, materials, fuel)
+- [x] **Enhance `WorldFactory`** with proper starting conditions
+  - [x] Add `CreateStartingWorld(GameSetup setup)` method
+  - [x] Create multiple star systems with strategic positioning
+  - [x] Add starting fleets for each player (3-5 ships per player)
+  - [x] Add starting structures (1-2 per starting planet)
+  - [x] Add starting resources (credits, materials, fuel)
 
-- [ ] **Add `PlayerSetup` model**
-  - [ ] `PlayerType` enum (Human, AI)
-  - [ ] `StartingPosition` (which star system/planet)
-  - [ ] `AiStrategy` (for AI players)
-  - [ ] `PlayerName` and `PlayerColor`
-  - [ ] `Difficulty` level for AI players
+- [x] **Add `PlayerSetup` model**
+  - [x] `PlayerType` enum (Human, AI)
+  - [x] `StartingPosition` (which star system/planet)
+  - [x] `AiStrategy` (for AI players)
+  - [x] `PlayerName` and `PlayerColor`
+  - [x] `Difficulty` level for AI players
 
-- [ ] **Create starting fleet templates**
-  - [ ] Small fleet: 1-2 ships (scout/patrol)
-  - [ ] Medium fleet: 3-5 ships (combat)
-  - [ ] Large fleet: 6-10 ships (invasion)
-  - [ ] Balanced fleet: Mix of ship types
+- [x] **Create starting fleet templates**
+  - [x] Small fleet: 1-2 ships (scout/patrol)
+  - [x] Medium fleet: 3-5 ships (combat)
+  - [x] Large fleet: 6-10 ships (invasion)
+  - [x] Balanced fleet: Mix of ship types
 
 ### **Medium Priority**
 - [ ] **Add starting structure templates**
@@ -107,35 +107,35 @@ This document outlines the implementation plan for adding essential game mechani
 ## 🎮 **3. Game Content (Placeholders)**
 
 ### **High Priority**
-- [ ] **Create `GameContentService`** for managing game data
-  - [ ] Add ship templates with stats (health, attack, speed, cost)
-  - [ ] Add structure templates with effects
-  - [ ] Add planet types with bonuses
+- [x] **Create `GameContentService`** for managing game data
+  - [x] Add ship templates with stats (health, attack, speed, cost)
+  - [x] Add structure templates with effects
+  - [x] Add planet types with bonuses
   - [ ] Add technology tree (basic)
   - [ ] Add resource types and conversion rates
 
-- [ ] **Add ship types and stats**
-  - [ ] Scout: Fast (speed 3), weak (attack 1, health 10), cheap (cost 50)
-  - [ ] Fighter: Balanced (speed 2, attack 2, health 20), medium cost (cost 100)
-  - [ ] Destroyer: Strong (speed 1, attack 4, health 40), expensive (cost 200)
-  - [ ] Cruiser: Heavy (speed 1, attack 6, health 60), very expensive (cost 400)
-  - [ ] Transport: High capacity (cargo 50), weak combat (attack 1, health 30), medium cost (cost 150)
+- [x] **Add ship types and stats**
+  - [x] Scout: Fast (speed 3), weak (attack 1, health 10), cheap (cost 50)
+  - [x] Fighter: Balanced (speed 2, attack 2, health 20), medium cost (cost 100)
+  - [x] Destroyer: Strong (speed 1, attack 4, health 40), expensive (cost 200)
+  - [x] Cruiser: Heavy (speed 1, attack 6, health 60), very expensive (cost 400)
+  - [x] Transport: High capacity (cargo 50), weak combat (attack 1, health 30), medium cost (cost 150)
 
-- [ ] **Add structure effects**
-  - [ ] Mine: +10 materials per turn
-  - [ ] Refinery: +5 fuel per turn
-  - [ ] Shipyard: Can build ships (cost: 100 materials + 50 fuel per ship)
-  - [ ] Training Facility: Can train troops (cost: 50 materials per troop)
-  - [ ] Shield Generator: +50% planet defense, +20% structure health
-  - [ ] Construction Yard: Reduces building costs by 25%
+- [x] **Add structure effects**
+  - [x] Mine: +10 materials per turn
+  - [x] Refinery: +5 fuel per turn
+  - [x] Shipyard: Can build ships (cost: 100 materials + 50 fuel per ship)
+  - [x] Training Facility: Can train troops (cost: 50 materials per troop)
+  - [x] Shield Generator: +50% planet defense, +20% structure health
+  - [x] Construction Yard: Reduces building costs by 25%
 
-- [ ] **Add planet types**
-  - [ ] Terran: Balanced, good for starting (+5 all resources)
-  - [ ] Desert: +materials (+15), -food (-5)
-  - [ ] Ice: +fuel (+15), -materials (-5)
-  - [ ] Gas Giant: +fuel (+20), can't build structures
-  - [ ] Asteroid: +materials (+20), -habitability (reduced population)
-  - [ ] Ocean: +food (+15), -materials (-5)
+- [x] **Add planet types**
+  - [x] Terran: Balanced, good for starting (+5 all resources)
+  - [x] Desert: +materials (+15), -food (-5)
+  - [x] Ice: +fuel (+15), -materials (-5)
+  - [x] Gas Giant: +fuel (+20), can't build structures
+  - [x] Asteroid: +materials (+20), -habitability (reduced population)
+  - [x] Ocean: +food (+15), -materials (-5)
 
 ### **Medium Priority**
 - [ ] **Create technology system**

@@ -16,5 +16,9 @@ public record Planet(
     int MaxMinerals = 1000,
     int Energy = 50,
     int MaxEnergy = 500,
-    double ProductionRate = 1.0
+    double ProductionRate = 1.0,
+    PlanetType PlanetType = null,
+    int Credits = 0,
+    int Materials = 0,
+    int Fuel = 0
 ) : GameObject;
