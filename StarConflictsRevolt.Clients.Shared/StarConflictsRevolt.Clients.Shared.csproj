@@ -12,7 +12,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\StarConflictsRevolt.Clients.Http\StarConflictsRevolt.Clients.Http.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
     </ItemGroup>
 </Project>
