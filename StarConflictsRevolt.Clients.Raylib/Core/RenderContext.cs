@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Game.User;
 using StarConflictsRevolt.Clients.Raylib.Game.World;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
+using StarConflictsRevolt.Clients.Shared.User;
 
 namespace StarConflictsRevolt.Clients.Raylib.Core;
 
@@ -11,13 +11,14 @@ public class RenderContext
     private readonly IOptions<GameClientConfiguration> _configurationOptions;
     private readonly ILogger<RenderContext> _logger;
     private readonly UIManager _uiManager;
-
-    public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore, UIManager uiManager)
+    
+    public RenderContext(ILogger<RenderContext> logger, IOptions<GameClientConfiguration> configurationOptions, IClientWorldStore worldStore, UIManager uiManager, UserProfile userProfile)
     {
         _logger = logger;
         _configurationOptions = configurationOptions;
         WorldStore = worldStore;
         _uiManager = uiManager;
+        UserProfile = userProfile;
     }
 
     public GameClientConfiguration Configuration => _configurationOptions.Value;
@@ -62,5 +63,5 @@ public class RenderContext
     }
 
     public UIManager UIManager => _uiManager;
-    public UserProfile UserProfile { get; set; }
+    public UserProfile UserProfile { get; }
 }

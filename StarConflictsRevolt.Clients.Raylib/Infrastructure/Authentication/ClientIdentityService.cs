@@ -1,11 +1,9 @@
-using StarConflictsRevolt.Clients.Raylib.Game.User;
-
 namespace StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication;
 
 public class ClientIdentityService : IClientIdentityService
 {
     private readonly ILogger<ClientIdentityService> _logger;
-
+    
     public ClientIdentityService(ILogger<ClientIdentityService> logger)
     {
         _logger = logger;
@@ -33,14 +31,5 @@ public class ClientIdentityService : IClientIdentityService
         }
 
         return clientId;
-    }
-
-    public UserProfile GetUserProfile()
-    {
-        _logger.LogInformation("Retrieving Windows user profile");
-        var userProfile = UserProfile.GetUserProfile();
-        _logger.LogInformation("User profile retrieved: UserId={UserId}, DisplayName={DisplayName}, UserName={UserName}",
-            userProfile.UserId, userProfile.DisplayName, userProfile.UserName);
-        return userProfile;
     }
 }

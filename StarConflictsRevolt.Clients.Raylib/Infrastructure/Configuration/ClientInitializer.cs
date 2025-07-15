@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using StarConflictsRevolt.Clients.Raylib.Core;
 using StarConflictsRevolt.Clients.Shared.Authentication;
+using StarConflictsRevolt.Clients.Shared.User;
 using IClientIdentityService = StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication.IClientIdentityService;
 
 namespace StarConflictsRevolt.Clients.Raylib.Infrastructure.Configuration;
@@ -12,19 +13,22 @@ public class ClientInitializer : IClientInitializer
     private readonly ILogger<ClientInitializer> _logger;
     private readonly RenderContext _renderContext;
     private readonly ITokenProvider _tokenProvider;
+    private readonly UserProfile _userProfile;
 
     public ClientInitializer(
         ILogger<ClientInitializer> logger,
         IConfiguration configuration,
         IClientIdentityService identityService,
         RenderContext renderContext,
-        ITokenProvider tokenProvider)
+        ITokenProvider tokenProvider, 
+        UserProfile userProfile)
     {
         _logger = logger;
         _configuration = configuration;
         _identityService = identityService;
         _renderContext = renderContext;
         _tokenProvider = tokenProvider;
+        _userProfile = userProfile;
     }
 
     public async Task InitializeAsync()
@@ -35,7 +39,7 @@ public class ClientInitializer : IClientInitializer
         ValidateConfiguration();
 
         // Setup client identity
-        await SetupClientIdentityAsync();
+        SetupClientIdentity();
 
         // Test authentication
         await TestAuthenticationAsync();
@@ -82,19 +86,16 @@ public class ClientInitializer : IClientInitializer
 #endif
     }
 
-    private async Task SetupClientIdentityAsync()
+    private void SetupClientIdentity()
     {
         _logger.LogInformation("Setting up client identity");
 
         // Get or create client ID
         var clientId = _identityService.GetOrCreateClientId();
 
-        // Get user profile
-        var userProfile = _identityService.GetUserProfile();
-
         // Setup render context
-        _renderContext.GameState.PlayerName = userProfile.DisplayName;
-        _renderContext.GameState.PlayerId = userProfile.UserId;
+        _renderContext.GameState.PlayerName = _userProfile.DisplayName;
+        _renderContext.GameState.PlayerId = _userProfile.UserId;
         _renderContext.ClientId = clientId;
 
         _logger.LogInformation("Client ID set: {ClientId}", _renderContext.ClientId);

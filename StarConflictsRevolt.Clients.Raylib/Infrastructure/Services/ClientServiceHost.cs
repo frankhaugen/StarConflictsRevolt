@@ -1,5 +1,4 @@
 ﻿using StarConflictsRevolt.Clients.Raylib.Core;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
@@ -11,15 +10,13 @@ public class ClientServiceHost : BackgroundService
     private readonly ILogger<ClientServiceHost> _logger;
     private readonly RenderContext _renderContext;
     private readonly SignalRService _signalRService;
-    private readonly IClientIdentityService _clientIdentityService;
 
-    public ClientServiceHost(SignalRService renderService, RenderContext renderContext, IGameRenderer gameRenderer, ILogger<ClientServiceHost> logger, IClientIdentityService clientIdentityService)
+    public ClientServiceHost(SignalRService renderService, RenderContext renderContext, IGameRenderer gameRenderer, ILogger<ClientServiceHost> logger)
     {
         _signalRService = renderService;
         _renderContext = renderContext;
         _gameRenderer = gameRenderer;
         _logger = logger;
-        _clientIdentityService = clientIdentityService;
         _logger.LogInformation("ClientServiceHost initialized");
     }
 
@@ -29,7 +26,6 @@ public class ClientServiceHost : BackgroundService
         _logger.LogInformation("Starting ClientServiceHost");
         
         _logger.LogInformation("Initializing User Profile");
-        _renderContext.UserProfile = _clientIdentityService.GetUserProfile();
         _renderContext.GameState.PlayerName = _renderContext.UserProfile?.DisplayName ?? "Unknown Player";
         _logger.LogInformation("User Profile initialized: {PlayerName}", _renderContext.GameState.PlayerName);
 
