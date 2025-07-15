@@ -53,13 +53,25 @@ public class GameSetupService
         if (setup.Players.Count > 8)
             throw new ArgumentException("Maximum 8 players allowed");
 
-        if (setup.GalaxySize < setup.Players.Count)
+        int numPlanets = GetPlanetCountForGalaxySize(setup.GalaxySize);
+        if (numPlanets < setup.Players.Count)
             throw new ArgumentException("Galaxy size must be at least equal to player count");
 
         // Validate player names are unique
         var playerNames = setup.Players.Select(p => p.Name).ToList();
         if (playerNames.Count != playerNames.Distinct().Count())
             throw new ArgumentException("Player names must be unique");
+    }
+
+    private int GetPlanetCountForGalaxySize(GalaxySize size)
+    {
+        return size switch
+        {
+            GalaxySize.Small => 12,
+            GalaxySize.Medium => 24,
+            GalaxySize.Large => 36,
+            _ => 15
+        };
     }
 
     private void AssignStartingPositions(World world, GameSetup setup)

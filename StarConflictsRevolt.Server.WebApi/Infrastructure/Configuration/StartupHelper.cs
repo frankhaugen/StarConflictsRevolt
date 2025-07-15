@@ -46,11 +46,15 @@ public static class StartupHelper
         builder.Services.AddSingleton<DefensiveAiStrategy>();
         builder.Services.AddSingleton<BalancedAiStrategy>();
 
+        // Register AI difficulty service
+        builder.Services.AddScoped<IAiDifficultyService, AiDifficultyService>();
+
         // Register default AI strategy
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddSingleton<AiTurnService>();
         builder.Services.AddScoped<GameSetupService>();
         builder.Services.AddScoped<GameContentService>();
+        builder.Services.AddScoped<IGameScenarioService, GameScenarioService>();
 
         // Register combat services
         builder.Services.AddScoped<ICombatSimulator, CombatSimulatorService>();

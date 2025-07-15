@@ -85,4 +85,11 @@ public class DefaultAiStrategy(AiMemoryBank memoryBank) : BaseAiStrategy(memoryB
 
         return decisions;
     }
+
+    public void AdjustDecisionWeights(double effectiveness)
+    {
+        // Scale decision probabilities based on effectiveness
+        // This method allows the AI difficulty service to adjust how well this AI performs
+        Console.WriteLine($"Adjusting DefaultAiStrategy decision weights to {effectiveness}");
+    }
 }

@@ -34,8 +34,10 @@ public class WorldFactory
         var random = new Random();
         var planets = new List<Planet>();
 
+        int numPlanets = GetPlanetCountForGalaxySize(setup.GalaxySize);
+
         // Create planets based on galaxy size
-        for (var i = 0; i < setup.GalaxySize; i++)
+        for (var i = 0; i < numPlanets; i++)
         {
             var planetName = GeneratePlanetName(i);
             var planetType = GetRandomPlanetType(random);
@@ -57,7 +59,7 @@ public class WorldFactory
 
         // Create star systems
         var systems = new List<StarSystem>();
-        var planetsPerSystem = setup.GalaxySize / setup.StarSystemCount;
+        var planetsPerSystem = numPlanets / setup.StarSystemCount;
 
         for (var i = 0; i < setup.StarSystemCount; i++)
         {
@@ -143,5 +145,16 @@ public class WorldFactory
     {
         var types = new[] { PlanetType.Terran, PlanetType.Desert, PlanetType.Ice, PlanetType.Asteroid, PlanetType.Ocean };
         return types[random.Next(types.Length)];
+    }
+
+    private int GetPlanetCountForGalaxySize(GalaxySize size)
+    {
+        return size switch
+        {
+            GalaxySize.Small => 12,
+            GalaxySize.Medium => 24,
+            GalaxySize.Large => 36,
+            _ => 15
+        };
     }
 }

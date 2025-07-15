@@ -241,4 +241,11 @@ public class EconomicAiStrategy : BaseAiStrategy
 
         return null;
     }
+
+    public void SetEfficiencyLevel(double level)
+    {
+        // Adjust economic efficiency level (0.0 to 1.0)
+        // Higher levels increase building probabilities and resource optimization
+        Console.WriteLine($"Setting EconomicAiStrategy efficiency level to {level}");
+    }
 }

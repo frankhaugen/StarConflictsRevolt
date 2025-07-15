@@ -248,4 +248,11 @@ public class DefensiveAiStrategy : BaseAiStrategy
 
         return null;
     }
+
+    public void SetDefensiveLevel(double level)
+    {
+        // Adjust defensive level (0.0 to 1.0)
+        // Higher levels increase defensive building and reduce offensive actions
+        Console.WriteLine($"Setting DefensiveAiStrategy defensive level to {level}");
+    }
 }

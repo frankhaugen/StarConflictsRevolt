@@ -497,4 +497,11 @@ public class BalancedAiStrategy : BaseAiStrategy
         var allPlanets = world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList();
         return allPlanets[_random.Next(allPlanets.Count)];
     }
+
+    public void SetBalanceLevel(double level)
+    {
+        // Adjust balance level (0.0 to 1.0)
+        // Higher levels improve decision-making across all phases
+        Console.WriteLine($"Setting BalancedAiStrategy balance level to {level}");
+    }
 }

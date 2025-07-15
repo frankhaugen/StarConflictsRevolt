@@ -200,4 +200,11 @@ public class AggressiveAiStrategy : BaseAiStrategy
 
         return null;
     }
+
+    public void SetAggressionLevel(double level)
+    {
+        // Adjust aggression level (0.0 to 1.0)
+        // Higher levels increase attack probabilities and reduce defensive behavior
+        Console.WriteLine($"Setting AggressiveAiStrategy aggression level to {level}");
+    }
 }

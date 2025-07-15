@@ -6,5 +6,7 @@ public enum GameMode
     TwoVsTwo,
     FreeForAll,
     HumanVsAI,
-    AIvsAI
+    AIvsAI,
+    Tutorial,
+    TeamBattle
 }
