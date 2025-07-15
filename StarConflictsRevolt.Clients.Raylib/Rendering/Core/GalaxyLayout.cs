@@ -4,21 +4,6 @@ using System.Collections.Generic;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 
-public class SectorInfo
-{
-    public int SectorId { get; set; }
-    public bool IsVisible { get; set; }
-    public string Name { get; set; } = string.Empty;
-}
-
-public class StarSystemWithSector
-{
-    public StarSystemDto System { get; set; }
-    public int SectorId { get; set; }
-    public bool IsVisible { get; set; }
-    public string SectorName { get; set; } = string.Empty;
-}
-
 public static class GalaxyLayout
 {
     private static List<SectorInfo> _sectors = new()

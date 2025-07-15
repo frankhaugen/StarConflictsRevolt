@@ -5,11 +5,11 @@ namespace StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 
 public interface IMissionSimulator
 {
-    CombatResult SimulateMission(Mission mission, Character agent, Planet target);
-    double CalculateMissionDifficulty(Mission mission, Planet target, Character agent);
-    double CalculateSkillBonus(Character agent, MissionType missionType);
+    CombatResult SimulateMission(StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Mission mission, StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Character agent, Planet target);
+    double CalculateMissionDifficulty(StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Mission mission, StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Character agent, Planet target);
+    double CalculateSkillBonus(StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Character agent, StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.MissionType missionType);
     double CalculateEnvironmentalModifier(Planet target);
     double CalculateSuccessChance(int difficulty, double skillBonus, double environmentalModifier);
-    List<MissionReward> CalculateRewards(Mission mission, bool success, Character agent);
-    List<MissionConsequence> ApplyMissionConsequences(Mission mission, bool success, Planet target);
+    List<StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.MissionReward> CalculateRewards(StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Mission mission, bool success, StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Character agent);
+    List<StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.MissionConsequence> ApplyMissionConsequences(StarConflictsRevolt.Server.WebApi.Core.Domain.Combat.Mission mission, bool success, Planet target);
 }
