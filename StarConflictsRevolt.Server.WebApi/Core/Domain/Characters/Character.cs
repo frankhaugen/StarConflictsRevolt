@@ -1,6 +1,8 @@
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.Entities;
+
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Characters;
 
-public class Character : Datastore.Entities.GameObject
+public class Character : GameObject
 {
     public string Name { get; set; } = string.Empty;
     public CharacterRank Rank { get; set; } = CharacterRank.None;

@@ -2,7 +2,7 @@
 
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class StarSystem : Datastore.Entities.GameObject
+public class StarSystem : Infrastructure.Datastore.Entities.GameObject
 {
     public string Name { get; set; }
     public IEnumerable<Planet> Planets { get; set; }

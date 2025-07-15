@@ -2,7 +2,7 @@
 
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class Structure : Datastore.Entities.GameObject
+public class Structure : Infrastructure.Datastore.Entities.GameObject
 {
     public StructureVariant Variant { get; set; }
     public Guid? PlanetId { get; set; }

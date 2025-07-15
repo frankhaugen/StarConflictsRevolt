@@ -1,8 +1,9 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Characters;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.Entities;
 
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Missions;
 
-public class Mission : Datastore.Entities.GameObject
+public class Mission : GameObject
 {
     public string Name { get; set; } = string.Empty;
     public MissionType Type { get; set; }

@@ -2,7 +2,7 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class Fleet : Datastore.Entities.GameObject
+public class Fleet : Infrastructure.Datastore.Entities.GameObject
 {
     public Fleet(Guid parse, string rebelFlagship, List<Ship> ships, FleetStatus idle)
     {

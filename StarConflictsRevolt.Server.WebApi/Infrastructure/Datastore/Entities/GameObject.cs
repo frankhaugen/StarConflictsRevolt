@@ -1,6 +1,6 @@
 ﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 
-namespace StarConflictsRevolt.Server.WebApi.Datastore.Entities;
+namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.Entities;
 
 public abstract class GameObject : IGameObject
 {

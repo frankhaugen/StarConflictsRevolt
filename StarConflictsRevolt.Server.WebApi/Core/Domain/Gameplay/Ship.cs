@@ -1,6 +1,6 @@
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
-public class Ship : Datastore.Entities.GameObject
+public class Ship : Infrastructure.Datastore.Entities.GameObject
 {
     public Ship(Guid parse, string xWing, bool b)
     {
