@@ -23,8 +23,22 @@ var window = Window.CreateWindow(
 builder.Services.AddSingleton<IWindow>(window);
 builder.Services.AddSingleton<GraphicsDevice>(device);
 
-builder.Services.AddHostedService<RenderLoopService>();
+// Register the render loop as a regular service, not a hosted service
+builder.Services.AddSingleton<RenderLoopService>();
 
 var app = builder.Build();
 
-await app.RunAsync();
+// Start the DI container and any background services
+await app.StartAsync();
+
+try
+{
+    // Get the render loop service from DI and run it on the main thread
+    var renderLoop = app.Services.GetRequiredService<RenderLoopService>();
+    renderLoop.Run(); // This will block the main thread until the window closes
+}
+finally
+{
+    // Ensure proper cleanup when the render loop ends
+    await app.StopAsync();
+}

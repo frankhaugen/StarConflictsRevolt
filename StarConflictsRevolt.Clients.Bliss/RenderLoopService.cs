@@ -11,7 +11,7 @@ using Bliss.CSharp.Colors;
 
 namespace StarConflictsRevolt.Clients.Bliss;
 
-public class RenderLoopService : BackgroundService
+public class RenderLoopService : IDisposable
 {
     private readonly ILogger<RenderLoopService> _logger;
     private readonly IWindow _window;
@@ -21,6 +21,7 @@ public class RenderLoopService : BackgroundService
     private SpriteBatch _spriteBatch = null!;
     private PrimitiveBatch _primitiveBatch = null!;
     private float _rotation = 0f;
+    private bool _disposed = false;
 
     /// <inheritdoc />
     public RenderLoopService(ILogger<RenderLoopService> logger, IWindow window, GraphicsDevice graphicsDevice)
@@ -30,8 +31,10 @@ public class RenderLoopService : BackgroundService
         _graphicsDevice = graphicsDevice;
     }
 
-    /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    /// <summary>
+    /// Runs the render loop on the main thread. This method blocks until the window is closed.
+    /// </summary>
+    public void Run()
     {
         _logger.LogInformation("Render loop started");
 
@@ -56,7 +59,8 @@ public class RenderLoopService : BackgroundService
         _spriteBatch = new SpriteBatch(_graphicsDevice, _window);
         _primitiveBatch = new PrimitiveBatch(_graphicsDevice, _window);
 
-        while (!stoppingToken.IsCancellationRequested && _window.Exists)
+        // Main render loop - runs on the main thread
+        while (_window.Exists && !_disposed)
         {
             _window.PumpEvents(); // Process window events.
             Input.Begin(); // Start input processing.
@@ -73,8 +77,12 @@ public class RenderLoopService : BackgroundService
             RenderFrame();
             
             Input.End(); // End input processing.
-            await Task.Delay(16, stoppingToken); // Wait for ~16ms to maintain ~60 FPS.
+            
+            // Small delay to maintain ~60 FPS
+            Thread.Sleep(16);
         }
+        
+        _logger.LogInformation("Render loop ended");
     }
 
     private void RenderFrame()
@@ -126,5 +134,17 @@ public class RenderLoopService : BackgroundService
         _commandList.End();
         _graphicsDevice.SubmitCommands(_commandList);
         _graphicsDevice.SwapBuffers(); // Swap buffers to display the rendered frame.
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            _commandList?.Dispose();
+            _immediateRenderer?.Dispose();
+            _spriteBatch?.Dispose();
+            _primitiveBatch?.Dispose();
+        }
     }
 }
