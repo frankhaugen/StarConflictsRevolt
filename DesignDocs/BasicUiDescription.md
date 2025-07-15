@@ -134,10 +134,10 @@ Alternatively, there's a "Join by ID" option that allows entering a specific ses
 |                                                             |
 |   Available Games:                                          |
 |                                                             |
-|   > [1] Galactic Conquest 2024 (2/4 players) - Waiting     |
-|     [2] Rebel Alliance (1/4 players) - Waiting             |
+|   > [1] Galactic Conquest 2024 (2/4 players) - Waiting      |
+|     [2] Rebel Alliance (1/4 players) - Waiting              |
 |     [3] Empire Strikes Back (3/4 players) - In Progress     |
-|     [4] Clone Wars (0/4 players) - Waiting                 |
+|     [4] Clone Wars (0/4 players) - Waiting                  |
 |                                                             |
 |   Or join by Session ID: [ ABC123XYZ           ]            |
 |                                                             |
@@ -145,7 +145,7 @@ Alternatively, there's a "Join by ID" option that allows entering a specific ses
 |                 [   Back    ]                               |
 |                                                             |
 |-------------------------------------------------------------|
-|   (↑/↓ to navigate list, Enter to join, Tab for ID input)  |
+|   (↑/↓ to navigate list, Enter to join, Tab for ID input)   |
 |                                                             |
 +-------------------------------------------------------------+
 
@@ -254,13 +254,13 @@ The debug mode screen shows options for generating different types of game scena
 |                                                             |
 |   [✓] Enable AI players                                     |
 |   [✓] Enable all technologies                               |
-|   [ ] Infinite resources                                     |
+|   [ ] Infinite resources                                    |
 |                                                             |
 |                 [   Start   ]                               |
 |                 [   Back    ]                               |
 |                                                             |
 |-------------------------------------------------------------|
-|   (↑/↓ to navigate, Enter to select, Tab for options)      |
+|   (↑/↓ to navigate, Enter to select, Tab for options)       |
 |                                                             |
 +-------------------------------------------------------------+
 
@@ -289,18 +289,18 @@ Navigation is primarily mouse-driven with keyboard shortcuts for common actions.
 |         ⭐ Coruscant (Capital)                              |
 |            /     \                                          |
 |           /       \                                         |
-|    ⭐ Naboo    ⭐ Tatooine                                   |
+|    ⭐ Naboo    ⭐ Tatooine                                  |
 |      [Fleet]      [Enemy]                                   |
 |         |            |                                      |
 |         |            |                                      |
-|    ⭐ Alderaan   ⭐ Hoth                                     |
+|    ⭐ Alderaan   ⭐ Hoth                                    |
 |      [Planet]     [Planet]                                  |
 |                                                             |
 |                                                             |
 |-------------------------------------------------------------|
 | [Fleets] [Planets] [Diplomacy] [Technology] [Missions] [Menu]|
 |                                                             |
-| Selected: Coruscant - Capital World                        |
+| Selected: Coruscant - Capital World                         |
 | Actions: [Build Fleet] [Upgrade] [Trade] [Diplomacy]        |
 +-------------------------------------------------------------+
 
