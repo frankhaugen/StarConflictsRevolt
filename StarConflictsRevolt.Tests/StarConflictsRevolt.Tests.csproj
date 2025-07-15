@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\StarConflictsRevolt.Clients.Bliss\StarConflictsRevolt.Clients.Bliss.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
     </ItemGroup>
