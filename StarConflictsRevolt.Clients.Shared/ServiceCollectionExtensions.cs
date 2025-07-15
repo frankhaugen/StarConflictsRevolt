@@ -32,5 +32,7 @@ public static class ServiceCollectionExtensions
 
         // Register shared configuration services
         builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
+        
+        return builder;
     }
 } 
