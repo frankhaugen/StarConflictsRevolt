@@ -1,39 +1,30 @@
-using Microsoft.Extensions.Hosting;
-using StarConflictsRevolt.Clients.Bliss.Core;
-using StarConflictsRevolt.Clients.Bliss.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Bliss.CSharp.Windowing;
+using StarConflictsRevolt.Clients.Bliss;
+using StarConflictsRevolt.Clients.Bliss.Infrastructure.Configuration;
+using Veldrid;
 
-namespace StarConflictsRevolt.Clients.Bliss;
+var builder = Host.CreateApplicationBuilder();
 
-/// <summary>
-/// Main entry point for the Bliss client.
-/// </summary>
-public class Program
-{
-    public static async Task Main(string[] args)
-    {
-        var builder = Host.CreateApplicationBuilder(args);
+var windowConfig = WindowConfiguration.Create16x9();
 
-        // Add Bliss client services
-        builder.Services.AddBlissClientServices(builder.Configuration);
+builder.Services.Configure<WindowConfiguration>(config => windowConfig.Set(config));
 
-        var host = builder.Build();
+var window = Window.CreateWindow(
+    windowConfig.Type,
+    windowConfig.Width,
+    windowConfig.Height,
+    windowConfig.Title,
+    windowConfig.State,
+    windowConfig.GraphicsDeviceOptions,
+    windowConfig.GraphicsBackend,
+    out var device
+);
 
-        try
-        {
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("Starting Star Conflicts Revolt Bliss Client");
+builder.Services.AddSingleton<IWindow>(window);
+builder.Services.AddSingleton<GraphicsDevice>(device);
 
-            // Get the game loop and run it
-            var gameLoop = host.Services.GetRequiredService<IGameLoop>();
-            await gameLoop.RunAsync(CancellationToken.None);
-        }
-        catch (Exception ex)
-        {
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while running the Bliss client");
-            throw;
-        }
-    }
-}
+builder.Services.AddHostedService<RenderLoopService>();
+
+var app = builder.Build();
+
+await app.RunAsync();
