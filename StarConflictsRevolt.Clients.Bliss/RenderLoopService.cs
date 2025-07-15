@@ -10,6 +10,7 @@ using Bliss.CSharp.Transformations;
 using Bliss.CSharp.Colors;
 using Bliss.CSharp.Interact.Keyboards;
 using StarConflictsRevolt.Clients.Bliss.Core;
+using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Views;
 
 namespace StarConflictsRevolt.Clients.Bliss;
@@ -24,6 +25,7 @@ public class RenderLoopService : IDisposable
     private SpriteBatch _spriteBatch = null!;
     private PrimitiveBatch _primitiveBatch = null!;
     private ViewManager _viewManager = null!;
+    private UIManager _uiManager = null!;
     private float _lastFrameTime = 0f;
     private bool _disposed = false;
 
@@ -73,6 +75,10 @@ public class RenderLoopService : IDisposable
         _viewManager.RegisterView(new GalaxyView());
         _viewManager.RegisterView(new TacticalBattleView());
 
+        // Initialize UI manager
+        _uiManager = new UIManager(_window.GetWidth(), _window.GetHeight());
+        _uiManager.ViewRequested += (viewName) => _viewManager.SwitchToView(viewName);
+
         // Main render loop - runs on the main thread
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         
@@ -97,6 +103,9 @@ public class RenderLoopService : IDisposable
             // Update current view
             _viewManager.CurrentView?.Update((float)deltaTime);
             
+            // Update UI manager
+            _uiManager.Update((float)deltaTime);
+            
             // Render frame
             RenderFrame();
             
@@ -111,6 +120,15 @@ public class RenderLoopService : IDisposable
     
     private void HandleInput()
     {
+        // Handle UI input first (modals, navigation bar)
+        _uiManager.HandleInput();
+        
+        // If a modal is open, don't process other input
+        if (_uiManager.ModalDialog.IsVisible)
+        {
+            return;
+        }
+        
         // Handle keyboard input for view switching
         if (Input.IsKeyPressed(KeyboardKey.F1))
         {
@@ -141,6 +159,17 @@ public class RenderLoopService : IDisposable
                 menuView.ActivateSelected();
             }
         }
+        
+        // Demo modal functionality
+        if (Input.IsKeyPressed(KeyboardKey.M))
+        {
+            _uiManager.ShowMessage("Demo", "This is a demo modal dialog!", "OK");
+        }
+        else if (Input.IsKeyPressed(KeyboardKey.C))
+        {
+            _uiManager.ShowConfirmation("Confirm Action", "Are you sure you want to proceed?", 
+                () => _uiManager.ShowMessage("Success", "Action confirmed!", "OK"));
+        }
     }
 
     private void RenderFrame()
@@ -165,6 +194,15 @@ public class RenderLoopService : IDisposable
                 _graphicsDevice.SwapchainFramebuffer
             );
         }
+        
+        // Render UI components
+        _uiManager.Render(
+            _immediateRenderer,
+            _primitiveBatch,
+            _spriteBatch,
+            _commandList,
+            _graphicsDevice.SwapchainFramebuffer
+        );
 
         _commandList.End();
         _graphicsDevice.SubmitCommands(_commandList);

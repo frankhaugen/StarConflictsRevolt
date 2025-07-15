@@ -4,6 +4,7 @@ using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
 using Bliss.CSharp.Transformations;
 using StarConflictsRevolt.Clients.Bliss.Core;
+using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using System.Numerics;
 using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
@@ -103,8 +104,9 @@ public class MenuView : GameView
     {
         primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
         
-        // Draw title background panel
-        var titlePanel = new RectangleF(400, 100, 1120, 200);
+        // Draw title background panel - centered
+        var titlePanel = UILayout.CenteredRect(1120, 200, 1920, 1080);
+        titlePanel.Y = 100; // Position from top
         primitiveBatch.DrawFilledRectangle(
             titlePanel, 
             Vector2.Zero, 
@@ -122,8 +124,8 @@ public class MenuView : GameView
         
         // Draw subtitle line
         primitiveBatch.DrawLine(
-            new Vector2(450, 280), 
-            new Vector2(1470, 280), 
+            new Vector2(titlePanel.X + 50, titlePanel.Y + 180), 
+            new Vector2(titlePanel.X + titlePanel.Width - 50, titlePanel.Y + 180), 
             2f, 
             0.5f, 
             StarWarsTheme.EmpireAccent);
@@ -146,17 +148,18 @@ public class MenuView : GameView
     
     private void DrawButton(PrimitiveBatch primitiveBatch, MenuButton button, int index)
     {
-        var y = 400 + index * 80;
-        var rect = new RectangleF(600, y, 720, 60);
+        // Center the button container
+        var buttonContainer = UILayout.CenteredRect(720, 60, 1920, 1080);
+        buttonContainer.Y = 400 + index * 80; // Position from top
         
         // Button background
         var bgColor = button.IsSelected ? StarWarsTheme.EmpirePrimary : StarWarsTheme.PanelBackground;
-        primitiveBatch.DrawFilledRectangle(rect, Vector2.Zero, 0f, 0.5f, bgColor);
+        primitiveBatch.DrawFilledRectangle(buttonContainer, Vector2.Zero, 0f, 0.5f, bgColor);
         
         // Button border (using filled rectangle with border effect)
         var borderColor = button.IsSelected ? StarWarsTheme.EmpireAccent : StarWarsTheme.Border;
         primitiveBatch.DrawFilledRectangle(
-            new RectangleF(rect.X - 2, rect.Y - 2, rect.Width + 4, rect.Height + 4), 
+            new RectangleF(buttonContainer.X - 2, buttonContainer.Y - 2, buttonContainer.Width + 4, buttonContainer.Height + 4), 
             Vector2.Zero, 
             0f, 
             0.5f, 
@@ -168,9 +171,9 @@ public class MenuView : GameView
             // Draw selection arrow
             var arrowPoints = new Vector2[]
             {
-                new Vector2(580, y + 30),
-                new Vector2(590, y + 20),
-                new Vector2(590, y + 40)
+                new Vector2(buttonContainer.X - 20, buttonContainer.Y + 30),
+                new Vector2(buttonContainer.X - 10, buttonContainer.Y + 20),
+                new Vector2(buttonContainer.X - 10, buttonContainer.Y + 40)
             };
             
             primitiveBatch.DrawFilledTriangle(
@@ -182,7 +185,7 @@ public class MenuView : GameView
             
             // Draw glow effect
             primitiveBatch.DrawFilledRectangle(
-                new RectangleF(595, y + 5, 5, 50), 
+                new RectangleF(buttonContainer.X - 15, buttonContainer.Y + 5, 5, 50), 
                 Vector2.Zero, 
                 0f, 
                 0.5f, 
