@@ -113,6 +113,7 @@ public class TacticalBattleView : GameView
                 new Vector2(x, 0), 
                 new Vector2(x, 1080), 
                 0.5f, 
+                0.5f, 
                 new Color(51, 51, 77, 128));
         }
         
@@ -121,6 +122,7 @@ public class TacticalBattleView : GameView
             primitiveBatch.DrawLine(
                 new Vector2(0, y), 
                 new Vector2(1920, y), 
+                0.5f, 
                 0.5f, 
                 new Color(51, 51, 77, 128));
         }
@@ -155,6 +157,7 @@ public class TacticalBattleView : GameView
                           ship.Size.X, ship.Size.Y), 
             new Vector2(ship.Size.X / 2, ship.Size.Y / 2), 
             ship.Rotation, 
+            0.5f, 
             primaryColor);
         
         // Draw ship details
@@ -163,6 +166,7 @@ public class TacticalBattleView : GameView
                           ship.Size.X * 0.66f, ship.Size.Y * 0.66f), 
             new Vector2(ship.Size.X / 3, ship.Size.Y / 3), 
             ship.Rotation, 
+            0.5f, 
             accentColor);
         
         // Draw engine glow
@@ -209,6 +213,7 @@ public class TacticalBattleView : GameView
                 trailStart, 
                 projectile.Position, 
                 2f, 
+                0.5f, 
                 color);
             
             // Draw projectile head
@@ -232,6 +237,7 @@ public class TacticalBattleView : GameView
             new RectangleF(0, 0, 1920, 80), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         // Draw bottom control panel
@@ -239,6 +245,7 @@ public class TacticalBattleView : GameView
             new RectangleF(0, 1000, 1920, 80), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         // Draw side tactical panel
@@ -246,6 +253,7 @@ public class TacticalBattleView : GameView
             new RectangleF(1720, 80, 200, 920), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         primitiveBatch.End();

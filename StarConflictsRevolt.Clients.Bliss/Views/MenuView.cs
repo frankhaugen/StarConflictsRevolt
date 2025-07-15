@@ -87,7 +87,7 @@ public class MenuView : GameView
                 200 + i * 150 + (float)Math.Cos(_time * 0.3f + i) * 30
             );
             
-            var nebulaColor = new Color(0.1f, 0.2f, 0.4f, 0.1f);
+            var nebulaColor = new Color(26, 51, 102, 26);
             primitiveBatch.DrawFilledCircle(
                 center, 
                 100 + (float)Math.Sin(_time + i) * 20, 
@@ -109,6 +109,7 @@ public class MenuView : GameView
             titlePanel, 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             new Color(26, 26, 51, 204));
         
         // Draw title border (using filled rectangle with border effect)
@@ -116,6 +117,7 @@ public class MenuView : GameView
             new RectangleF(titlePanel.X - 3, titlePanel.Y - 3, titlePanel.Width + 6, titlePanel.Height + 6), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.Border);
         
         // Draw subtitle line
@@ -123,6 +125,7 @@ public class MenuView : GameView
             new Vector2(450, 280), 
             new Vector2(1470, 280), 
             2f, 
+            0.5f, 
             StarWarsTheme.EmpireAccent);
         
         primitiveBatch.End();
@@ -148,7 +151,7 @@ public class MenuView : GameView
         
         // Button background
         var bgColor = button.IsSelected ? StarWarsTheme.EmpirePrimary : StarWarsTheme.PanelBackground;
-        primitiveBatch.DrawFilledRectangle(rect, Vector2.Zero, 0f, bgColor);
+        primitiveBatch.DrawFilledRectangle(rect, Vector2.Zero, 0f, 0.5f, bgColor);
         
         // Button border (using filled rectangle with border effect)
         var borderColor = button.IsSelected ? StarWarsTheme.EmpireAccent : StarWarsTheme.Border;
@@ -156,6 +159,7 @@ public class MenuView : GameView
             new RectangleF(rect.X - 2, rect.Y - 2, rect.Width + 4, rect.Height + 4), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             borderColor);
         
         // Selection indicator
@@ -173,6 +177,7 @@ public class MenuView : GameView
                 arrowPoints[0], 
                 arrowPoints[1], 
                 arrowPoints[2], 
+                0.5f, 
                 StarWarsTheme.EmpireAccent);
             
             // Draw glow effect
@@ -180,6 +185,7 @@ public class MenuView : GameView
                 new RectangleF(595, y + 5, 5, 50), 
                 Vector2.Zero, 
                 0f, 
+                0.5f, 
                 new Color(255, 51, 51, 77));
         }
     }
@@ -196,12 +202,14 @@ public class MenuView : GameView
                 new Vector2(0, y), 
                 new Vector2(200, y), 
                 1f, 
+                0.5f, 
                 StarWarsTheme.EmpireSecondary);
             
             primitiveBatch.DrawLine(
                 new Vector2(1720, y), 
                 new Vector2(1920, y), 
                 1f, 
+                0.5f, 
                 StarWarsTheme.RebellionSecondary);
         }
         
@@ -226,12 +234,14 @@ public class MenuView : GameView
                 position, 
                 position + new Vector2(size, 0), 
                 2f, 
+                0.5f, 
                 color);
             
             primitiveBatch.DrawLine(
                 position, 
                 position + new Vector2(0, size), 
                 2f, 
+                0.5f, 
                 color);
         }
         else
@@ -241,12 +251,14 @@ public class MenuView : GameView
                 position, 
                 position + new Vector2(-size, 0), 
                 2f, 
+                0.5f, 
                 color);
             
             primitiveBatch.DrawLine(
                 position, 
                 position + new Vector2(0, size), 
                 2f, 
+                0.5f, 
                 color);
         }
     }

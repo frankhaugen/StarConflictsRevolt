@@ -96,6 +96,7 @@ public class GalaxyView : GameView
                 new Vector2(x, 0), 
                 new Vector2(x, 1080), 
                 1f, 
+                0.5f, 
                 StarWarsTheme.Border);
         }
         
@@ -105,6 +106,7 @@ public class GalaxyView : GameView
                 new Vector2(0, y), 
                 new Vector2(1920, y), 
                 1f, 
+                0.5f, 
                 StarWarsTheme.Border);
         }
         
@@ -192,7 +194,7 @@ public class GalaxyView : GameView
                 (float)Math.Cos(angle - 2.5f) * 8,
                 (float)Math.Sin(angle - 2.5f) * 8);
             
-            primitiveBatch.DrawFilledTriangle(points[0], points[1], points[2], fleetColor);
+            primitiveBatch.DrawFilledTriangle(points[0], points[1], points[2], 0.5f, fleetColor);
             
             // Draw fleet glow
             primitiveBatch.DrawFilledCircle(
@@ -215,6 +217,7 @@ public class GalaxyView : GameView
             new RectangleF(0, 0, 1920, 60), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         // Draw bottom panel
@@ -222,6 +225,7 @@ public class GalaxyView : GameView
             new RectangleF(0, 1020, 1920, 60), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         // Draw side panel
@@ -229,6 +233,7 @@ public class GalaxyView : GameView
             new RectangleF(1720, 60, 200, 960), 
             Vector2.Zero, 
             0f, 
+            0.5f, 
             StarWarsTheme.PanelBackground);
         
         primitiveBatch.End();

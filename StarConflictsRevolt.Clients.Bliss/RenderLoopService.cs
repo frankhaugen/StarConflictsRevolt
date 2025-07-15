@@ -8,6 +8,7 @@ using Bliss.CSharp.Windowing;
 using Veldrid;
 using Bliss.CSharp.Transformations;
 using Bliss.CSharp.Colors;
+using Bliss.CSharp.Interact.Keyboards;
 using StarConflictsRevolt.Clients.Bliss.Core;
 using StarConflictsRevolt.Clients.Bliss.Views;
 
@@ -111,15 +112,15 @@ public class RenderLoopService : IDisposable
     private void HandleInput()
     {
         // Handle keyboard input for view switching
-        if (Input.IsKeyPressed(Keys.F1))
+        if (Input.IsKeyPressed(KeyboardKey.F1))
         {
             _viewManager.SwitchToView("Galaxy Overview");
         }
-        else if (Input.IsKeyPressed(Keys.F2))
+        else if (Input.IsKeyPressed(KeyboardKey.F2))
         {
             _viewManager.SwitchToView("Tactical Battle");
         }
-        else if (Input.IsKeyPressed(Keys.Escape))
+        else if (Input.IsKeyPressed(KeyboardKey.Escape))
         {
             _viewManager.SwitchToView("Main Menu");
         }
@@ -127,15 +128,15 @@ public class RenderLoopService : IDisposable
         // Handle menu navigation if current view is MenuView
         if (_viewManager.CurrentView is MenuView menuView)
         {
-            if (Input.IsKeyPressed(Keys.Up))
+            if (Input.IsKeyPressed(KeyboardKey.Up))
             {
                 menuView.SelectPrevious();
             }
-            else if (Input.IsKeyPressed(Keys.Down))
+            else if (Input.IsKeyPressed(KeyboardKey.Down))
             {
                 menuView.SelectNext();
             }
-            else if (Input.IsKeyPressed(Keys.Enter))
+            else if (Input.IsKeyPressed(KeyboardKey.Enter))
             {
                 menuView.ActivateSelected();
             }
