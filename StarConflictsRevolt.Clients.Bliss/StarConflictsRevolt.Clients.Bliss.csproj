@@ -13,11 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
-      <ProjectReference Include="..\StarConflictsRevolt.Clients.Http\StarConflictsRevolt.Clients.Http.csproj" />
-      <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" />
     </ItemGroup>
-
+    
     <ItemGroup>
         <None Include="Assets/**/*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
