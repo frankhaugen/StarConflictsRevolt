@@ -66,33 +66,12 @@ public class GalaxyView(RenderContext renderContext, ILogger<GalaxyView> logger)
         return mouse.X >= 64 && mouse.X < 1600 && mouse.Y >= 48 && mouse.Y < 912;
     }
 
+    private readonly EnhancedGalaxyBackground _galaxyBackground = new();
+
     private void DrawStarfield()
     {
-        // Draw in screen space (not affected by camera)
-        int numStars = 2000;
-        double spiralArms = 3.5;
-        double spiralSpread = 0.45;
-        double centerX = Window.GetScreenWidth() / 2.0;
-        double centerY = Window.GetScreenHeight() / 2.0;
-        double maxRadius = Math.Min(centerX, centerY) * 1.1;
-        var rand = new Random(42);
-        for (int i = 0; i < numStars; i++)
-        {
-            // Spiral math
-            double t = i * 0.15;
-            double arm = (i % (int)spiralArms) * (2 * Math.PI / spiralArms);
-            double radius = spiralSpread * t * maxRadius / numStars + rand.NextDouble() * 18;
-            double angle = t + arm + rand.NextDouble() * 0.25;
-            int x = (int)(centerX + Math.Cos(angle) * radius + rand.NextDouble() * 8 - 4);
-            int y = (int)(centerY + Math.Sin(angle) * radius + rand.NextDouble() * 8 - 4);
-            // Twinkle
-            byte twinkle = (byte)(((_starfieldFrame / 10 + i) % 20 < 2) ? 40 : 0);
-            byte baseCol = (byte)(120 + rand.Next(80));
-            var color = (i % 7 == 0)
-                ? new Color((byte)(200 + twinkle), (byte)(200 + twinkle), 255, 255)
-                : new Color((byte)(baseCol + twinkle), (byte)(baseCol + twinkle), (byte)(180 + rand.Next(60)), 255);
-            Graphics.DrawPixel(x, y, color);
-        }
+        // Use enhanced galaxy background
+        _galaxyBackground.Draw();
     }
 
     private void DrawSectorBorders()

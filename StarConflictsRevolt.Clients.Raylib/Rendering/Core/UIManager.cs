@@ -125,24 +125,60 @@ public class UIManager
         }
     }
     
+    private readonly List<IUIElement> _modals = new();
+
+    public void ShowModal(IUIElement modal)
+    {
+        if (!_modals.Contains(modal))
+            _modals.Add(modal);
+    }
+
+    public void HideModal(IUIElement modal)
+    {
+        _modals.Remove(modal);
+    }
+
+    public void HideAllModals()
+    {
+        _modals.Clear();
+    }
+
     public void Update(float deltaTime)
     {
         // Update camera with smooth movement
         UpdateCamera(deltaTime);
+        // Update modals (topmost first)
+        for (int i = _modals.Count - 1; i >= 0; i--)
+            _modals[i].Update(deltaTime, _inputState);
     }
-    
+
     public void Render()
     {
         // Set up camera for rendering
         _renderer.BeginMode2D();
-        
+
         // Render current view
         if (_currentView != null)
         {
             _currentView.Draw();
         }
-        
+
+        // Render modals (bottom to top)
+        foreach (var modal in _modals)
+            modal.Render(_renderer);
+
         _renderer.EndMode2D();
+    }
+
+    public bool HandleInput()
+    {
+        // Give modals first chance to handle input (topmost first)
+        for (int i = _modals.Count - 1; i >= 0; i--)
+        {
+            if (_modals[i].HandleInput(_inputState))
+                return true;
+        }
+        return false;
     }
     
     private void UpdateCamera(float deltaTime)

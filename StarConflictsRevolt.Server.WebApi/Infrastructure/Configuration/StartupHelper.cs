@@ -61,6 +61,7 @@ public static class StartupHelper
         builder.Services.AddScoped<IFleetCombatSimulator, FleetCombatSimulator>();
         builder.Services.AddScoped<IPlanetaryCombatSimulator, PlanetaryCombatSimulator>();
         builder.Services.AddScoped<IDeathStarRunSimulator, DeathStarRunSimulator>();
+        builder.Services.AddScoped<IDeathStarRunCombatService, DeathStarRunCombatService>();
         builder.Services.AddScoped<IMissionSimulator, MissionSimulator>();
         builder.Services.AddScoped<ITargetSelector, TargetSelector>();
         builder.Services.AddScoped<IAttackResolver, AttackResolver>();

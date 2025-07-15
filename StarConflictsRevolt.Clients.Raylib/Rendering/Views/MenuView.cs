@@ -37,9 +37,12 @@ public class MenuView(RenderContext renderContext, GameCommandService commandSer
 
     public GameView ViewType => GameView.Menu;
 
+    private readonly EnhancedGalaxyBackground _galaxyBackground = new();
+
     public void Draw()
     {
-        Graphics.ClearBackground(UIHelper.Colors.Background);
+        // Draw enhanced galaxy background
+        _galaxyBackground.Draw();
 
         // Draw title
         UIHelper.DrawText("Star Conflicts Revolt", 400, 50, UIHelper.FontSizes.Title, Color.White, true);
