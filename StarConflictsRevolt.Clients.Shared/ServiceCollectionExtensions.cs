@@ -4,6 +4,7 @@ using StarConflictsRevolt.Clients.Http.TODO.Shared.Authentication;
 using StarConflictsRevolt.Clients.Http.TODO.Shared.Communication;
 using StarConflictsRevolt.Clients.Http.TODO.Shared.Configuration;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Shared;
 
 namespace StarConflictsRevolt.Clients.Http.TODO.Shared;
 
@@ -32,6 +33,9 @@ public static class ServiceCollectionExtensions
 
         // Register shared configuration services
         builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
+        
+        // Register shared user info services
+        builder.Services.AddUserService();
         
         return builder;
     }

@@ -1,18 +1,17 @@
-﻿using System.DirectoryServices.AccountManagement;
+using System.DirectoryServices.AccountManagement;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 
-namespace StarConflictsRevolt.Clients.Raylib.Game.User;
+namespace StarConflictsRevolt.Clients.Shared;
 
-public record UserProfile
+public class UserProfileProvider : IUserProfileProvider
 {
-    public string UserId { get; init; } = string.Empty;
-    public string DisplayName { get; init; } = string.Empty;
-    public string UserName { get; init; } = string.Empty;
+    private UserProfile? _userProfile;
+    
+    public UserProfile GetUserProfile() => _userProfile ??= GetUserProfileInternal();
 
-    // Helper method to get Windows user profile
-    public static UserProfile GetUserProfile()
+    private static UserProfile GetUserProfileInternal()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return GetWindowsUserProfile();
