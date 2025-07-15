@@ -8,6 +8,8 @@ using Bliss.CSharp.Windowing;
 using Veldrid;
 using Bliss.CSharp.Transformations;
 using Bliss.CSharp.Colors;
+using StarConflictsRevolt.Clients.Bliss.Core;
+using StarConflictsRevolt.Clients.Bliss.Views;
 
 namespace StarConflictsRevolt.Clients.Bliss;
 
@@ -20,7 +22,8 @@ public class RenderLoopService : IDisposable
     private ImmediateRenderer _immediateRenderer = null!;
     private SpriteBatch _spriteBatch = null!;
     private PrimitiveBatch _primitiveBatch = null!;
-    private float _rotation = 0f;
+    private ViewManager _viewManager = null!;
+    private float _lastFrameTime = 0f;
     private bool _disposed = false;
 
     /// <inheritdoc />
@@ -59,7 +62,19 @@ public class RenderLoopService : IDisposable
         _spriteBatch = new SpriteBatch(_graphicsDevice, _window);
         _primitiveBatch = new PrimitiveBatch(_graphicsDevice, _window);
 
+        // Initialize view manager and register views
+        _viewManager = new ViewManager();
+        
+        var menuView = new MenuView();
+        menuView.ViewRequested += (viewName) => _viewManager.SwitchToView(viewName);
+        
+        _viewManager.RegisterView(menuView);
+        _viewManager.RegisterView(new GalaxyView());
+        _viewManager.RegisterView(new TacticalBattleView());
+
         // Main render loop - runs on the main thread
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        
         while (_window.Exists && !_disposed)
         {
             _window.PumpEvents(); // Process window events.
@@ -70,8 +85,16 @@ public class RenderLoopService : IDisposable
                 break; // Exit loop if the main window no longer exists.
             }
             
-            // Update rotation for animation
-            _rotation += 1f;
+            // Calculate delta time
+            var currentTime = stopwatch.ElapsedMilliseconds / 1000.0f;
+            var deltaTime = currentTime - _lastFrameTime;
+            _lastFrameTime = currentTime;
+            
+            // Handle input
+            HandleInput();
+            
+            // Update current view
+            _viewManager.CurrentView?.Update((float)deltaTime);
             
             // Render frame
             RenderFrame();
@@ -84,52 +107,63 @@ public class RenderLoopService : IDisposable
         
         _logger.LogInformation("Render loop ended");
     }
+    
+    private void HandleInput()
+    {
+        // Handle keyboard input for view switching
+        if (Input.IsKeyPressed(Keys.F1))
+        {
+            _viewManager.SwitchToView("Galaxy Overview");
+        }
+        else if (Input.IsKeyPressed(Keys.F2))
+        {
+            _viewManager.SwitchToView("Tactical Battle");
+        }
+        else if (Input.IsKeyPressed(Keys.Escape))
+        {
+            _viewManager.SwitchToView("Main Menu");
+        }
+        
+        // Handle menu navigation if current view is MenuView
+        if (_viewManager.CurrentView is MenuView menuView)
+        {
+            if (Input.IsKeyPressed(Keys.Up))
+            {
+                menuView.SelectPrevious();
+            }
+            else if (Input.IsKeyPressed(Keys.Down))
+            {
+                menuView.SelectNext();
+            }
+            else if (Input.IsKeyPressed(Keys.Enter))
+            {
+                menuView.ActivateSelected();
+            }
+        }
+    }
 
     private void RenderFrame()
     {
         _commandList.Begin();
         _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
-        _commandList.ClearColorTarget(0, new RgbaFloat(0.1f, 0.1f, 0.2f, 1.0f)); // Dark blue background
+        _commandList.ClearColorTarget(0, new RgbaFloat(0.05f, 0.05f, 0.1f, 1.0f)); // Dark space background
         // Only clear depth if the framebuffer has a depth target
         if (_graphicsDevice.SwapchainFramebuffer.OutputDescription.DepthAttachment != null)
         {
             _commandList.ClearDepthStencil(1.0f);
         }
 
-        // Draw some 3D objects using ImmediateRenderer
-        _immediateRenderer.DrawCube(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription, 
-            new Transform { Translation = new System.Numerics.Vector3(0, 0, 0) }, 
-            new System.Numerics.Vector3(1, 1, 1));
-        
-        _immediateRenderer.DrawSphere(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription, 
-            new Transform { Translation = new System.Numerics.Vector3(3, 0, 0) }, 
-            1, 20, 20);
-
-        // Draw 2D primitives using PrimitiveBatch
-        _primitiveBatch.Begin(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription);
-        
-        // Draw a rotating rectangle
-        _primitiveBatch.DrawFilledRectangle(
-            new global::Bliss.CSharp.Transformations.RectangleF(100, 100, 100, 100), 
-            origin: new System.Numerics.Vector2(50, 50), 
-            rotation: _rotation, 
-            color: global::Bliss.CSharp.Colors.Color.Green);
-        
-        // Draw a circle
-        _primitiveBatch.DrawFilledCircle(
-            new System.Numerics.Vector2(300, 200), 
-            50, 32, 0.5f, 
-            global::Bliss.CSharp.Colors.Color.Red);
-        
-        _primitiveBatch.End();
-
-        // Draw text using SpriteBatch
-        _spriteBatch.Begin(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription);
-        
-        // Note: We would need a font to draw text, but for now just draw without text
-        // _spriteBatch.DrawText(font, "Hello Bliss!", new System.Numerics.Vector2(10, 10), 24);
-        
-        _spriteBatch.End();
+        // Render the current view
+        if (_viewManager.CurrentView != null)
+        {
+            _viewManager.CurrentView.Render(
+                _immediateRenderer,
+                _primitiveBatch,
+                _spriteBatch,
+                _commandList,
+                _graphicsDevice.SwapchainFramebuffer
+            );
+        }
 
         _commandList.End();
         _graphicsDevice.SubmitCommands(_commandList);
