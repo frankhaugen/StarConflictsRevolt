@@ -1,8 +1,8 @@
 using System.Text.Json;
-using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Communication;
+namespace StarConflictsRevolt.Clients.Shared.Communication;
 
 /// <summary>
 /// Shared Game API extensions that can be used by both Raylib and Bliss clients.

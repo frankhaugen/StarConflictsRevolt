@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Shared.User;
 
 public class UserProfileProvider : IUserProfileProvider
 {

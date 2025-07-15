@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StarConflictsRevolt.Clients.Http.Authentication;
-using StarConflictsRevolt.Clients.Http.Configuration;
-using StarConflictsRevolt.Clients.Http.Http;
+using StarConflictsRevolt.Clients.Shared.Authentication.Configuration;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 
-namespace StarConflictsRevolt.Clients.Http;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 public static class ServiceCollectionExtensions
 {

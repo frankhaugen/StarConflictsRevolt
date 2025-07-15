@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StarConflictsRevolt.Clients.Http.TODO.Shared.Authentication;
-using StarConflictsRevolt.Clients.Http.TODO.Shared.Communication;
-using StarConflictsRevolt.Clients.Http.TODO.Shared.Configuration;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Shared;
+using StarConflictsRevolt.Clients.Shared.Authentication;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using StarConflictsRevolt.Clients.Shared.Configuration;
+using StarConflictsRevolt.Clients.Shared.User;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared;
+namespace StarConflictsRevolt.Clients.Shared;
 
 /// <summary>
 /// Shared service collection extensions that can be used by both Raylib and Bliss clients.

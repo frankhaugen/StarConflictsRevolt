@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Communication;
+namespace StarConflictsRevolt.Clients.Shared.Communication;
 
 /// <summary>
 /// Shared SignalR service implementation that can be used by both Raylib and Bliss clients.

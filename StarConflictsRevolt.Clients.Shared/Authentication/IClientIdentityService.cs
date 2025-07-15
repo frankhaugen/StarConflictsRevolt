@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Authentication;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 /// <summary>
 /// Generic interface for client identity service that can be used by both Raylib and Bliss clients.

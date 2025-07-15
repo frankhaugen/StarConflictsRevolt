@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Authentication;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 /// <summary>
 /// Generic client identity service implementation that can be used by both Raylib and Bliss clients.

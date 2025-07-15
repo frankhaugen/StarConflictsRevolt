@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Http.Configuration;
+namespace StarConflictsRevolt.Clients.Shared.Authentication.Configuration;
 
 public class TokenProviderOptions
 {

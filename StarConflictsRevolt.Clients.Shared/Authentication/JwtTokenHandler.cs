@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 
-namespace StarConflictsRevolt.Clients.Http.Authentication;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 public class JwtTokenHandler : DelegatingHandler
 {

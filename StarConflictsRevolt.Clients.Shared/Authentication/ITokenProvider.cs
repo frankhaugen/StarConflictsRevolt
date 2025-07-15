@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Http.Authentication;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 public interface ITokenProvider
 {

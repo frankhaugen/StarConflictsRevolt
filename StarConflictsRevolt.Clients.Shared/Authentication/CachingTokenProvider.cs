@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using StarConflictsRevolt.Clients.Http.Configuration;
 using StarConflictsRevolt.Clients.Models.Authentication;
+using StarConflictsRevolt.Clients.Shared.Authentication.Configuration;
 
-namespace StarConflictsRevolt.Clients.Http.Authentication;
+namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
 public class CachingTokenProvider(
     IHttpClientFactory httpClientFactory,

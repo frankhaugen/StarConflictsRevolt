@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Shared;
+namespace StarConflictsRevolt.Clients.Shared.User;
 
 public interface IUserProfileProvider
 {

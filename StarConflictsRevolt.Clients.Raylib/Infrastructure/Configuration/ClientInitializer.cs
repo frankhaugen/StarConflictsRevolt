@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using StarConflictsRevolt.Clients.Http.Authentication;
 using StarConflictsRevolt.Clients.Raylib.Core;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication;
+using StarConflictsRevolt.Clients.Shared.Authentication;
+using IClientIdentityService = StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication.IClientIdentityService;
 
 namespace StarConflictsRevolt.Clients.Raylib.Infrastructure.Configuration;
 

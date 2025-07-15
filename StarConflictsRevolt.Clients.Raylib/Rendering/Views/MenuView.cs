@@ -2,13 +2,13 @@ using Raylib_CSharp.Colors;
 using Raylib_CSharp.Interact;
 using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
-using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
 using StarConflictsRevolt.Clients.Raylib.Game.Commands;
 using StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
 using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 using StarConflictsRevolt.Clients.Raylib.Rendering.UI;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Views;
 

@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Communication;
+namespace StarConflictsRevolt.Clients.Shared.Communication;
 
 /// <summary>
 /// Generic interface for SignalR service that can be used by both Raylib and Bliss clients.

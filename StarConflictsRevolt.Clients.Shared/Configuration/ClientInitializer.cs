@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Clients.Http.Authentication;
-using StarConflictsRevolt.Clients.Http.TODO.Shared.Authentication;
+using StarConflictsRevolt.Clients.Shared.Authentication;
 
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Configuration;
+namespace StarConflictsRevolt.Clients.Shared.Configuration;
 
 /// <summary>
 /// Generic client initializer implementation that can be used by both Raylib and Bliss clients.

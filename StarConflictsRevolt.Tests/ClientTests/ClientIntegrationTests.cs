@@ -3,8 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models.Authentication;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ClientTests;

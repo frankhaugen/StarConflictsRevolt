@@ -1,4 +1,3 @@
-using StarConflictsRevolt.Clients.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
 using StarConflictsRevolt.Clients.Raylib.Game.Commands;
@@ -29,7 +28,7 @@ public static class ServiceCollectionExtensions
         });
 
         // Configure HTTP client with the new standardized library
-        services.AddStarConflictsHttpClients(configuration, "GameApi", client =>
+        Shared.Authentication.ServiceCollectionExtensions.AddStarConflictsHttpClients(services, configuration, "GameApi", client =>
         {
             var apiUrl = configuration.GetValue<string>("GameClientConfiguration:ApiUrl");
             client.BaseAddress = new Uri("http://webapi");

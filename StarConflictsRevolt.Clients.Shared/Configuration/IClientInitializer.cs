@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Http.TODO.Shared.Configuration;
+namespace StarConflictsRevolt.Clients.Shared.Configuration;
 
 /// <summary>
 /// Generic interface for client initializer that can be used by both Raylib and Bliss clients.

@@ -12,8 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
-using StarConflictsRevolt.Clients.Http;
-using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
 using StarConflictsRevolt.Clients.Raylib.Game.Commands;
@@ -33,7 +31,9 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 using Frank.PulseFlow;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
+using ServiceCollectionExtensions = StarConflictsRevolt.Clients.Shared.Authentication.ServiceCollectionExtensions;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -53,7 +53,7 @@ public class TestHostApplication : IDisposable
 
         // Add client services
         // Configure HTTP client with the new standardized library
-        builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", client => { client.BaseAddress = new Uri("http://127.0.0.1:" + Port); });
+        ServiceCollectionExtensions.AddStarConflictsHttpClients(builder.Services, builder.Configuration, "GameApi", client => { client.BaseAddress = new Uri("http://127.0.0.1:" + Port); });
 
         if (includeClientServices)
         {

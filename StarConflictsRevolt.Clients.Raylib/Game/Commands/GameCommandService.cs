@@ -1,7 +1,7 @@
-using StarConflictsRevolt.Clients.Http.Http;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Raylib.Core;
 using StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
+using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 
 namespace StarConflictsRevolt.Clients.Raylib.Game.Commands;
 
