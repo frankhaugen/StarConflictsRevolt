@@ -44,31 +44,43 @@ public class SimpleTextRenderer : IDisposable
                 return _cachedFont;
             }
             
-            // Try to load Windows Arial font from system fonts directory
-            try 
-            { 
-                _cachedFont = new Font("C:\\Windows\\Fonts\\arial.ttf"); 
-                Console.WriteLine("Successfully loaded Arial font from Windows Fonts directory");
-                return _cachedFont;
-            } 
-            catch (Exception ex) 
-            { 
-                Console.WriteLine($"Failed to load Arial from Windows Fonts: {ex.Message}");
+            // Try multiple font paths in order of preference
+            var fontPaths = new[]
+            {
+                "C:\\Windows\\Fonts\\arial.ttf",
+                "C:\\Windows\\Fonts\\calibri.ttf",
+                "C:\\Windows\\Fonts\\tahoma.ttf",
+                "C:\\Windows\\Fonts\\verdana.ttf",
+                "C:\\Windows\\Fonts\\segoeui.ttf"
+            };
+            
+            foreach (var fontPath in fontPaths)
+            {
+                try 
+                { 
+                    _cachedFont = new Font(fontPath); 
+                    Console.WriteLine($"Successfully loaded font: {fontPath}");
+                    return _cachedFont;
+                } 
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine($"Failed to load font {fontPath}: {ex.Message}");
+                }
             }
             
-            // Try alternative system font paths
-            try 
-            { 
-                _cachedFont = new Font("C:\\Windows\\Fonts\\calibri.ttf"); 
-                Console.WriteLine("Successfully loaded Calibri font as fallback");
+            // If all system fonts fail, try to create a default font
+            try
+            {
+                // Try to create a font with a simple path that might exist
+                _cachedFont = new Font("arial");
+                Console.WriteLine("Created default font as fallback");
                 return _cachedFont;
-            } 
-            catch (Exception ex) 
-            { 
-                Console.WriteLine($"Failed to load Calibri: {ex.Message}");
             }
-            
-            return null!;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to create default font: {ex.Message}");
+                return null!;
+            }
         }
     }
     
@@ -83,7 +95,7 @@ public class SimpleTextRenderer : IDisposable
             
             if (font == null)
             {
-                Console.WriteLine("Warning: Could not load any system font, using fallback");
+                Console.WriteLine("Warning: Could not load any font, text will not be rendered");
                 return;
             }
             
@@ -98,7 +110,32 @@ public class SimpleTextRenderer : IDisposable
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Error rendering text '{text}': {ex.Message}");
             // Fallback to simple rectangle representation
+        }
+    }
+    
+    /// <summary>
+    /// Draw text at a specific position.
+    /// </summary>
+    public void DrawText(string text, Vector2 position, SpriteBatch spriteBatch, string fontName, float fontSize, Color color)
+    {
+        try
+        {
+            var font = GetOrCreateFont();
+            
+            if (font == null)
+            {
+                Console.WriteLine("Warning: Could not load any font, text will not be rendered");
+                return;
+            }
+            
+            // Draw text using SpriteBatch
+            spriteBatch.DrawText(font, text, position, fontSize, color: color, layerDepth: 1.5f);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rendering text '{text}': {ex.Message}");
         }
     }
     

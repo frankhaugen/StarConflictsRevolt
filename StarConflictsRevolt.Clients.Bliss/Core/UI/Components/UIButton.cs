@@ -19,6 +19,7 @@ public class UIButton : UIComponent
     private readonly string _text;
     private readonly Action _onClick;
     private readonly RectangleF _bounds;
+    private readonly SimpleTextRenderer _textRenderer;
     private bool _isHovered;
     private bool _isSelected;
     private float _animationTime;
@@ -33,12 +34,13 @@ public class UIButton : UIComponent
     
     public event Action<UIButton>? Clicked;
     
-    public UIButton(IInputHandler inputHandler, string text, RectangleF bounds, Action onClick)
+    public UIButton(IInputHandler inputHandler, string text, RectangleF bounds, Action onClick, SimpleTextRenderer textRenderer)
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _text = text ?? throw new ArgumentNullException(nameof(text));
         _bounds = bounds;
         _onClick = onClick ?? throw new ArgumentNullException(nameof(onClick));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
     }
     
     public void Update(float deltaTime)
@@ -95,7 +97,7 @@ public class UIButton : UIComponent
         
         primitiveBatch.End();
         
-        // Draw text using sprite batch
+        // Draw text using SimpleTextRenderer
         DrawButtonText(spriteBatch, textColor);
     }
     
@@ -184,24 +186,7 @@ public class UIButton : UIComponent
     
     private void DrawButtonText(SpriteBatch spriteBatch, Color textColor)
     {
-        // Calculate text position (centered in button)
-        var textPosition = new Vector2(
-            _bounds.X + _bounds.Width / 2f,
-            _bounds.Y + _bounds.Height / 2f
-        );
-        
-        // Draw text centered in the button
-        try
-        {
-            // Try to use the Galaxy font if available
-            var font = new Font("Assets/Fonts/Galaxy.ttf");
-            var fontSize = 20f;
-            spriteBatch.DrawText(font, _text, textPosition, fontSize, color: textColor);
-            font.Dispose();
-        }
-        catch
-        {
-            // Fallback: do nothing
-        }
+        // Draw text centered in the button using SimpleTextRenderer
+        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor);
     }
 } 

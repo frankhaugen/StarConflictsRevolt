@@ -45,13 +45,7 @@ public class InputHandler : IInputHandler
     
     public bool IsLeftMousePressed()
     {
-        var isPressed = Input.IsMouseButtonPressed(MouseButton.Left);
-        if (isPressed)
-        {
-            var mousePos = Input.GetMousePosition();
-            Console.WriteLine($"Mouse left button pressed at position: {mousePos}");
-        }
-        return isPressed;
+        return Input.IsMouseButtonPressed(MouseButton.Left);
     }
     
     public bool IsRightMousePressed()
@@ -76,7 +70,7 @@ public class InputHandler : IInputHandler
             KeyboardKey.Up, KeyboardKey.Down, KeyboardKey.Left, KeyboardKey.Right,
             KeyboardKey.Enter, KeyboardKey.Escape, KeyboardKey.Tab,
             KeyboardKey.F1, KeyboardKey.F2, KeyboardKey.F3, KeyboardKey.F12,
-            KeyboardKey.ShiftLeft, KeyboardKey.ControlLeft
+            KeyboardKey.ShiftLeft, KeyboardKey.ControlLeft, KeyboardKey.D
         };
         
         foreach (var key in keysToTrack)

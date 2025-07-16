@@ -77,7 +77,7 @@ public class LandingScreen : BaseScreen
         // Draw title panel background (behind text)
         DrawTitlePanel(primitiveBatch, commandList, framebuffer);
         
-        // Draw menu buttons (backgrounds and borders)
+        // Draw menu buttons (backgrounds, borders, and text)
         DrawMenuButtons(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
         
         // Draw user info (on top)
@@ -92,9 +92,8 @@ public class LandingScreen : BaseScreen
             DrawDebugModeOption(primitiveBatch, commandList, framebuffer);
         }
         
-        // Draw ALL text last (on top of everything)
+        // Draw title text last (on top of everything)
         DrawTitleText(spriteBatch, commandList, framebuffer);
-        DrawButtonText(spriteBatch, commandList, framebuffer);
     }
     
     public override void HandleInput()
@@ -361,43 +360,7 @@ public class LandingScreen : BaseScreen
             spriteBatch, "Default", subtitleFontSize, Color.LightGray);
     }
     
-    private void DrawButtonText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
-    {
-        var buttonSpacing = _scalingService.ScaleFontSize(80f);
-        var startY = _scalingService.ScaleFontSize(400f);
-        var scaledFontSize = _scalingService.ScaleFontSize(24f);
-        
-        for (int i = 0; i < _buttons.Count; i++)
-        {
-            var button = _buttons[i];
-            var buttonY = startY + (i * buttonSpacing);
-            
-            // Calculate button bounds for text positioning
-            var buttonBounds = new RectangleF(
-                _scalingService.CenterHorizontally(400f),
-                buttonY,
-                400f,
-                60f
-            );
-            var scaledButtonBounds = _scalingService.ScaleRectangle(buttonBounds);
-            
-            Console.WriteLine($"Drawing button text: '{button.Text}' at bounds {scaledButtonBounds}");
-            
-            // Draw button text using system default font
-            _textRenderer.DrawTextCentered(button.Text, 
-                scaledButtonBounds, 
-                spriteBatch, "Default", scaledFontSize, Color.White);
-        }
-    }
+
     
-    private Color GetButtonTextColor(SimpleButton button)
-    {
-        if (!button.IsEnabled)
-            return new Color(128, 128, 128, 255);
-            
-        if (button.IsSelected || button.IsHovered)
-            return Color.White;
-            
-        return new Color(200, 200, 200, 255);
-    }
+
 } 

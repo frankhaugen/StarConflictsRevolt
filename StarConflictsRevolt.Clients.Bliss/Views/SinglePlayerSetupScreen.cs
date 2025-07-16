@@ -21,6 +21,7 @@ public class SinglePlayerSetupScreen : BaseScreen
 {
     private readonly IInputHandler _inputHandler;
     private readonly IPlayerProfileProvider _playerProfileProvider;
+    private readonly SimpleTextRenderer _textRenderer;
     private readonly List<UIButton> _buttons = new();
     private readonly List<UIComponent> _inputFields = new();
     private int _selectedComponentIndex = 0;
@@ -28,11 +29,12 @@ public class SinglePlayerSetupScreen : BaseScreen
     private string _errorMessage = "";
     private bool _hasError = false;
     
-    public SinglePlayerSetupScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider) 
+    public SinglePlayerSetupScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, SimpleTextRenderer textRenderer) 
         : base("single-player-setup", "START NEW SINGLE PLAYER GAME")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
         
         InitializeComponents();
     }
@@ -141,7 +143,7 @@ public class SinglePlayerSetupScreen : BaseScreen
                 componentHeight
             );
             
-            var button = new UIButton(_inputHandler, text, bounds, action);
+            var button = new UIButton(_inputHandler, text, bounds, action, _textRenderer);
             _buttons.Add(button);
         }
     }

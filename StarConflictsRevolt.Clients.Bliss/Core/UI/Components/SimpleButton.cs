@@ -63,6 +63,7 @@ public class SimpleButton : UIComponent
         // Determine button colors based on state
         var bgColor = GetBackgroundColor();
         var borderColor = GetBorderColor();
+        var textColor = GetTextColor();
         
         // Draw button background
         primitiveBatch.DrawFilledRectangle(_bounds, Vector2.Zero, 0f, 0.4f, bgColor);
@@ -85,7 +86,8 @@ public class SimpleButton : UIComponent
             DrawHoverEffect(primitiveBatch);
         }
         
-        // Note: Text will be drawn separately by the screen to ensure proper z-ordering
+        // Draw button text
+        DrawButtonText(spriteBatch, textColor);
     }
     
     public void SetSelected(bool selected)
@@ -168,5 +170,17 @@ public class SimpleButton : UIComponent
             _bounds.Width + 10, _bounds.Height + 10);
         primitiveBatch.DrawFilledRectangle(
             glowRect, Vector2.Zero, 0f, 0.48f, new Color(102, 102, 153, 51));
+    }
+    
+    private void DrawButtonText(SpriteBatch spriteBatch, Color textColor)
+    {
+        // Calculate text position (centered in button)
+        var textPosition = new Vector2(
+            _bounds.X + _bounds.Width / 2f,
+            _bounds.Y + _bounds.Height / 2f
+        );
+        
+        // Draw text centered in the button
+        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor);
     }
 } 

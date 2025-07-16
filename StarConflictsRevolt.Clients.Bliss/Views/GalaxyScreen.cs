@@ -18,13 +18,15 @@ namespace StarConflictsRevolt.Clients.Bliss.Views;
 public class GalaxyScreen : BaseScreen
 {
     private readonly IInputHandler _inputHandler;
+    private readonly SimpleTextRenderer _textRenderer;
     private readonly List<UIButton> _buttons = new();
     private float _time = 0f;
     
-    public GalaxyScreen(IInputHandler inputHandler) 
+    public GalaxyScreen(IInputHandler inputHandler, SimpleTextRenderer textRenderer) 
         : base("galaxy", "GALAXY VIEW")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
         
         InitializeButtons();
     }
@@ -95,7 +97,7 @@ public class GalaxyScreen : BaseScreen
                 buttonHeight
             );
             
-            var button = new UIButton(_inputHandler, text, bounds, action);
+            var button = new UIButton(_inputHandler, text, bounds, action, _textRenderer);
             _buttons.Add(button);
         }
     }
