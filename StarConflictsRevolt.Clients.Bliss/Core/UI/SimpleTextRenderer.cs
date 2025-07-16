@@ -79,13 +79,11 @@ public class SimpleTextRenderer : IDisposable
     {
         try
         {
-            
             var font = GetOrCreateFont();
             
             if (font == null)
             {
                 Console.WriteLine("Warning: Could not load any system font, using fallback");
-                DrawTextCenteredFallback(text, bounds, null, fontName, fontSize, color);
                 return;
             }
             
@@ -96,38 +94,14 @@ public class SimpleTextRenderer : IDisposable
             var textY = bounds.Y + (bounds.Height - textSize.Y) / 2;
             
             // Draw text using SpriteBatch
-            spriteBatch.DrawText(font, text, new Vector2(textX, textY), fontSize, color: color);
+            spriteBatch.DrawText(font, text, new Vector2(textX, textY), fontSize, color: color, layerDepth: 1.5f);
         }
         catch (Exception ex)
         {
             // Fallback to simple rectangle representation
-            DrawTextCenteredFallback(text, bounds, null, fontName, fontSize, color);
         }
     }
     
-    /// <summary>
-    /// Fallback text rendering using simple colored rectangles.
-    /// This is a temporary solution while we debug the text rendering pipeline.
-    /// </summary>
-    public void DrawTextCenteredFallback(string text, RectangleF bounds, PrimitiveBatch primitiveBatch, string fontName, float fontSize, Color color)
-    {
-        
-        // Draw a simple colored rectangle to represent the text
-        var textRect = new RectangleF(
-            bounds.X + bounds.Width * 0.1f,  // 10% margin from left
-            bounds.Y + bounds.Height * 0.3f, // 30% margin from top
-            bounds.Width * 0.8f,             // 80% of bounds width
-            bounds.Height * 0.4f);           // 40% of bounds height
-        
-        // Use a bright color to make it visible
-        var fallbackColor = new Color(255, 255, 255, 255); // White
-        
-        if (primitiveBatch != null)
-        {
-            primitiveBatch.DrawFilledRectangle(textRect, Vector2.Zero, 0f, 0.9f, fallbackColor);
-        }
-    }
-
     public void Dispose()
     {
         if (_disposed)

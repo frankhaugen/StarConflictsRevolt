@@ -294,18 +294,16 @@ public class LandingScreen : BaseScreen
     private void DrawUserInfo(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
         var playerName = _playerProfileProvider.GetPlayerProfile()?.Name ?? "Unknown Player";
-        if (!string.IsNullOrEmpty(playerName))
-        {
-                    // Draw user info panel
+        if (string.IsNullOrEmpty(playerName)) return;
+        
         var baseUserPanel = new RectangleF(50f, 50f, 300f, 40f);
         var scaledUserPanel = _scalingService.ScaleRectangle(baseUserPanel);
         primitiveBatch.DrawFilledRectangle(
             scaledUserPanel, 
             Vector2.Zero, 
             0f, 
-            0.35f, // Above title panel but below text
+            1.5f, // On top of everything
             new Color(26, 26, 51, 153));
-        }
     }
     
     private void DrawNavigationInstructions(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
@@ -317,7 +315,7 @@ public class LandingScreen : BaseScreen
             scaledInstructionsPanel, 
             Vector2.Zero, 
             0f, 
-            0.35f, // Above title panel but below text
+            0.01f, // Above title panel but below text
             new Color(26, 26, 51, 153));
     }
     
@@ -330,7 +328,7 @@ public class LandingScreen : BaseScreen
             scaledDebugPanel, 
             Vector2.Zero, 
             0f, 
-            0.35f, // Above title panel but below text
+            0.01f, // Above title panel but below text
             new Color(102, 26, 26, 153));
     }
     
