@@ -1,6 +1,9 @@
+using Bliss.CSharp;
 using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
+using Bliss.CSharp.Interact;
+using Bliss.CSharp.Interact.Contexts;
 using Bliss.CSharp.Windowing;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using Veldrid;
@@ -34,6 +37,19 @@ public class UIRenderLoopService
         _screenManager = screenManager ?? throw new ArgumentNullException(nameof(screenManager));
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         
+        // Initialize Bliss global resources
+        GlobalResource.Init(graphicsDevice);
+        
+        // Initialize input system
+        if (_window is Sdl3Window)
+        {
+            Input.Init(new Sdl3InputContext(_window));
+        }
+        else
+        {
+            throw new Exception("This type of window is not supported by the InputContext!");
+        }
+        
         // Initialize rendering components
         _immediateRenderer = new ImmediateRenderer(graphicsDevice);
         _primitiveBatch = new PrimitiveBatch(graphicsDevice, window, 1000);
@@ -50,6 +66,9 @@ public class UIRenderLoopService
         
         while (_isRunning && _window.Exists)
         {
+            _window.PumpEvents(); // Process window events
+            Input.Begin(); // Start input processing
+            
             // Update input handler
             _inputHandler.Update();
             
@@ -62,8 +81,7 @@ public class UIRenderLoopService
             // Render current screen
             Render();
             
-            // Process window events
-            _window.PumpEvents();
+            Input.End(); // End input processing
         }
     }
     
@@ -99,5 +117,6 @@ public class UIRenderLoopService
         _spriteBatch?.Dispose();
         _primitiveBatch?.Dispose();
         _immediateRenderer?.Dispose();
+        GlobalResource.Destroy();
     }
 } 
