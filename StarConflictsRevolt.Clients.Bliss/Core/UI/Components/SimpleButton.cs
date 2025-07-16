@@ -66,13 +66,13 @@ public class SimpleButton : UIComponent
         var textColor = GetTextColor();
         
         // Draw button background
-        primitiveBatch.DrawFilledRectangle(_bounds, Vector2.Zero, 0f, 0.5f, bgColor);
+        primitiveBatch.DrawFilledRectangle(_bounds, Vector2.Zero, 0f, 0.7f, bgColor);
         
         // Draw button border
         var borderRect = new RectangleF(
             _bounds.X - 2, _bounds.Y - 2, 
             _bounds.Width + 4, _bounds.Height + 4);
-        primitiveBatch.DrawFilledRectangle(borderRect, Vector2.Zero, 0f, 0.5f, borderColor);
+        primitiveBatch.DrawFilledRectangle(borderRect, Vector2.Zero, 0f, 0.75f, borderColor);
         
         // Draw selection indicator if selected
         if (_isSelected)
@@ -154,12 +154,12 @@ public class SimpleButton : UIComponent
         
         primitiveBatch.DrawFilledTriangle(
             arrowPoints[0], arrowPoints[1], arrowPoints[2], 
-            0.5f, StarWarsTheme.EmpireAccent);
+            0.8f, StarWarsTheme.EmpireAccent);
         
         // Draw glow effect
         primitiveBatch.DrawFilledRectangle(
             new RectangleF(_bounds.X - 15, _bounds.Y + 5, 5, _bounds.Height - 10), 
-            Vector2.Zero, 0f, 0.5f, new Color(255, 51, 51, 77));
+            Vector2.Zero, 0f, 0.8f, new Color(255, 51, 51, 77));
     }
     
     private void DrawHoverEffect(PrimitiveBatch primitiveBatch)
@@ -169,6 +169,6 @@ public class SimpleButton : UIComponent
             _bounds.X - 5, _bounds.Y - 5, 
             _bounds.Width + 10, _bounds.Height + 10);
         primitiveBatch.DrawFilledRectangle(
-            glowRect, Vector2.Zero, 0f, 0.3f, new Color(102, 102, 153, 51));
+            glowRect, Vector2.Zero, 0f, 0.65f, new Color(102, 102, 153, 51));
     }
 } 

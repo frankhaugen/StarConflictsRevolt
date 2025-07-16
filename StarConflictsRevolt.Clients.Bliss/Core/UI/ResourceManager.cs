@@ -29,11 +29,11 @@ public class ResourceManager : IDisposable
     {
         _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
         _window = window ?? throw new ArgumentNullException(nameof(window));
-        InitializeResources();
+        // Don't initialize resources during construction - wait until first use
     }
     
     /// <summary>
-    /// Initializes resources after construction (for DI scenarios).
+    /// Initializes resources when first needed.
     /// </summary>
     public void Initialize()
     {
@@ -93,6 +93,12 @@ public class ResourceManager : IDisposable
         CommandList.Begin();
         CommandList.SetFramebuffer(framebuffer);
         CommandList.ClearColorTarget(0, new RgbaFloat(0, 0, 0, 1));
+        
+        // Begin the primitive batch for UI elements
+        PrimitiveBatch.Begin(CommandList, framebuffer.OutputDescription);
+        
+        // Begin the sprite batch for text rendering
+        SpriteBatch.Begin(CommandList, framebuffer.OutputDescription);
     }
     
     /// <summary>
@@ -101,6 +107,12 @@ public class ResourceManager : IDisposable
     public void EndFrame()
     {
         if (_disposed) throw new ObjectDisposedException(nameof(ResourceManager));
+        
+        // End the sprite batch
+        SpriteBatch.End();
+        
+        // End the primitive batch
+        PrimitiveBatch.End();
         
         CommandList.End();
         _graphicsDevice.SubmitCommands(CommandList);
@@ -114,16 +126,38 @@ public class ResourceManager : IDisposable
     {
         if (_disposed) return;
         
-        // Dispose existing resources
-        foreach (var resource in _managedResources)
+        try
         {
-            resource?.Dispose();
+            // Dispose existing resources safely
+            foreach (var resource in _managedResources)
+            {
+                try
+                {
+                    resource?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't crash - resource might already be disposed
+                    Console.WriteLine($"Warning: Error disposing resource: {ex.Message}");
+                }
+            }
+            _managedResources.Clear();
+            _fonts.Clear();
+            
+            // Reset properties to null
+            ImmediateRenderer = null!;
+            PrimitiveBatch = null!;
+            SpriteBatch = null!;
+            CommandList = null!;
+            
+            // Recreate resources
+            InitializeResources();
         }
-        _managedResources.Clear();
-        _fonts.Clear();
-        
-        // Recreate resources
-        InitializeResources();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error recreating resources: {ex.Message}");
+            // Don't rethrow - try to continue with existing resources
+        }
     }
     
     public void Dispose()

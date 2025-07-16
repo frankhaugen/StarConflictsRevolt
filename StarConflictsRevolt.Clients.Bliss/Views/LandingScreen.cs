@@ -70,25 +70,25 @@ public class LandingScreen : BaseScreen
                                CommandList commandList,
                                Framebuffer framebuffer)
     {
-        // Draw animated starfield background
+        // Draw animated starfield background (furthest back)
         DrawAnimatedStarfield(primitiveBatch, commandList, framebuffer);
         
-        // Draw title panel
+        // Draw title panel background (behind text)
         DrawTitlePanel(primitiveBatch, commandList, framebuffer);
         
-        // Draw title text
+        // Draw title text (on top of panel)
         DrawTitleText(spriteBatch, commandList, framebuffer);
         
-        // Draw menu buttons
+        // Draw menu buttons (on top of everything)
         DrawMenuButtons(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
         
-        // Draw user info
+        // Draw user info (on top)
         DrawUserInfo(primitiveBatch, commandList, framebuffer);
         
-        // Draw navigation instructions
+        // Draw navigation instructions (on top)
         DrawNavigationInstructions(primitiveBatch, commandList, framebuffer);
         
-        // Draw debug mode option if available
+        // Draw debug mode option if available (on top)
         if (_showDebugMode)
         {
             DrawDebugModeOption(primitiveBatch, commandList, framebuffer);
@@ -110,7 +110,7 @@ public class LandingScreen : BaseScreen
     
     private void InitializeButtons()
     {
-        var buttonWidth = 400f;
+        var buttonWidth = 500f; // Increased width to accommodate longer text
         var buttonHeight = 60f;
         var startY = 400f;
         var spacing = 80f;
@@ -198,8 +198,6 @@ public class LandingScreen : BaseScreen
     
     private void DrawAnimatedStarfield(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         var currentRes = _scalingService.CurrentResolution;
         
         // Draw animated stars
@@ -219,7 +217,7 @@ public class LandingScreen : BaseScreen
                 scaledPos, 
                 scaledSize, 
                 8, 
-                0.5f, 
+                0.1f, // Furthest back layer
                 color);
         }
         
@@ -239,17 +237,13 @@ public class LandingScreen : BaseScreen
                 scaledCenter, 
                 scaledRadius, 
                 32, 
-                0.1f, 
+                0.15f, // Slightly in front of stars
                 nebulaColor);
         }
-        
-        primitiveBatch.End();
     }
     
     private void DrawTitlePanel(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw title background panel - centered
         var baseTitlePanel = new RectangleF(_scalingService.CenterHorizontally(1120f), 100f, 1120f, 200f);
         var scaledTitlePanel = _scalingService.ScaleRectangle(baseTitlePanel);
@@ -257,7 +251,7 @@ public class LandingScreen : BaseScreen
             scaledTitlePanel, 
             Vector2.Zero, 
             0f, 
-            0.5f, 
+            0.3f, // Behind text but in front of background
             new Color(26, 26, 51, 204));
         
         // Draw title border
@@ -267,7 +261,7 @@ public class LandingScreen : BaseScreen
             scaledBorderRect, 
             Vector2.Zero, 
             0f, 
-            0.5f, 
+            0.35f, // Slightly in front of panel background
             StarWarsTheme.Border);
         
         // Draw subtitle line
@@ -280,10 +274,8 @@ public class LandingScreen : BaseScreen
             scaledLineStart, 
             scaledLineEnd, 
             scaledLineWidth, 
-            0.5f, 
+            0.4f, // In front of border
             StarWarsTheme.EmpireAccent);
-        
-        primitiveBatch.End();
     }
     
     private void DrawMenuButtons(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
@@ -299,26 +291,20 @@ public class LandingScreen : BaseScreen
         var playerName = _playerProfileProvider.GetPlayerProfile()?.Name ?? "Unknown Player";
         if (!string.IsNullOrEmpty(playerName))
         {
-            primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-            
-            // Draw user info panel
-            var baseUserPanel = new RectangleF(50f, 50f, 300f, 40f);
-            var scaledUserPanel = _scalingService.ScaleRectangle(baseUserPanel);
-            primitiveBatch.DrawFilledRectangle(
-                scaledUserPanel, 
-                Vector2.Zero, 
-                0f, 
-                0.5f, 
-                new Color(26, 26, 51, 153));
-            
-            primitiveBatch.End();
+                    // Draw user info panel
+        var baseUserPanel = new RectangleF(50f, 50f, 300f, 40f);
+        var scaledUserPanel = _scalingService.ScaleRectangle(baseUserPanel);
+        primitiveBatch.DrawFilledRectangle(
+            scaledUserPanel, 
+            Vector2.Zero, 
+            0f, 
+            0.6f, // On top of most elements
+            new Color(26, 26, 51, 153));
         }
     }
     
     private void DrawNavigationInstructions(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw instructions panel at bottom
         var baseInstructionsPanel = new RectangleF(50f, 1000f, 400f, 60f);
         var scaledInstructionsPanel = _scalingService.ScaleRectangle(baseInstructionsPanel);
@@ -326,16 +312,12 @@ public class LandingScreen : BaseScreen
             scaledInstructionsPanel, 
             Vector2.Zero, 
             0f, 
-            0.5f, 
+            0.6f, // On top of most elements
             new Color(26, 26, 51, 153));
-        
-        primitiveBatch.End();
     }
     
     private void DrawDebugModeOption(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw debug mode indicator
         var baseDebugPanel = new RectangleF(50f, 150f, 200f, 40f);
         var scaledDebugPanel = _scalingService.ScaleRectangle(baseDebugPanel);
@@ -343,27 +325,32 @@ public class LandingScreen : BaseScreen
             scaledDebugPanel, 
             Vector2.Zero, 
             0f, 
-            0.5f, 
+            0.6f, // On top of most elements
             new Color(102, 26, 26, 153));
-        
-        primitiveBatch.End();
     }
     
     private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
     {
         // Calculate title position (centered in title panel)
-        var baseTitlePos = new Vector2(_scalingService.CenterHorizontally(1120f) + 560f, 180f); // Center of title panel
-        var scaledTitlePos = _scalingService.ScalePosition(baseTitlePos);
+        var baseTitlePanel = new RectangleF(_scalingService.CenterHorizontally(1120f), 100f, 1120f, 200f);
+        var scaledTitlePanel = _scalingService.ScaleRectangle(baseTitlePanel);
         var scaledFontSize = _scalingService.ScaleFontSize(48f);
         
-        // Draw main title
-        _textRenderer.DrawText("STAR CONFLICTS: REVOLT", scaledTitlePos, "Galaxy", scaledFontSize, Color.White);
+        // Draw main title centered in the title panel
+        _textRenderer.DrawTextCentered("STAR CONFLICTS: REVOLT", 
+            scaledTitlePanel, 
+            spriteBatch, "Galaxy", scaledFontSize, Color.White);
         
-        // Draw subtitle
-        var baseSubtitlePos = new Vector2(_scalingService.CenterHorizontally(1120f) + 560f, 220f);
-        var scaledSubtitlePos = _scalingService.ScalePosition(baseSubtitlePos);
+        // Draw subtitle in a smaller area within the title panel
+        var subtitleBounds = new RectangleF(
+            scaledTitlePanel.X + scaledTitlePanel.Width * 0.1f,
+            scaledTitlePanel.Y + scaledTitlePanel.Height * 0.6f,
+            scaledTitlePanel.Width * 0.8f,
+            scaledTitlePanel.Height * 0.3f);
         var scaledSubtitleFontSize = _scalingService.ScaleFontSize(24f);
         
-        _textRenderer.DrawText("A New Hope Rises", scaledSubtitlePos, "Galaxy", scaledSubtitleFontSize, StarWarsTheme.EmpireAccent);
+        _textRenderer.DrawTextCentered("A New Hope Rises", 
+            subtitleBounds, 
+            spriteBatch, "Galaxy", scaledSubtitleFontSize, StarWarsTheme.EmpireAccent);
     }
 } 

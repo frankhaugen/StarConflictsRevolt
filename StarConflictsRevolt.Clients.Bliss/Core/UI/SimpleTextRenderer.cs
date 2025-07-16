@@ -32,12 +32,17 @@ public class SimpleTextRenderer
     {
         if (string.IsNullOrEmpty(text)) return;
         
+        // Ensure resources are initialized
+        _resourceManager.Initialize();
+        
         var font = _resourceManager.GetFont(fontName);
         if (font == null) return;
         
         var size = fontSize ?? _defaultFontSizes.GetValueOrDefault(fontName, 16f);
         var textColor = color ?? Color.White;
         
+        // Note: This method requires the SpriteBatch to be in the correct state
+        // Use DrawText(SpriteBatch spriteBatch, ...) instead for better control
         _resourceManager.SpriteBatch.DrawText(font, text, position, size, color: textColor);
     }
     
@@ -47,6 +52,9 @@ public class SimpleTextRenderer
     public void DrawTextCentered(string text, RectangleF bounds, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
     {
         if (string.IsNullOrEmpty(text)) return;
+        
+        // Ensure resources are initialized
+        _resourceManager.Initialize();
         
         var font = _resourceManager.GetFont(fontName);
         if (font == null) return;
@@ -70,6 +78,9 @@ public class SimpleTextRenderer
     {
         if (string.IsNullOrEmpty(text)) return;
         
+        // Ensure resources are initialized
+        _resourceManager.Initialize();
+        
         var font = _resourceManager.GetFont(fontName);
         if (font == null) return;
         
@@ -91,6 +102,9 @@ public class SimpleTextRenderer
     public void DrawTextAligned(string text, Vector2 position, TextAlignment alignment, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
     {
         if (string.IsNullOrEmpty(text)) return;
+        
+        // Ensure resources are initialized
+        _resourceManager.Initialize();
         
         var font = _resourceManager.GetFont(fontName);
         if (font == null) return;

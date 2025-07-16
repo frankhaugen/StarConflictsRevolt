@@ -66,6 +66,11 @@ public class SimpleRenderLoop : IDisposable
     
     public void Run()
     {
+        Console.WriteLine("Starting simplified render loop...");
+        
+        // Initialize resources before starting render loop
+        _resourceManager.Initialize();
+        
         _isRunning = true;
         
         while (_isRunning && _window.Exists)
@@ -74,6 +79,8 @@ public class SimpleRenderLoop : IDisposable
             Update();
             Render();
         }
+        
+        Console.WriteLine("Render loop ended.");
     }
     
     private void ProcessInput()
@@ -121,8 +128,8 @@ public class SimpleRenderLoop : IDisposable
         // Update scaling service
         _scalingService.UpdateResolution();
         
-        // Recreate resources if needed
-        _resourceManager.RecreateResources();
+        // Note: Resource recreation is not needed for simple UI scaling
+        // The scaling service handles coordinate transformation
     }
     
     public void Dispose()
