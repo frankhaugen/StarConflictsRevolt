@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using StarConflictsRevolt.Clients.Bliss.Views;
+using StarConflictsRevolt.Clients.Shared.Player;
 
 namespace StarConflictsRevolt.Clients.Bliss.Infrastructure.Configuration;
 
@@ -20,7 +21,7 @@ public static class ServiceCollectionExtensions
     {
         // Register core UI interfaces and implementations
         services.AddSingleton<IInputHandler, InputHandler>();
-        services.AddSingleton<IUserProfileProvider, UserProfileProvider>();
+        services.AddPlayerProfileProvider();
         services.AddSingleton<IScreenManager, ScreenManager>();
         
         // Register UI screens

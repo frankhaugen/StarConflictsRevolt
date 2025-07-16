@@ -12,6 +12,7 @@ using System.Numerics;
 using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
+using StarConflictsRevolt.Clients.Shared.Player;
 
 namespace StarConflictsRevolt.Clients.Bliss.Views;
 
@@ -22,17 +23,17 @@ namespace StarConflictsRevolt.Clients.Bliss.Views;
 public class LandingScreen : BaseScreen
 {
     private readonly IInputHandler _inputHandler;
-    private readonly IUserProfileProvider _userProfileProvider;
+    private readonly IPlayerProfileProvider _playerProfileProvider;
     private readonly List<UIButton> _buttons = new();
     private int _selectedButtonIndex = 0;
     private float _time = 0f;
     private bool _showDebugMode = false;
     
-    public LandingScreen(IInputHandler inputHandler, IUserProfileProvider userProfileProvider) 
+    public LandingScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider) 
         : base("landing", "STAR CONFLICTS: REVOLT")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
-        _userProfileProvider = userProfileProvider ?? throw new ArgumentNullException(nameof(userProfileProvider));
+        _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
         
         InitializeButtons();
     }
@@ -40,7 +41,7 @@ public class LandingScreen : BaseScreen
     public override void OnActivate()
     {
         base.OnActivate();
-        _userProfileProvider.LoadUserProfile();
+        _playerProfileProvider.LoadPlayerProfile();
         UpdateButtonSelection();
     }
     
@@ -269,8 +270,8 @@ public class LandingScreen : BaseScreen
     
     private void DrawUserInfo(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        var userName = _userProfileProvider.GetUserName();
-        if (!string.IsNullOrEmpty(userName))
+        var playerName = _playerProfileProvider.GetPlayerProfile()?.Name ?? "Unknown Player";
+        if (!string.IsNullOrEmpty(playerName))
         {
             primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
             

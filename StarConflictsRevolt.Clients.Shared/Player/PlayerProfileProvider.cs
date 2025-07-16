@@ -1,123 +1,110 @@
 using System.Text.Json;
-using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 
-namespace StarConflictsRevolt.Clients.Bliss.Core.UI;
+namespace StarConflictsRevolt.Clients.Shared.Player;
 
-/// <summary>
-/// Provides access to user profile information with file-based persistence.
-/// Follows the Single Responsibility Principle by focusing only on user profile management.
-/// </summary>
-public class UserProfileProvider : IUserProfileProvider
+public class PlayerProfileProvider : IPlayerProfileProvider
 {
-    private const string ProfileFileName = "user_profile.json";
-    private UserProfile? _currentProfile;
-    
-    private class UserProfile
+    private const string ProfileFileName = "player_profile.json";
+    private PlayerProfile? _currentProfile;
+
+    public PlayerProfile? GetPlayerProfile()
     {
-        public string Name { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastAccessed { get; set; }
+        return _currentProfile;
     }
-    
-    public string? GetUserName()
-    {
-        return _currentProfile?.Name;
-    }
-    
-    public void SetUserName(string name)
+
+    public void SetPlayerName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("User name cannot be null or empty.", nameof(name));
-            
+            throw new ArgumentException("Player name cannot be null or empty.", nameof(name));
+
         if (_currentProfile == null)
         {
-            CreateUserProfile(name);
+            CreatePlayerProfile(name);
         }
         else
         {
-            _currentProfile.Name = name;
-            _currentProfile.LastAccessed = DateTime.UtcNow;
-            SaveUserProfile();
+            _currentProfile = _currentProfile with { Name = name, LastAccessed = DateTime.UtcNow };
+            SavePlayerProfile();
         }
     }
-    
-    public bool HasUserProfile()
+
+    public bool HasPlayerProfile()
     {
         return _currentProfile != null;
     }
-    
-    public void CreateUserProfile(string name)
+
+    public void CreatePlayerProfile(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("User name cannot be null or empty.", nameof(name));
-            
-        _currentProfile = new UserProfile
+            throw new ArgumentException("Player name cannot be null or empty.", nameof(name));
+
+        _currentProfile = new PlayerProfile
         {
             Name = name,
             CreatedAt = DateTime.UtcNow,
             LastAccessed = DateTime.UtcNow
         };
-        
-        SaveUserProfile();
+
+        SavePlayerProfile();
     }
-    
-    public void SaveUserProfile()
+
+    public void SavePlayerProfile()
     {
         if (_currentProfile == null)
             return;
-            
+
         try
         {
             var json = JsonSerializer.Serialize(_currentProfile, new JsonSerializerOptions
             {
                 WriteIndented = true
             });
-            
+
             var profilePath = GetProfilePath();
             File.WriteAllText(profilePath, json);
         }
         catch (Exception ex)
         {
             // Log error but don't throw - profile saving is not critical for app functionality
-            Console.WriteLine($"Failed to save user profile: {ex.Message}");
+            Console.WriteLine($"Failed to save player profile: {ex.Message}");
         }
     }
-    
-    public void LoadUserProfile()
+
+    public void LoadPlayerProfile()
     {
         try
         {
             var profilePath = GetProfilePath();
             if (!File.Exists(profilePath))
                 return;
-                
+
             var json = File.ReadAllText(profilePath);
-            _currentProfile = JsonSerializer.Deserialize<UserProfile>(json);
-            
+            _currentProfile = JsonSerializer.Deserialize<PlayerProfile>(json);
+
             if (_currentProfile != null)
             {
-                _currentProfile.LastAccessed = DateTime.UtcNow;
+                _currentProfile = _currentProfile with { LastAccessed = DateTime.UtcNow };
             }
         }
         catch (Exception ex)
         {
             // Log error but don't throw - profile loading is not critical for app functionality
-            Console.WriteLine($"Failed to load user profile: {ex.Message}");
+            Console.WriteLine($"Failed to load player profile: {ex.Message}");
             _currentProfile = null;
         }
     }
-    
+
     private static string GetProfilePath()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var appFolder = Path.Combine(appDataPath, "StarConflictsRevolt");
-        
+
         // Ensure the directory exists
         if (!Directory.Exists(appFolder))
         {
             Directory.CreateDirectory(appFolder);
         }
-        
+
         return Path.Combine(appFolder, ProfileFileName);
     }
 } 

@@ -12,6 +12,7 @@ using System.Numerics;
 using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
+using StarConflictsRevolt.Clients.Shared.Player;
 
 namespace StarConflictsRevolt.Clients.Bliss.Views;
 
@@ -22,7 +23,7 @@ namespace StarConflictsRevolt.Clients.Bliss.Views;
 public class SinglePlayerSetupScreen : BaseScreen
 {
     private readonly IInputHandler _inputHandler;
-    private readonly IUserProfileProvider _userProfileProvider;
+    private readonly IPlayerProfileProvider _playerProfileProvider;
     private readonly List<UIButton> _buttons = new();
     private readonly List<UIComponent> _inputFields = new();
     private int _selectedComponentIndex = 0;
@@ -30,11 +31,11 @@ public class SinglePlayerSetupScreen : BaseScreen
     private string _errorMessage = "";
     private bool _hasError = false;
     
-    public SinglePlayerSetupScreen(IInputHandler inputHandler, IUserProfileProvider userProfileProvider) 
+    public SinglePlayerSetupScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider) 
         : base("single-player-setup", "START NEW SINGLE PLAYER GAME")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
-        _userProfileProvider = userProfileProvider ?? throw new ArgumentNullException(nameof(userProfileProvider));
+        _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
         
         InitializeComponents();
     }
@@ -44,10 +45,11 @@ public class SinglePlayerSetupScreen : BaseScreen
         base.OnActivate();
         
         // Pre-fill with default name or last used name
-        var userName = _userProfileProvider.GetUserName();
-        if (!string.IsNullOrEmpty(userName))
+        _playerProfileProvider.LoadPlayerProfile();
+        var playerName = _playerProfileProvider.GetPlayerProfile()?.Name;
+        if (!string.IsNullOrEmpty(playerName))
         {
-            _sessionName = $"{userName}'s Game";
+            _sessionName = $"{playerName}'s Game";
         }
         else
         {
