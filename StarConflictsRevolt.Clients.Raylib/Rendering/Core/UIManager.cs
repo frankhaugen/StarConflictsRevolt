@@ -1,9 +1,7 @@
 using System.Numerics;
-using Raylib_CSharp;
 using Raylib_CSharp.Colors;
 using Raylib_CSharp.Camera.Cam2D;
 using Raylib_CSharp.Interact;
-using Raylib_CSharp.Rendering;
 using Raylib_CSharp.Windowing;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;

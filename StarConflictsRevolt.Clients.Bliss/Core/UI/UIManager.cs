@@ -1,7 +1,6 @@
 using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
-using Bliss.CSharp.Transformations;
 using Bliss.CSharp.Interact;
 using Bliss.CSharp.Interact.Keyboards;
 using Veldrid;

@@ -13,8 +13,6 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.PulseFlow;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;

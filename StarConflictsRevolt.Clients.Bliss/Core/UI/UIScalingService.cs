@@ -1,6 +1,4 @@
-using Bliss.CSharp.Transformations;
 using Bliss.CSharp.Windowing;
-using System.Numerics;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
 
 namespace StarConflictsRevolt.Clients.Bliss.Core.UI;

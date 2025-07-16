@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace StarConflictsRevolt.Clients.Bliss.Core;
 
 /// <summary>

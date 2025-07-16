@@ -1,6 +1,5 @@
 using System.Numerics;
 using StarConflictsRevolt.Clients.Models;
-using System.Collections.Generic;
 
 namespace StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 

@@ -1,11 +1,8 @@
-using Bliss.CSharp.Colors;
 using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
-using Bliss.CSharp.Transformations;
 using StarConflictsRevolt.Clients.Bliss.Core;
 using StarConflictsRevolt.Clients.Bliss.Core.UI;
-using System.Numerics;
 using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
