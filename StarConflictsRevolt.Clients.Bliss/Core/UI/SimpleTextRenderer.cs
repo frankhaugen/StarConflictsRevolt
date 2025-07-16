@@ -1,4 +1,5 @@
 using Bliss.CSharp.Fonts;
+using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Transformations;
 using System.Numerics;
@@ -9,120 +10,135 @@ using RectangleF = Bliss.CSharp.Transformations.RectangleF;
 namespace StarConflictsRevolt.Clients.Bliss.Core.UI;
 
 /// <summary>
-/// Simplified text renderer that uses the ResourceManager.
+/// Simplified text renderer that uses system default fonts.
 /// Follows the Facade pattern to hide complexity.
 /// </summary>
-public class SimpleTextRenderer
+public class SimpleTextRenderer : IDisposable
 {
-    private readonly ResourceManager _resourceManager;
     private readonly Dictionary<string, float> _defaultFontSizes = new()
     {
-        ["Galaxy"] = 24f
+        ["Default"] = 24f
     };
     
-    public SimpleTextRenderer(ResourceManager resourceManager)
+    // Cache the loaded font to avoid recreation every frame
+    private Font? _cachedFont = null;
+    private readonly object _fontLock = new object();
+    private bool _disposed = false;
+    
+    public SimpleTextRenderer()
     {
-        _resourceManager = resourceManager ?? throw new ArgumentNullException(nameof(resourceManager));
+        // No custom font loading - use system defaults
     }
     
     /// <summary>
-    /// Draws text at the specified position.
+    /// Gets or creates a cached font instance.
     /// </summary>
-    public void DrawText(string text, Vector2 position, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
+    private Font GetOrCreateFont()
     {
-        if (string.IsNullOrEmpty(text)) return;
+        if (_cachedFont != null)
+        {
+            return _cachedFont;
+        }
         
-        // Ensure resources are initialized
-        _resourceManager.Initialize();
-        
-        var font = _resourceManager.GetFont(fontName);
-        if (font == null) return;
-        
-        var size = fontSize ?? _defaultFontSizes.GetValueOrDefault(fontName, 16f);
-        var textColor = color ?? Color.White;
-        
-        // Note: This method requires the SpriteBatch to be in the correct state
-        // Use DrawText(SpriteBatch spriteBatch, ...) instead for better control
-        _resourceManager.SpriteBatch.DrawText(font, text, position, size, color: textColor);
+        lock (_fontLock)
+        {
+            if (_cachedFont != null)
+            {
+                return _cachedFont;
+            }
+            
+            // Try to load Windows Arial font from system fonts directory
+            try 
+            { 
+                _cachedFont = new Font("C:\\Windows\\Fonts\\arial.ttf"); 
+                Console.WriteLine("Successfully loaded Arial font from Windows Fonts directory");
+                return _cachedFont;
+            } 
+            catch (Exception ex) 
+            { 
+                Console.WriteLine($"Failed to load Arial from Windows Fonts: {ex.Message}");
+            }
+            
+            // Try alternative system font paths
+            try 
+            { 
+                _cachedFont = new Font("C:\\Windows\\Fonts\\calibri.ttf"); 
+                Console.WriteLine("Successfully loaded Calibri font as fallback");
+                return _cachedFont;
+            } 
+            catch (Exception ex) 
+            { 
+                Console.WriteLine($"Failed to load Calibri: {ex.Message}");
+            }
+            
+            return null!;
+        }
     }
     
     /// <summary>
-    /// Draws text centered within a rectangle.
+    /// Draw text centered in the specified bounds using system default font.
     /// </summary>
-    public void DrawTextCentered(string text, RectangleF bounds, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
+    public void DrawTextCentered(string text, RectangleF bounds, SpriteBatch spriteBatch, string fontName, float fontSize, Color color)
     {
-        if (string.IsNullOrEmpty(text)) return;
-        
-        // Ensure resources are initialized
-        _resourceManager.Initialize();
-        
-        var font = _resourceManager.GetFont(fontName);
-        if (font == null) return;
-        
-        var size = fontSize ?? _defaultFontSizes.GetValueOrDefault(fontName, 16f);
-        var textColor = color ?? Color.White;
-        
-        // Calculate center position
-        var centerX = bounds.X + bounds.Width / 2f;
-        var centerY = bounds.Y + bounds.Height / 2f;
-        var centerPosition = new Vector2(centerX, centerY);
-        
-        // Use the current SpriteBatch from ResourceManager
-        _resourceManager.SpriteBatch.DrawText(font, text, centerPosition, size, color: textColor);
+        try
+        {
+            
+            var font = GetOrCreateFont();
+            
+            if (font == null)
+            {
+                Console.WriteLine("Warning: Could not load any system font, using fallback");
+                DrawTextCenteredFallback(text, bounds, null, fontName, fontSize, color);
+                return;
+            }
+            
+            // Calculate text position (centered)
+            var spriteFont = font.GetSpriteFont(fontSize);
+            var textSize = spriteFont.MeasureString(text);
+            var textX = bounds.X + (bounds.Width - textSize.X) / 2;
+            var textY = bounds.Y + (bounds.Height - textSize.Y) / 2;
+            
+            // Draw text using SpriteBatch
+            spriteBatch.DrawText(font, text, new Vector2(textX, textY), fontSize, color: color);
+        }
+        catch (Exception ex)
+        {
+            // Fallback to simple rectangle representation
+            DrawTextCenteredFallback(text, bounds, null, fontName, fontSize, color);
+        }
     }
     
     /// <summary>
-    /// Draws text centered within a rectangle using the provided SpriteBatch.
+    /// Fallback text rendering using simple colored rectangles.
+    /// This is a temporary solution while we debug the text rendering pipeline.
     /// </summary>
-    public void DrawTextCentered(string text, RectangleF bounds, SpriteBatch spriteBatch, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
+    public void DrawTextCenteredFallback(string text, RectangleF bounds, PrimitiveBatch primitiveBatch, string fontName, float fontSize, Color color)
     {
-        if (string.IsNullOrEmpty(text)) return;
         
-        // Ensure resources are initialized
-        _resourceManager.Initialize();
+        // Draw a simple colored rectangle to represent the text
+        var textRect = new RectangleF(
+            bounds.X + bounds.Width * 0.1f,  // 10% margin from left
+            bounds.Y + bounds.Height * 0.3f, // 30% margin from top
+            bounds.Width * 0.8f,             // 80% of bounds width
+            bounds.Height * 0.4f);           // 40% of bounds height
         
-        var font = _resourceManager.GetFont(fontName);
-        if (font == null) return;
+        // Use a bright color to make it visible
+        var fallbackColor = new Color(255, 255, 255, 255); // White
         
-        var size = fontSize ?? _defaultFontSizes.GetValueOrDefault(fontName, 16f);
-        var textColor = color ?? Color.White;
-        
-        // Calculate center position
-        var centerX = bounds.X + bounds.Width / 2f;
-        var centerY = bounds.Y + bounds.Height / 2f;
-        var centerPosition = new Vector2(centerX, centerY);
-        
-        // Use the provided SpriteBatch
-        spriteBatch.DrawText(font, text, centerPosition, size, color: textColor);
+        if (primitiveBatch != null)
+        {
+            primitiveBatch.DrawFilledRectangle(textRect, Vector2.Zero, 0f, 0.9f, fallbackColor);
+        }
     }
-    
-    /// <summary>
-    /// Draws text with custom alignment.
-    /// </summary>
-    public void DrawTextAligned(string text, Vector2 position, TextAlignment alignment, string fontName = "Galaxy", float? fontSize = null, Color? color = null)
-    {
-        if (string.IsNullOrEmpty(text)) return;
-        
-        // Ensure resources are initialized
-        _resourceManager.Initialize();
-        
-        var font = _resourceManager.GetFont(fontName);
-        if (font == null) return;
-        
-        var size = fontSize ?? _defaultFontSizes.GetValueOrDefault(fontName, 16f);
-        var textColor = color ?? Color.White;
-        
-        // For now, just draw at position - alignment can be added later if needed
-        _resourceManager.SpriteBatch.DrawText(font, text, position, size, color: textColor);
-    }
-}
 
-/// <summary>
-/// Text alignment options.
-/// </summary>
-public enum TextAlignment
-{
-    Left,
-    Center,
-    Right
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _cachedFont?.Dispose();
+        _disposed = true;
+    }
 } 

@@ -28,6 +28,13 @@ public class ScreenFactory : IScreenFactory
             
         try
         {
+            // Handle placeholder screens with specific parameters
+            if (screenType == typeof(StarConflictsRevolt.Clients.Bliss.Views.PlaceholderScreen))
+            {
+                var screenName = GetPlaceholderScreenName(screenId);
+                return (IScreen)ActivatorUtilities.CreateInstance(_serviceProvider, screenType, screenId, screenName);
+            }
+            
             return (IScreen)ActivatorUtilities.CreateInstance(_serviceProvider, screenType);
         }
         catch (Exception ex)
@@ -36,6 +43,18 @@ public class ScreenFactory : IScreenFactory
             Console.WriteLine($"Failed to create screen '{screenId}': {ex.Message}");
             return null;
         }
+    }
+    
+    private string GetPlaceholderScreenName(string screenId)
+    {
+        return screenId switch
+        {
+            "multiplayer-setup" => "Multiplayer Setup",
+            "join-game" => "Join Game",
+            "leaderboards" => "Leaderboards",
+            "debug-mode" => "Debug Mode",
+            _ => "Unknown Screen"
+        };
     }
     
     public IEnumerable<string> GetAvailableScreenIds()
@@ -51,11 +70,10 @@ public class ScreenFactory : IScreenFactory
         _screenTypes["single-player-setup"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.SinglePlayerSetupScreen);
         _screenTypes["galaxy"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.GalaxyScreen);
         
-        // Add more screen types as they are implemented
-        // _screenTypes["multiplayer-setup"] = typeof(MultiplayerSetupScreen);
-        // _screenTypes["join-game"] = typeof(JoinGameScreen);
-        // _screenTypes["leaderboards"] = typeof(LeaderboardsScreen);
-        // _screenTypes["galaxy"] = typeof(GalaxyScreen);
-        // _screenTypes["debug-mode"] = typeof(DebugModeScreen);
+        // Register placeholder screens for unimplemented features
+        _screenTypes["multiplayer-setup"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.PlaceholderScreen);
+        _screenTypes["join-game"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.PlaceholderScreen);
+        _screenTypes["leaderboards"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.PlaceholderScreen);
+        _screenTypes["debug-mode"] = typeof(StarConflictsRevolt.Clients.Bliss.Views.PlaceholderScreen);
     }
 } 

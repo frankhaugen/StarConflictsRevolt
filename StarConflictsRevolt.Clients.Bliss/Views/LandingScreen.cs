@@ -31,15 +31,19 @@ public class LandingScreen : BaseScreen
     private float _time = 0f;
     private bool _showDebugMode = false;
     
-    public LandingScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, 
-                        UIScalingService scalingService, SimpleTextRenderer textRenderer) 
+    public LandingScreen(
+        IInputHandler inputHandler,
+        UIScalingService scalingService,
+        SimpleTextRenderer textRenderer,
+        IPlayerProfileProvider playerProfileProvider)
         : base("landing", "STAR CONFLICTS: REVOLT")
     {
-        _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
-        _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
-        _scalingService = scalingService ?? throw new ArgumentNullException(nameof(scalingService));
-        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
+        _inputHandler = inputHandler;
+        _scalingService = scalingService;
+        _textRenderer = textRenderer;
+        _playerProfileProvider = playerProfileProvider;
         
+        // Initialize buttons
         InitializeButtons();
     }
     
@@ -61,7 +65,7 @@ public class LandingScreen : BaseScreen
             button.Update(deltaTime);
         }
         
-        HandleKeyboardInput();
+        // Debug output removed for cleaner console
     }
     
     public override void Render(ImmediateRenderer immediateRenderer,
@@ -76,10 +80,7 @@ public class LandingScreen : BaseScreen
         // Draw title panel background (behind text)
         DrawTitlePanel(primitiveBatch, commandList, framebuffer);
         
-        // Draw title text (on top of panel)
-        DrawTitleText(spriteBatch, commandList, framebuffer);
-        
-        // Draw menu buttons (on top of everything)
+        // Draw menu buttons (backgrounds and borders)
         DrawMenuButtons(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
         
         // Draw user info (on top)
@@ -93,6 +94,10 @@ public class LandingScreen : BaseScreen
         {
             DrawDebugModeOption(primitiveBatch, commandList, framebuffer);
         }
+        
+        // Draw ALL text last (on top of everything)
+        DrawTitleText(spriteBatch, commandList, framebuffer);
+        DrawButtonText(spriteBatch, commandList, framebuffer);
     }
     
     public override void HandleInput()
@@ -106,6 +111,9 @@ public class LandingScreen : BaseScreen
         {
             _showDebugMode = !_showDebugMode;
         }
+        
+        // Handle keyboard navigation
+        HandleKeyboardInput();
     }
     
     private void InitializeButtons()
@@ -118,11 +126,11 @@ public class LandingScreen : BaseScreen
         // Create buttons as specified in the document
         var buttonConfigs = new (string text, Action action)[]
         {
-            ("Start New Single Player Game", () => RequestNavigation("single-player-setup")),
-            ("Start New Multiplayer Game", () => RequestNavigation("multiplayer-setup")),
-            ("Join Existing Game", () => RequestNavigation("join-game")),
-            ("See Leaderboards", () => RequestNavigation("leaderboards")),
-            ("Exit", () => RequestExit())
+            ("Start New Single Player Game", () => { Console.WriteLine("Single Player button clicked"); RequestNavigation("single-player-setup"); }),
+            ("Start New Multiplayer Game", () => { Console.WriteLine("Multiplayer button clicked"); RequestNavigation("multiplayer-setup"); }),
+            ("Join Existing Game", () => { Console.WriteLine("Join Game button clicked"); RequestNavigation("join-game"); }),
+            ("See Leaderboards", () => { Console.WriteLine("Leaderboards button clicked"); RequestNavigation("leaderboards"); }),
+            ("Exit", () => { Console.WriteLine("Exit button clicked"); RequestExit(); })
         };
         
         for (int i = 0; i < buttonConfigs.Length; i++)
@@ -251,7 +259,7 @@ public class LandingScreen : BaseScreen
             scaledTitlePanel, 
             Vector2.Zero, 
             0f, 
-            0.3f, // Behind text but in front of background
+            0.2f, // Behind text but in front of background
             new Color(26, 26, 51, 204));
         
         // Draw title border
@@ -261,7 +269,7 @@ public class LandingScreen : BaseScreen
             scaledBorderRect, 
             Vector2.Zero, 
             0f, 
-            0.35f, // Slightly in front of panel background
+            0.25f, // Slightly in front of panel background
             StarWarsTheme.Border);
         
         // Draw subtitle line
@@ -274,7 +282,7 @@ public class LandingScreen : BaseScreen
             scaledLineStart, 
             scaledLineEnd, 
             scaledLineWidth, 
-            0.4f, // In front of border
+            0.3f, // In front of border
             StarWarsTheme.EmpireAccent);
     }
     
@@ -298,7 +306,7 @@ public class LandingScreen : BaseScreen
             scaledUserPanel, 
             Vector2.Zero, 
             0f, 
-            0.6f, // On top of most elements
+            0.35f, // Above title panel but below text
             new Color(26, 26, 51, 153));
         }
     }
@@ -312,7 +320,7 @@ public class LandingScreen : BaseScreen
             scaledInstructionsPanel, 
             Vector2.Zero, 
             0f, 
-            0.6f, // On top of most elements
+            0.35f, // Above title panel but below text
             new Color(26, 26, 51, 153));
     }
     
@@ -325,21 +333,25 @@ public class LandingScreen : BaseScreen
             scaledDebugPanel, 
             Vector2.Zero, 
             0f, 
-            0.6f, // On top of most elements
+            0.35f, // Above title panel but below text
             new Color(102, 26, 26, 153));
     }
     
     private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
     {
+        Console.WriteLine("DrawTitleText called");
+        
         // Calculate title position (centered in title panel)
         var baseTitlePanel = new RectangleF(_scalingService.CenterHorizontally(1120f), 100f, 1120f, 200f);
         var scaledTitlePanel = _scalingService.ScaleRectangle(baseTitlePanel);
         var scaledFontSize = _scalingService.ScaleFontSize(48f);
         
-        // Draw main title centered in the title panel
+        Console.WriteLine($"Title panel bounds: {scaledTitlePanel}, font size: {scaledFontSize}");
+        
+        // Draw main title centered in the title panel using fallback method
         _textRenderer.DrawTextCentered("STAR CONFLICTS: REVOLT", 
             scaledTitlePanel, 
-            spriteBatch, "Galaxy", scaledFontSize, Color.White);
+            spriteBatch, "Default", scaledFontSize, Color.White);
         
         // Draw subtitle in a smaller area within the title panel
         var subtitleBounds = new RectangleF(
@@ -347,10 +359,50 @@ public class LandingScreen : BaseScreen
             scaledTitlePanel.Y + scaledTitlePanel.Height * 0.6f,
             scaledTitlePanel.Width * 0.8f,
             scaledTitlePanel.Height * 0.3f);
-        var scaledSubtitleFontSize = _scalingService.ScaleFontSize(24f);
         
-        _textRenderer.DrawTextCentered("A New Hope Rises", 
+        var subtitleFontSize = _scalingService.ScaleFontSize(24f);
+        _textRenderer.DrawTextCentered("A New Hope Awaits", 
             subtitleBounds, 
-            spriteBatch, "Galaxy", scaledSubtitleFontSize, StarWarsTheme.EmpireAccent);
+            spriteBatch, "Default", subtitleFontSize, Color.LightGray);
+    }
+    
+    private void DrawButtonText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
+    {
+        var buttonSpacing = _scalingService.ScaleFontSize(80f);
+        var startY = _scalingService.ScaleFontSize(400f);
+        var scaledFontSize = _scalingService.ScaleFontSize(24f);
+        
+        for (int i = 0; i < _buttons.Count; i++)
+        {
+            var button = _buttons[i];
+            var buttonY = startY + (i * buttonSpacing);
+            
+            // Calculate button bounds for text positioning
+            var buttonBounds = new RectangleF(
+                _scalingService.CenterHorizontally(400f),
+                buttonY,
+                400f,
+                60f
+            );
+            var scaledButtonBounds = _scalingService.ScaleRectangle(buttonBounds);
+            
+            Console.WriteLine($"Drawing button text: '{button.Text}' at bounds {scaledButtonBounds}");
+            
+            // Draw button text using system default font
+            _textRenderer.DrawTextCentered(button.Text, 
+                scaledButtonBounds, 
+                spriteBatch, "Default", scaledFontSize, Color.White);
+        }
+    }
+    
+    private Color GetButtonTextColor(SimpleButton button)
+    {
+        if (!button.IsEnabled)
+            return new Color(128, 128, 128, 255);
+            
+        if (button.IsSelected || button.IsHovered)
+            return Color.White;
+            
+        return new Color(200, 200, 200, 255);
     }
 } 

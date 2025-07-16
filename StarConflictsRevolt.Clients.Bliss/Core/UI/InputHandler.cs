@@ -45,7 +45,13 @@ public class InputHandler : IInputHandler
     
     public bool IsLeftMousePressed()
     {
-        return Input.IsMouseButtonPressed(MouseButton.Left);
+        var isPressed = Input.IsMouseButtonPressed(MouseButton.Left);
+        if (isPressed)
+        {
+            var mousePos = Input.GetMousePosition();
+            Console.WriteLine($"Mouse left button pressed at position: {mousePos}");
+        }
+        return isPressed;
     }
     
     public bool IsRightMousePressed()

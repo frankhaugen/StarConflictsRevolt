@@ -42,12 +42,22 @@ public class ScreenManager : IScreenManager
     
     public bool NavigateTo(string screenId)
     {
+        Console.WriteLine($"Navigation requested to screen: '{screenId}'");
+        
         if (string.IsNullOrEmpty(screenId))
+        {
+            Console.WriteLine("Navigation failed: screenId is null or empty");
             return false;
+        }
             
         if (!_screens.TryGetValue(screenId, out var screen))
+        {
+            Console.WriteLine($"Navigation failed: screen '{screenId}' not found. Available screens: {string.Join(", ", _screens.Keys)}");
             return false;
-            
+        }
+        
+        Console.WriteLine($"Navigation successful: switching from '{_currentScreen?.ScreenId}' to '{screenId}'");
+        
         // Deactivate current screen
         if (_currentScreen != null)
         {

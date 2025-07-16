@@ -9,6 +9,16 @@ using Veldrid;
 namespace StarConflictsRevolt.Clients.Bliss.Core.UI;
 
 /// <summary>
+/// Text alignment options.
+/// </summary>
+public enum TextAlignment
+{
+    Left,
+    Center,
+    Right
+}
+
+/// <summary>
 /// Service for handling text rendering using Bliss.CSharp font system.
 /// Manages font loading and provides text rendering capabilities.
 /// </summary>

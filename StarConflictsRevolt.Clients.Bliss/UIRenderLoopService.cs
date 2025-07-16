@@ -97,6 +97,12 @@ public class UIRenderLoopService
         _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
         _commandList.ClearColorTarget(0, new RgbaFloat(0, 0, 0, 1));
         
+        // Begin the primitive batch for UI elements
+        _primitiveBatch.Begin(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription);
+        
+        // Begin the sprite batch for text rendering
+        _spriteBatch.Begin(_commandList, _graphicsDevice.SwapchainFramebuffer.OutputDescription);
+        
         // Render current screen
         _screenManager.Render(
             _immediateRenderer,
@@ -104,6 +110,12 @@ public class UIRenderLoopService
             _spriteBatch,
             _commandList,
             _graphicsDevice.SwapchainFramebuffer);
+        
+        // End the sprite batch
+        _spriteBatch.End();
+        
+        // End the primitive batch
+        _primitiveBatch.End();
         
         // End frame
         _commandList.End();
