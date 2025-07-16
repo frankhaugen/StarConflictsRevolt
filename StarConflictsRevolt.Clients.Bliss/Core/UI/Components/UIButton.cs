@@ -1,4 +1,5 @@
 using Bliss.CSharp.Colors;
+using Bliss.CSharp.Fonts;
 using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
@@ -96,9 +97,8 @@ public class UIButton : UIComponent
         
         primitiveBatch.End();
         
-        // Draw text (this would need to be implemented with a text renderer)
-        // For now, we'll just draw a placeholder
-        DrawButtonText(primitiveBatch, commandList, framebuffer, textColor);
+        // Draw text using sprite batch
+        DrawButtonText(spriteBatch, commandList, framebuffer.OutputDescription, textColor);
     }
     
     public void SetSelected(bool selected)
@@ -184,16 +184,26 @@ public class UIButton : UIComponent
             glowRect, Vector2.Zero, 0f, 0.3f, new Color(102, 102, 153, 51));
     }
     
-    private void DrawButtonText(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer, Color textColor)
+    private void DrawButtonText(SpriteBatch spriteBatch, CommandList commandList, OutputDescription outputDescription, Color textColor)
     {
-        // This is a placeholder - in a real implementation, you would use a text renderer
-        // For now, we'll draw a simple rectangle to represent the text area
-        var textBounds = new RectangleF(
-            _bounds.X + 10, _bounds.Y + 5,
-            _bounds.Width - 20, _bounds.Height - 10);
-            
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        primitiveBatch.DrawFilledRectangle(textBounds, Vector2.Zero, 0f, 0.1f, textColor);
-        primitiveBatch.End();
+        // Calculate text position (centered in button)
+        var textPosition = new Vector2(
+            _bounds.X + _bounds.Width / 2f,
+            _bounds.Y + _bounds.Height / 2f
+        );
+        
+        try
+        {
+            var font = new Font("Assets/Fonts/Galaxy.ttf");
+            var fontSize = 20f;
+            spriteBatch.Begin(commandList, outputDescription);
+            spriteBatch.DrawText(font, _text, textPosition, fontSize, color: textColor);
+            spriteBatch.End();
+            font.Dispose();
+        }
+        catch
+        {
+            // Fallback: do nothing
+        }
     }
 } 

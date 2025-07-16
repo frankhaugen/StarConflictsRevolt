@@ -5,6 +5,7 @@ using Bliss.CSharp.Graphics.Rendering.Renderers;
 using Bliss.CSharp.Interact;
 using Bliss.CSharp.Interact.Contexts;
 using Bliss.CSharp.Windowing;
+using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using Veldrid;
 
@@ -20,6 +21,7 @@ public class UIRenderLoopService
     private readonly GraphicsDevice _graphicsDevice;
     private readonly IScreenManager _screenManager;
     private readonly IInputHandler _inputHandler;
+    private readonly UIScalingService _scalingService;
     private readonly ImmediateRenderer _immediateRenderer;
     private readonly PrimitiveBatch _primitiveBatch;
     private readonly SpriteBatch _spriteBatch;
@@ -30,12 +32,14 @@ public class UIRenderLoopService
         IWindow window,
         GraphicsDevice graphicsDevice,
         IScreenManager screenManager,
-        IInputHandler inputHandler)
+        IInputHandler inputHandler,
+        UIScalingService scalingService)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
         _screenManager = screenManager ?? throw new ArgumentNullException(nameof(screenManager));
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
+        _scalingService = scalingService ?? throw new ArgumentNullException(nameof(scalingService));
         
         // Initialize Bliss global resources
         GlobalResource.Init(graphicsDevice);
@@ -58,6 +62,7 @@ public class UIRenderLoopService
         
         // Set up event handlers
         _window.Closed += OnWindowClosed;
+        _window.Resized += OnWindowResized;
     }
     
     public void Run()
@@ -109,6 +114,12 @@ public class UIRenderLoopService
     private void OnWindowClosed()
     {
         _isRunning = false;
+    }
+    
+    private void OnWindowResized()
+    {
+        // Update scaling service when window is resized
+        _scalingService.UpdateResolution();
     }
     
     public void Dispose()

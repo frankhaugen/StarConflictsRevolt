@@ -24,6 +24,10 @@ public static class ServiceCollectionExtensions
         services.AddPlayerProfileProvider();
         services.AddSingleton<IScreenManager, ScreenManager>();
         
+        // Register UI scaling and text rendering services
+        services.AddSingleton<UIScalingService>();
+        services.AddSingleton<TextRenderingService>();
+        
         // Register UI screens
         services.AddTransient<LandingScreen>();
         services.AddTransient<SinglePlayerSetupScreen>();

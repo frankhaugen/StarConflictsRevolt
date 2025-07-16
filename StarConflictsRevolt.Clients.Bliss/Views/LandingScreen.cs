@@ -24,16 +24,21 @@ public class LandingScreen : BaseScreen
 {
     private readonly IInputHandler _inputHandler;
     private readonly IPlayerProfileProvider _playerProfileProvider;
+    private readonly UIScalingService _scalingService;
+    private readonly TextRenderingService _textService;
     private readonly List<UIButton> _buttons = new();
     private int _selectedButtonIndex = 0;
     private float _time = 0f;
     private bool _showDebugMode = false;
     
-    public LandingScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider) 
+    public LandingScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, 
+                        UIScalingService scalingService, TextRenderingService textService) 
         : base("landing", "STAR CONFLICTS: REVOLT")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
+        _scalingService = scalingService ?? throw new ArgumentNullException(nameof(scalingService));
+        _textService = textService ?? throw new ArgumentNullException(nameof(textService));
         
         InitializeButtons();
     }
@@ -70,6 +75,9 @@ public class LandingScreen : BaseScreen
         
         // Draw title panel
         DrawTitlePanel(primitiveBatch, commandList, framebuffer);
+        
+        // Draw title text
+        DrawTitleText(spriteBatch, commandList, framebuffer);
         
         // Draw menu buttons
         DrawMenuButtons(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
@@ -120,28 +128,31 @@ public class LandingScreen : BaseScreen
         for (int i = 0; i < buttonConfigs.Length; i++)
         {
             var (text, action) = buttonConfigs[i];
-            var bounds = new RectangleF(
-                (1920f - buttonWidth) / 2f, // Center horizontally
+            var baseBounds = new RectangleF(
+                _scalingService.CenterHorizontally(buttonWidth), // Center horizontally
                 startY + i * spacing,
                 buttonWidth,
                 buttonHeight
             );
             
-            var button = new UIButton(_inputHandler, text, bounds, action);
+            // Scale the bounds to current window size
+            var scaledBounds = _scalingService.ScaleRectangle(baseBounds);
+            var button = new UIButton(_inputHandler, text, scaledBounds, action);
             _buttons.Add(button);
         }
         
         // Add debug mode button if enabled
         if (_showDebugMode)
         {
-            var debugBounds = new RectangleF(
-                (1920f - buttonWidth) / 2f,
+            var baseDebugBounds = new RectangleF(
+                _scalingService.CenterHorizontally(buttonWidth),
                 startY + buttonConfigs.Length * spacing,
                 buttonWidth,
                 buttonHeight
             );
             
-            var debugButton = new UIButton(_inputHandler, "Start Debug Mode", debugBounds, 
+            var scaledDebugBounds = _scalingService.ScaleRectangle(baseDebugBounds);
+            var debugButton = new UIButton(_inputHandler, "Start Debug Mode", scaledDebugBounds, 
                 () => RequestNavigation("debug-mode"));
             _buttons.Add(debugButton);
         }
@@ -189,20 +200,24 @@ public class LandingScreen : BaseScreen
     {
         primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
         
+        var currentRes = _scalingService.CurrentResolution;
+        
         // Draw animated stars
         for (int i = 0; i < 300; i++)
         {
-            var x = (i * 12345) % 1920;
-            var y = (i * 67890) % 1080;
+            var baseX = (i * 12345) % 1920;
+            var baseY = (i * 67890) % 1080;
+            var scaledPos = _scalingService.ScalePosition(new Vector2(baseX, baseY));
             
             // Animate star brightness
             var brightness = (float)(Math.Sin(_time * 2 + i * 0.1f) * 0.5f + 0.5f);
             var color = new Color((byte)(brightness * 255), (byte)(brightness * 0.8f * 255), (byte)(brightness * 255), 255);
             
-            var size = 1 + (i % 3);
+            var baseSize = 1 + (i % 3);
+            var scaledSize = _scalingService.ScaleSize(new Vector2(baseSize, baseSize)).X;
             primitiveBatch.DrawFilledCircle(
-                new Vector2(x, y), 
-                size, 
+                scaledPos, 
+                scaledSize, 
                 8, 
                 0.5f, 
                 color);
@@ -211,15 +226,18 @@ public class LandingScreen : BaseScreen
         // Draw nebula-like effects
         for (int i = 0; i < 5; i++)
         {
-            var center = new Vector2(
+            var baseCenter = new Vector2(
                 200 + i * 300 + (float)Math.Sin(_time * 0.5f + i) * 50,
                 200 + i * 150 + (float)Math.Cos(_time * 0.3f + i) * 30
             );
+            var scaledCenter = _scalingService.ScalePosition(baseCenter);
             
             var nebulaColor = new Color(26, 51, 102, 26);
+            var baseRadius = 100 + (float)Math.Sin(_time + i) * 20;
+            var scaledRadius = _scalingService.ScaleSize(new Vector2(baseRadius, baseRadius)).X;
             primitiveBatch.DrawFilledCircle(
-                center, 
-                100 + (float)Math.Sin(_time + i) * 20, 
+                scaledCenter, 
+                scaledRadius, 
                 32, 
                 0.1f, 
                 nebulaColor);
@@ -233,27 +251,35 @@ public class LandingScreen : BaseScreen
         primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
         
         // Draw title background panel - centered
-        var titlePanel = new RectangleF((1920f - 1120f) / 2f, 100f, 1120f, 200f);
+        var baseTitlePanel = new RectangleF(_scalingService.CenterHorizontally(1120f), 100f, 1120f, 200f);
+        var scaledTitlePanel = _scalingService.ScaleRectangle(baseTitlePanel);
         primitiveBatch.DrawFilledRectangle(
-            titlePanel, 
+            scaledTitlePanel, 
             Vector2.Zero, 
             0f, 
             0.5f, 
             new Color(26, 26, 51, 204));
         
         // Draw title border
+        var baseBorderRect = new RectangleF(baseTitlePanel.X - 3, baseTitlePanel.Y - 3, baseTitlePanel.Width + 6, baseTitlePanel.Height + 6);
+        var scaledBorderRect = _scalingService.ScaleRectangle(baseBorderRect);
         primitiveBatch.DrawFilledRectangle(
-            new RectangleF(titlePanel.X - 3, titlePanel.Y - 3, titlePanel.Width + 6, titlePanel.Height + 6), 
+            scaledBorderRect, 
             Vector2.Zero, 
             0f, 
             0.5f, 
             StarWarsTheme.Border);
         
         // Draw subtitle line
+        var baseLineStart = new Vector2(baseTitlePanel.X + 50, baseTitlePanel.Y + 180);
+        var baseLineEnd = new Vector2(baseTitlePanel.X + baseTitlePanel.Width - 50, baseTitlePanel.Y + 180);
+        var scaledLineStart = _scalingService.ScalePosition(baseLineStart);
+        var scaledLineEnd = _scalingService.ScalePosition(baseLineEnd);
+        var scaledLineWidth = _scalingService.ScaleSize(new Vector2(2f, 2f)).X;
         primitiveBatch.DrawLine(
-            new Vector2(titlePanel.X + 50, titlePanel.Y + 180), 
-            new Vector2(titlePanel.X + titlePanel.Width - 50, titlePanel.Y + 180), 
-            2f, 
+            scaledLineStart, 
+            scaledLineEnd, 
+            scaledLineWidth, 
             0.5f, 
             StarWarsTheme.EmpireAccent);
         
@@ -276,9 +302,10 @@ public class LandingScreen : BaseScreen
             primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
             
             // Draw user info panel
-            var userPanel = new RectangleF(50f, 50f, 300f, 40f);
+            var baseUserPanel = new RectangleF(50f, 50f, 300f, 40f);
+            var scaledUserPanel = _scalingService.ScaleRectangle(baseUserPanel);
             primitiveBatch.DrawFilledRectangle(
-                userPanel, 
+                scaledUserPanel, 
                 Vector2.Zero, 
                 0f, 
                 0.5f, 
@@ -293,9 +320,10 @@ public class LandingScreen : BaseScreen
         primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
         
         // Draw instructions panel at bottom
-        var instructionsPanel = new RectangleF(50f, 1000f, 400f, 60f);
+        var baseInstructionsPanel = new RectangleF(50f, 1000f, 400f, 60f);
+        var scaledInstructionsPanel = _scalingService.ScaleRectangle(baseInstructionsPanel);
         primitiveBatch.DrawFilledRectangle(
-            instructionsPanel, 
+            scaledInstructionsPanel, 
             Vector2.Zero, 
             0f, 
             0.5f, 
@@ -309,14 +337,33 @@ public class LandingScreen : BaseScreen
         primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
         
         // Draw debug mode indicator
-        var debugPanel = new RectangleF(50f, 150f, 200f, 40f);
+        var baseDebugPanel = new RectangleF(50f, 150f, 200f, 40f);
+        var scaledDebugPanel = _scalingService.ScaleRectangle(baseDebugPanel);
         primitiveBatch.DrawFilledRectangle(
-            debugPanel, 
+            scaledDebugPanel, 
             Vector2.Zero, 
             0f, 
             0.5f, 
             new Color(102, 26, 26, 153));
         
         primitiveBatch.End();
+    }
+    
+    private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
+    {
+        // Calculate title position (centered in title panel)
+        var baseTitlePos = new Vector2(_scalingService.CenterHorizontally(1120f) + 560f, 180f); // Center of title panel
+        var scaledTitlePos = _scalingService.ScalePosition(baseTitlePos);
+        var scaledFontSize = _scalingService.ScaleFontSize(48f);
+        
+        // Draw main title
+        _textService.DrawText(spriteBatch, "STAR CONFLICTS: REVOLT", scaledTitlePos, commandList, framebuffer.OutputDescription, "Galaxy", scaledFontSize, (Color?)Color.White, TextAlignment.Center);
+        
+        // Draw subtitle
+        var baseSubtitlePos = new Vector2(_scalingService.CenterHorizontally(1120f) + 560f, 220f);
+        var scaledSubtitlePos = _scalingService.ScalePosition(baseSubtitlePos);
+        var scaledSubtitleFontSize = _scalingService.ScaleFontSize(24f);
+        
+        _textService.DrawText(spriteBatch, "A New Hope Rises", scaledSubtitlePos, commandList, framebuffer.OutputDescription, "Galaxy", scaledSubtitleFontSize, (Color?)StarWarsTheme.EmpireAccent, TextAlignment.Center);
     }
 } 
