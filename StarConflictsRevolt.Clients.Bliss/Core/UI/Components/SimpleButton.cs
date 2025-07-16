@@ -1,5 +1,4 @@
 using Bliss.CSharp.Colors;
-using Bliss.CSharp.Fonts;
 using Bliss.CSharp.Graphics.Rendering.Batches.Primitives;
 using Bliss.CSharp.Graphics.Rendering.Batches.Sprites;
 using Bliss.CSharp.Graphics.Rendering.Renderers;
@@ -12,18 +11,18 @@ using RectangleF = Bliss.CSharp.Transformations.RectangleF;
 namespace StarConflictsRevolt.Clients.Bliss.Core.UI.Components;
 
 /// <summary>
-/// A reusable UI button component that can be used across different screens.
-/// Follows the Component pattern for reusability and the Single Responsibility Principle.
+/// Simplified button component that uses the SimpleTextRenderer.
+/// Follows the Component pattern for reusability.
 /// </summary>
-public class UIButton : UIComponent
+public class SimpleButton : UIComponent
 {
     private readonly IInputHandler _inputHandler;
     private readonly string _text;
     private readonly Action _onClick;
     private readonly RectangleF _bounds;
+    private readonly SimpleTextRenderer _textRenderer;
     private bool _isHovered;
     private bool _isSelected;
-    private float _animationTime;
     
     public string Text => _text;
     public RectangleF Bounds => _bounds;
@@ -33,22 +32,20 @@ public class UIButton : UIComponent
     
     bool UIComponent.IsSelected => _isSelected;
     
-    public event Action<UIButton>? Clicked;
+    public event Action<SimpleButton>? Clicked;
     
-    public UIButton(IInputHandler inputHandler, string text, RectangleF bounds, Action onClick)
+    public SimpleButton(IInputHandler inputHandler, string text, RectangleF bounds, Action onClick, SimpleTextRenderer textRenderer)
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _text = text ?? throw new ArgumentNullException(nameof(text));
         _bounds = bounds;
         _onClick = onClick ?? throw new ArgumentNullException(nameof(onClick));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
     }
     
     public void Update(float deltaTime)
     {
-        if (!IsEnabled)
-            return;
-            
-        _animationTime += deltaTime;
+        if (!IsEnabled) return;
         
         // Check if mouse is hovering over button
         var mousePos = _inputHandler.GetMousePosition();
@@ -61,14 +58,8 @@ public class UIButton : UIComponent
         }
     }
     
-    public void Render(ImmediateRenderer immediateRenderer, 
-                      PrimitiveBatch primitiveBatch,
-                      SpriteBatch spriteBatch,
-                      CommandList commandList,
-                      Framebuffer framebuffer)
+    public void Render(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Determine button colors based on state
         var bgColor = GetBackgroundColor();
         var borderColor = GetBorderColor();
@@ -95,10 +86,8 @@ public class UIButton : UIComponent
             DrawHoverEffect(primitiveBatch);
         }
         
-        primitiveBatch.End();
-        
-        // Draw text using sprite batch
-        DrawButtonText(spriteBatch, textColor);
+        // Draw text centered in button using the provided SpriteBatch
+        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Galaxy", 20f, textColor);
     }
     
     public void SetSelected(bool selected)
@@ -108,9 +97,8 @@ public class UIButton : UIComponent
     
     public void Activate()
     {
-        if (!IsEnabled)
-            return;
-            
+        if (!IsEnabled) return;
+        
         _onClick();
         Clicked?.Invoke(this);
     }
@@ -182,28 +170,5 @@ public class UIButton : UIComponent
             _bounds.Width + 10, _bounds.Height + 10);
         primitiveBatch.DrawFilledRectangle(
             glowRect, Vector2.Zero, 0f, 0.3f, new Color(102, 102, 153, 51));
-    }
-    
-    private void DrawButtonText(SpriteBatch spriteBatch, Color textColor)
-    {
-        // Calculate text position (centered in button)
-        var textPosition = new Vector2(
-            _bounds.X + _bounds.Width / 2f,
-            _bounds.Y + _bounds.Height / 2f
-        );
-        
-        // Draw text centered in the button
-        try
-        {
-            // Try to use the Galaxy font if available
-            var font = new Font("Assets/Fonts/Galaxy.ttf");
-            var fontSize = 20f;
-            spriteBatch.DrawText(font, _text, textPosition, fontSize, color: textColor);
-            font.Dispose();
-        }
-        catch
-        {
-            // Fallback: do nothing
-        }
     }
 } 

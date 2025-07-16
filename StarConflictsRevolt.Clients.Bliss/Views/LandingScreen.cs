@@ -25,20 +25,20 @@ public class LandingScreen : BaseScreen
     private readonly IInputHandler _inputHandler;
     private readonly IPlayerProfileProvider _playerProfileProvider;
     private readonly UIScalingService _scalingService;
-    private readonly TextRenderingService _textService;
-    private readonly List<UIButton> _buttons = new();
+    private readonly SimpleTextRenderer _textRenderer;
+    private readonly List<SimpleButton> _buttons = new();
     private int _selectedButtonIndex = 0;
     private float _time = 0f;
     private bool _showDebugMode = false;
     
     public LandingScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, 
-                        UIScalingService scalingService, TextRenderingService textService) 
+                        UIScalingService scalingService, SimpleTextRenderer textRenderer) 
         : base("landing", "STAR CONFLICTS: REVOLT")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
         _scalingService = scalingService ?? throw new ArgumentNullException(nameof(scalingService));
-        _textService = textService ?? throw new ArgumentNullException(nameof(textService));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
         
         InitializeButtons();
     }
@@ -137,7 +137,7 @@ public class LandingScreen : BaseScreen
             
             // Scale the bounds to current window size
             var scaledBounds = _scalingService.ScaleRectangle(baseBounds);
-            var button = new UIButton(_inputHandler, text, scaledBounds, action);
+            var button = new SimpleButton(_inputHandler, text, scaledBounds, action, _textRenderer);
             _buttons.Add(button);
         }
         
@@ -152,8 +152,8 @@ public class LandingScreen : BaseScreen
             );
             
             var scaledDebugBounds = _scalingService.ScaleRectangle(baseDebugBounds);
-            var debugButton = new UIButton(_inputHandler, "Start Debug Mode", scaledDebugBounds, 
-                () => RequestNavigation("debug-mode"));
+            var debugButton = new SimpleButton(_inputHandler, "Start Debug Mode", scaledDebugBounds, 
+                () => RequestNavigation("debug-mode"), _textRenderer);
             _buttons.Add(debugButton);
         }
     }
@@ -357,13 +357,13 @@ public class LandingScreen : BaseScreen
         var scaledFontSize = _scalingService.ScaleFontSize(48f);
         
         // Draw main title
-        _textService.DrawText(spriteBatch, "STAR CONFLICTS: REVOLT", scaledTitlePos, commandList, framebuffer.OutputDescription, "Galaxy", scaledFontSize, (Color?)Color.White, TextAlignment.Center);
+        _textRenderer.DrawText("STAR CONFLICTS: REVOLT", scaledTitlePos, "Galaxy", scaledFontSize, Color.White);
         
         // Draw subtitle
         var baseSubtitlePos = new Vector2(_scalingService.CenterHorizontally(1120f) + 560f, 220f);
         var scaledSubtitlePos = _scalingService.ScalePosition(baseSubtitlePos);
         var scaledSubtitleFontSize = _scalingService.ScaleFontSize(24f);
         
-        _textService.DrawText(spriteBatch, "A New Hope Rises", scaledSubtitlePos, commandList, framebuffer.OutputDescription, "Galaxy", scaledSubtitleFontSize, (Color?)StarWarsTheme.EmpireAccent, TextAlignment.Center);
+        _textRenderer.DrawText("A New Hope Rises", scaledSubtitlePos, "Galaxy", scaledSubtitleFontSize, StarWarsTheme.EmpireAccent);
     }
 } 

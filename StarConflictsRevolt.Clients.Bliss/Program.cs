@@ -1,6 +1,7 @@
 using Bliss.CSharp.Windowing;
 using StarConflictsRevolt.Clients.Bliss;
 using StarConflictsRevolt.Clients.Bliss.Infrastructure.Configuration;
+using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using Veldrid;
 
@@ -28,11 +29,8 @@ var window = Window.CreateWindow(
 builder.Services.AddSingleton<IWindow>(window);
 builder.Services.AddSingleton<GraphicsDevice>(device);
 
-// Register the render loop as a regular service, not a hosted service
-builder.Services.AddSingleton<RenderLoopService>();
-
-// Register UI render loop service
-builder.Services.AddSingleton<UIRenderLoopService>();
+// Register the simplified render loop
+builder.Services.AddSingleton<SimpleRenderLoop>();
 
 var app = builder.Build();
 
@@ -45,9 +43,9 @@ try
     var screenManagerInitializer = app.Services.GetRequiredService<IScreenManagerInitializer>();
     screenManagerInitializer.Initialize();
     
-    // Get the UI render loop service from DI and run it on the main thread
-    var uiRenderLoop = app.Services.GetRequiredService<UIRenderLoopService>();
-    uiRenderLoop.Run(); // This will block the main thread until the window closes
+    // Get the simplified render loop from DI and run it on the main thread
+    var renderLoop = app.Services.GetRequiredService<SimpleRenderLoop>();
+    renderLoop.Run(); // This will block the main thread until the window closes
 }
 finally
 {
