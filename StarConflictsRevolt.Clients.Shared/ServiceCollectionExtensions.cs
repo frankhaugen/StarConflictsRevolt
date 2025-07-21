@@ -37,6 +37,16 @@ public static class ServiceCollectionExtensions
         // Register shared user info services
         builder.Services.AddUserService();
         
+        // Add authentication HTTP clients
+        builder.Services.AddStarConflictsHttpClients(
+            builder.Configuration,
+            clientName: "GameApi",
+            configureClient: client =>
+            {
+                // Configure the HTTP client if needed
+                client.BaseAddress = new Uri(builder.Configuration["GameClientConfiguration:ApiBaseUrl"]);
+            });
+        
         return builder;
     }
 } 

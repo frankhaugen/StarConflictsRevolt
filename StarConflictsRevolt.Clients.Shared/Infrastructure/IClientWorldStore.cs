@@ -1,6 +1,6 @@
 ﻿using StarConflictsRevolt.Clients.Models;
 
-namespace StarConflictsRevolt.Clients.Raylib.Game.World;
+namespace StarConflictsRevolt.Clients.Shared.Infrastructure;
 
 public interface IClientWorldStore
 {

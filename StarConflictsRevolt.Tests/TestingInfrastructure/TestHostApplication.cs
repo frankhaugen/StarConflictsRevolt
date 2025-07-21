@@ -13,14 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Raylib.Core;
-using StarConflictsRevolt.Clients.Raylib.Game.Commands;
-using StarConflictsRevolt.Clients.Raylib.Game.World;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Authentication;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Configuration;
-using StarConflictsRevolt.Clients.Raylib.Infrastructure.Services;
-using StarConflictsRevolt.Clients.Raylib.Rendering.Core;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
@@ -29,10 +21,12 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
-using StarConflictsRevolt.Tests.TestingInfrastructure.TestViews;
 using Frank.PulseFlow;
-using StarConflictsRevolt.Clients.Shared.Authentication.Http;
-using GameState = StarConflictsRevolt.Clients.Raylib.Core.GameState;
+using StarConflictsRevolt.Clients.Shared.Authentication;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using StarConflictsRevolt.Clients.Shared.Configuration;
+using StarConflictsRevolt.Clients.Shared.Http;
+using StarConflictsRevolt.Clients.Shared.Infrastructure;
 using ServiceCollectionExtensions = StarConflictsRevolt.Clients.Shared.Authentication.ServiceCollectionExtensions;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -57,29 +51,12 @@ public class TestHostApplication : IDisposable
 
         if (includeClientServices)
         {
-            // Register core services
-            builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
-            builder.Services.AddSingleton<IGameRenderer, TestRenderer>();
-            builder.Services.AddSingleton<IViewFactory, TestViewFactory>(); // Use TestViewFactory for testing
-            builder.Services.AddSingleton<RenderContext>();
-            builder.Services.AddSingleton<GameCommandService>();
-            builder.Services.AddSingleton<GameState>();
-
-            // Register all views as IView implementations
-            builder.Services.AddSingleton<IView, TestMenuView>();
-            builder.Services.AddSingleton<IView, TestGalaxyView>();
-            builder.Services.AddSingleton<IView, TestTacticalBattleView>();
-            builder.Services.AddSingleton<IView, TestFleetFinderView>();
-            builder.Services.AddSingleton<IView, TestGameOptionsView>();
-            builder.Services.AddSingleton<IView, TestPlanetaryFinderView>();
-
             // Bind configuration
             builder.Services.Configure<GameClientConfiguration>(
                 builder.Configuration.GetSection("GameClientConfiguration"));
 
             // Register infrastructure services
             builder.Services.AddSingleton<SignalRService>();
-            builder.Services.AddHostedService<ClientServiceHost>();
 
             // Register client initialization services
             builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();

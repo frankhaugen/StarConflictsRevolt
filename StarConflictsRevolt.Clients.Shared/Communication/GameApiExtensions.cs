@@ -1,6 +1,6 @@
 using System.Text.Json;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Shared.Authentication.Http;
+using StarConflictsRevolt.Clients.Shared.Http;
 
 namespace StarConflictsRevolt.Clients.Shared.Communication;
 

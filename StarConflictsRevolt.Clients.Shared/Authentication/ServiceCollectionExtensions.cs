@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Shared.Authentication.Configuration;
-using StarConflictsRevolt.Clients.Shared.Authentication.Http;
+using StarConflictsRevolt.Clients.Shared.Http;
 
 namespace StarConflictsRevolt.Clients.Shared.Authentication;
 

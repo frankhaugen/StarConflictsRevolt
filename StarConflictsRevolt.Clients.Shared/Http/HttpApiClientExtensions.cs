@@ -1,8 +1,7 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Clients.Shared.Authentication.Http;
 
-namespace StarConflictsRevolt.Clients.Raylib.Infrastructure.Communication;
+namespace StarConflictsRevolt.Clients.Shared.Http;
 
 public static class HttpApiClientExtensions
 {

@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace StarConflictsRevolt.Clients.Shared.Authentication.Http;
+namespace StarConflictsRevolt.Clients.Shared.Http;
 
 public class HttpApiClient : IHttpApiClient
 {

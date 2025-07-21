@@ -1,4 +1,4 @@
-namespace StarConflictsRevolt.Clients.Shared.Authentication.Http;
+namespace StarConflictsRevolt.Clients.Shared.Http;
 
 public interface IHttpApiClient
 {
