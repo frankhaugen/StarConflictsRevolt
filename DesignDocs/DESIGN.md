@@ -6,29 +6,29 @@ A real-time turn-based-ish 4X strategy game inspired by *Star Wars: Rebellion*.
 
 ## 📘 Overview
 
-A turn-based 4X strategy game inspired by *Star Wars: Rebellion*.  
-Written in C#/.NET, with a backend using Aspire, SignalR, and RavenDB, and frontends via Raylib-CSharp or Blazor.
+A turn-based 4X strategy game inspired by *Star Wars: Rebellion*.
+Written in C#/.NET, with a backend using Aspire, SignalR, and RavenDB, and a modern Bliss/Veldrid-powered desktop client.
 
 ---
 
 ## 🚀 Architecture Summary
 
-```text
-
+```
 StarConflictsRevolt/
-├── src/
-│   ├── StarConflictsRevolt.Dtos           # Shared DTOs
-│   ├── StarConflictsRevolt.Client         # Client library (NuGet)
-│   ├── StarConflictsRevolt.ApiService     # API + SignalR Hub
-│   ├── StarConflictsRevolt.EngineWorker   # Simulation engine & eventing
-│   ├── StarConflictsRevolt.Store.Eventing # RavenDB event store
-│   └── StarConflictsRevolt.AppHost        # Aspire orchestrator
-└── StarConflictsRevolt.sln
-
+├── StarConflictsRevolt.Clients.Bliss         # Main desktop client (Bliss/Veldrid)
+├── StarConflictsRevolt.Clients.Shared        # Shared client logic (HTTP, SignalR, auth, config)
+├── StarConflictsRevolt.Clients.Models        # DTOs for API and world state
+├── StarConflictsRevolt.Server.WebApi         # Backend API (Handlers-based, event-sourced)
+├── StarConflictsRevolt.Aspire.AppHost        # Aspire orchestrator (local/dev infra)
+├── StarConflictsRevolt.Aspire.ServiceDefaults# Shared Aspire service defaults
+├── StarConflictsRevolt.Tests                 # Integration and unit tests (TUnit)
+└── DesignDocs/                               # Architecture and design docs
 ```
 
-- Client & DTOs packaged as NuGet.
-- Aspire `AppHost` spins up Redis or RavenDB, API, Engine simultaneously.
+- Bliss client is the main UI implementation in this repository.
+- DTOs are strictly separated in Clients.Models.
+- Shared client logic is in Clients.Shared.
+- API is organized using modular Handlers (not Controllers).
 
 ---
 
@@ -36,10 +36,10 @@ StarConflictsRevolt/
 
 ```csharp
 public record WorldDto(Guid WorldId, List<PlanetDto> Planets);
-public record PlanetDto(Guid Id, string Name, ...)
+public record PlanetDto(Guid Id, string Name, ...);
 public record GameObjectUpdate(Guid Id, UpdateType Type, JsonElement? Data);
 public enum UpdateType { Added, Changed, Removed }
-````
+```
 
 ---
 
@@ -81,7 +81,7 @@ public class ChangeTracker<T> where T: GameObject
 }
 ```
 
-* Throttled (\~200ms), scoped by world via SignalR groups
+* Throttled (~200ms), scoped by world via SignalR groups
 * Client applies deltas to local `WorldDto` state
 
 ---
@@ -103,6 +103,7 @@ public interface IGameRenderer {
 
 * `ClientWorldStore` handles snapshots with history buffer
 * `GameClient` manages SignalR connections, world join, and ties into `IGameRenderer`
+* UI/view logic is structured to be testable without requiring the actual renderer
 
 ---
 
@@ -137,7 +138,6 @@ public class RavenEventStore : IEventStore { … }
 ## 🧯 Scaling & Resilience
 
 * SignalR uses Redis backplane (configured via `AddStackExchangeRedis(...)`)
-* Throttled updates via SignalR Groups
 * Aspire orchestrates local containers (Redis, RavenDB) and services
 * Supports horizontal scaling, reconnection logic, burst resiliency
 
@@ -149,9 +149,9 @@ Pattern: `StarConflictsRevolt.Function.Component`
 
 E.g.:
 
-* `StarConflictsRevolt.Store.Eventing.RavenEventStore`
-* `StarConflictsRevolt.ApiService.GameHub`
-* `StarConflictsRevolt.EngineWorker.ChangeTracker`
+* `StarConflictsRevolt.Server.WebApi.Handlers.SessionEndpointHandler`
+* `StarConflictsRevolt.Clients.Models.WorldDto`
+* `StarConflictsRevolt.Clients.Shared.Http.HttpApiClient`
 
 ---
 
@@ -160,30 +160,19 @@ E.g.:
 * Delta-based updates reduce bandwidth for late-game thousands of objects
 * Eventing + RavenDB provide replayability, AI training, and audit trail
 * AI runs inside engine without backdoors and shares command pipeline
-* Client library enables multiple renderer choices (Raylib, Blazor)
+* Client library enables multiple renderer choices (Bliss, future web)
 * Aspire ensures consistent local/cloud setup with infrastructure containers
 
 ---
 
-## 🔜 Next Steps
+## 🧪 Testing & UI Architecture
 
-* Flesh out concrete `IGameEvent` types and event subscribers (SignalR, read models)
-* Scaffold `IGameRenderer` stub for Raylib or Blazor Canvas
-* Add AI logic prototype (Utility AI)
-* Add snapshotting logic and replay tooling
-* Configure CI for NuGet packaging and Aspire deployment
-
----
-
-## 🔗 Code Snippets
-
-* Renderer loop, change tracker, SignalR wiring, event pushing included in their relevant sections above as prototypes from this conversation.
+* All view logic is structured to be testable without requiring the actual renderer
+* All types in tests are resolved from DI, ensuring logging and other services are available
+* Integration tests use TUnit and a custom builder to run both server and client with in-memory fakes
 
 ---
 
 *End of Document*
 
-```
-
-Let me know if you'd like this expanded with CI scripts, event schemas, or a more formal design spec!
 ```
