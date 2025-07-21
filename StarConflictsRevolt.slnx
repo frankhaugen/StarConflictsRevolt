@@ -6,6 +6,7 @@
   </Folder>
   <Project Path="StarConflictsRevolt.Aspire.AppHost\StarConflictsRevolt.Aspire.AppHost.csproj" Type="C#" />
   <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" Type="C#" />
+  <Project Path="StarConflictsRevolt.Clients.BlazorApp\StarConflictsRevolt.Clients.BlazorApp.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Clients.Bliss\StarConflictsRevolt.Clients.Bliss.csproj" Type="Classic C#" />
   <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" Type="C#" />
   <Project Path="StarConflictsRevolt.Clients.Raylib\StarConflictsRevolt.Clients.Raylib.csproj" Type="C#" />
