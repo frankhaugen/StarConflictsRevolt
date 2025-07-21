@@ -62,18 +62,14 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
 
     public void ApplyDeltas(IEnumerable<GameObjectUpdate> deltas)
     {
-        logger.LogInformation("ApplyDeltas called with {DeltaCount} deltas", deltas.Count());
+        var gameObjectUpdates = deltas.ToList();
+        logger.LogInformation("ApplyDeltas called with {DeltaCount} deltas", gameObjectUpdates.Count());
         if (_current is null) return;
-        if (_current.Galaxy is null || _current.Galaxy.StarSystems is null)
-        {
-            logger.LogWarning("Current world does not have a valid Galaxy or StarSystems");
-            return;
-        }
 
         var starSystems = _current.Galaxy.StarSystems.ToList();
 
         var planets = starSystems.SelectMany(x => x.Planets).ToList();
-        foreach (var d in deltas)
+        foreach (var d in gameObjectUpdates)
             switch (d.Type)
             {
                 case UpdateType.Added:
@@ -90,6 +86,8 @@ public class ClientWorldStore(ILogger<ClientWorldStore> logger) : IClientWorldSt
                 case UpdateType.Removed:
                     planets.RemoveAll(p => p.Id == d.Id);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
         Snapshot();
