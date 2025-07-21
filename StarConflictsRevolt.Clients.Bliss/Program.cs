@@ -3,6 +3,8 @@ using StarConflictsRevolt.Clients.Bliss.Infrastructure.Configuration;
 using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using Veldrid;
+using System.Text.Json;
+using StarConflictsRevolt.Clients.Models;
 
 var builder = Host.CreateApplicationBuilder();
 
@@ -50,4 +52,21 @@ finally
 {
     // Ensure proper cleanup when the render loop ends
     await app.StopAsync();
+}
+
+var configArg = args.FirstOrDefault(a => a.StartsWith("--config"));
+if (configArg != null)
+{
+    var configPath = configArg.Split(' ', 2).Length > 1 ? configArg.Split(' ', 2)[1] : args.SkipWhile(a => a != "--config").Skip(1).FirstOrDefault();
+    if (!string.IsNullOrWhiteSpace(configPath) && File.Exists(configPath))
+    {
+        var configJson = File.ReadAllText(configPath);
+        var config = JsonSerializer.Deserialize<GameClientConfiguration>(configJson);
+        Console.WriteLine($"Loaded config: GameServerUrl={config?.GameServerUrl}, GameServerHubUrl={config?.GameServerHubUrl}, ApiBaseUrl={config?.ApiBaseUrl}");
+        // TODO: Use config for further initialization
+    }
+    else
+    {
+        Console.WriteLine($"Config file not found: {configPath}");
+    }
 }
