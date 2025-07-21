@@ -259,8 +259,6 @@ public class SinglePlayerSetupScreen : BaseScreen
     
     private void DrawBackground(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw background panel
         var backgroundPanel = new RectangleF(200f, 100f, 1520f, 800f);
         primitiveBatch.DrawFilledRectangle(
@@ -277,14 +275,10 @@ public class SinglePlayerSetupScreen : BaseScreen
             0f, 
             0.5f, 
             StarWarsTheme.Border);
-        
-        primitiveBatch.End();
     }
     
     private void DrawTitle(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw title
         var titlePanel = new RectangleF(400f, 150f, 1120f, 100f);
         primitiveBatch.DrawFilledRectangle(
@@ -293,8 +287,6 @@ public class SinglePlayerSetupScreen : BaseScreen
             0f, 
             0.5f, 
             new Color(26, 26, 51, 153));
-        
-        primitiveBatch.End();
     }
     
     private void DrawInputField(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
@@ -317,8 +309,6 @@ public class SinglePlayerSetupScreen : BaseScreen
     
     private void DrawErrorMessage(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw error message panel
         var errorPanel = new RectangleF(400f, 500f, 1120f, 60f);
         primitiveBatch.DrawFilledRectangle(
@@ -327,14 +317,10 @@ public class SinglePlayerSetupScreen : BaseScreen
             0f, 
             0.5f, 
             new Color(102, 26, 26, 153));
-        
-        primitiveBatch.End();
     }
     
     private void DrawNavigationInstructions(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw instructions panel at bottom
         var instructionsPanel = new RectangleF(400f, 700f, 1120f, 60f);
         primitiveBatch.DrawFilledRectangle(
@@ -343,7 +329,5 @@ public class SinglePlayerSetupScreen : BaseScreen
             0f, 
             0.5f, 
             new Color(26, 26, 51, 153));
-        
-        primitiveBatch.End();
     }
 } 

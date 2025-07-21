@@ -19,7 +19,6 @@ public class SimpleRenderLoop : IDisposable
     private readonly IInputHandler _inputHandler;
     private readonly UIScalingService _scalingService;
     private readonly ResourceManager _resourceManager;
-    private readonly SimpleTextRenderer _textRenderer;
     private bool _isRunning = false;
     private bool _disposed = false;
     
@@ -29,8 +28,7 @@ public class SimpleRenderLoop : IDisposable
         IScreenManager screenManager,
         IInputHandler inputHandler,
         UIScalingService scalingService,
-        ResourceManager resourceManager,
-        SimpleTextRenderer textRenderer)
+        ResourceManager resourceManager)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
@@ -38,7 +36,6 @@ public class SimpleRenderLoop : IDisposable
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _scalingService = scalingService ?? throw new ArgumentNullException(nameof(scalingService));
         _resourceManager = resourceManager ?? throw new ArgumentNullException(nameof(resourceManager));
-        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
         
         // Initialize Bliss systems
         InitializeBlissSystems();
@@ -78,6 +75,7 @@ public class SimpleRenderLoop : IDisposable
             ProcessInput();
             Update();
             Render();
+            Input.End();
         }
         
         Console.WriteLine("Render loop ended.");
@@ -91,7 +89,6 @@ public class SimpleRenderLoop : IDisposable
         _inputHandler.Update();
         _screenManager.HandleInput();
         
-        Input.End();
     }
     
     private void Update()

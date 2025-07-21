@@ -104,8 +104,6 @@ public class GalaxyScreen : BaseScreen
     
     private void DrawBackground(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw animated starfield background
         for (int i = 0; i < 200; i++)
         {
@@ -123,14 +121,10 @@ public class GalaxyScreen : BaseScreen
                 0.5f, 
                 color);
         }
-        
-        primitiveBatch.End();
     }
     
     private void DrawTitle(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw title panel
         var titlePanel = new RectangleF(50f, 50f, 400f, 80f);
         primitiveBatch.DrawFilledRectangle(
@@ -147,14 +141,10 @@ public class GalaxyScreen : BaseScreen
             0f, 
             0.5f, 
             StarWarsTheme.Border);
-        
-        primitiveBatch.End();
     }
     
     private void DrawPlaceholderContent(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Draw placeholder galaxy content
         var contentPanel = new RectangleF(200f, 200f, 1520f, 600f);
         primitiveBatch.DrawFilledRectangle(
@@ -188,8 +178,6 @@ public class GalaxyScreen : BaseScreen
                 0.5f, 
                 starColor);
         }
-        
-        primitiveBatch.End();
     }
     
     private void DrawButtons(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)

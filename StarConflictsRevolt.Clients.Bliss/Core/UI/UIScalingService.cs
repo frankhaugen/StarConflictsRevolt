@@ -32,10 +32,10 @@ public class UIScalingService
     public void UpdateResolution()
     {
         _currentResolution = new Vector2(_window.GetWidth(), _window.GetHeight());
-        _scaleFactor = _currentResolution / _baseResolution;
-        
-        // Create transform matrix for scaling
-        _transformMatrix = Matrix4x4.CreateScale(_scaleFactor.X, _scaleFactor.Y, 1.0f);
+        // Clamp to avoid zero or negative scale
+        var minScale = 0.1f;
+        _scaleFactor = Vector2.Max(_currentResolution / _baseResolution, new Vector2(minScale, minScale));
+        // Remove transform matrix if not used elsewhere
     }
     
     /// <summary>
@@ -45,7 +45,7 @@ public class UIScalingService
     /// <returns>Position scaled to current window resolution</returns>
     public Vector2 ScalePosition(Vector2 basePosition)
     {
-        return Vector2.Transform(basePosition, _transformMatrix);
+        return basePosition * _scaleFactor;
     }
     
     /// <summary>
@@ -88,7 +88,8 @@ public class UIScalingService
     /// <returns>X coordinate for centered positioning</returns>
     public float CenterHorizontally(float elementWidth)
     {
-        return (_baseResolution.X - elementWidth) / 2f;
+        // Center in the current window, not base resolution
+        return (_currentResolution.X - elementWidth * _scaleFactor.X) / 2f;
     }
     
     /// <summary>
@@ -98,6 +99,6 @@ public class UIScalingService
     /// <returns>Y coordinate for centered positioning</returns>
     public float CenterVertically(float elementHeight)
     {
-        return (_baseResolution.Y - elementHeight) / 2f;
+        return (_currentResolution.Y - elementHeight * _scaleFactor.Y) / 2f;
     }
 } 

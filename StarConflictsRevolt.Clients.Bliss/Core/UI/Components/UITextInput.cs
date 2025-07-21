@@ -62,8 +62,6 @@ public class UITextInput : UIComponent
                       CommandList commandList,
                       Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Determine colors based on state
         var bgColor = GetBackgroundColor();
         var borderColor = GetBorderColor();
@@ -86,8 +84,6 @@ public class UITextInput : UIComponent
         {
             DrawCursor(primitiveBatch);
         }
-        
-        primitiveBatch.End();
     }
     
     public void SetSelected(bool selected)

@@ -67,8 +67,6 @@ public class UIButton : UIComponent
                       CommandList commandList,
                       Framebuffer framebuffer)
     {
-        primitiveBatch.Begin(commandList, framebuffer.OutputDescription);
-        
         // Determine button colors based on state
         var bgColor = GetBackgroundColor();
         var borderColor = GetBorderColor();
@@ -94,8 +92,6 @@ public class UIButton : UIComponent
         {
             DrawHoverEffect(primitiveBatch);
         }
-        
-        primitiveBatch.End();
         
         // Draw text using SimpleTextRenderer
         DrawButtonText(spriteBatch, textColor);

@@ -49,7 +49,7 @@ public class WindowConfiguration
         };
     }
 
-    public static WindowConfiguration Create16x9(int width = 1280, string title = "Star Conflicts Revolt", WindowType type = WindowType.Sdl3, WindowState state = WindowState.AlwaysOnTop | WindowState.Resizable) => new(16.0m / 9.0m, type, width, title, state);
+    public static WindowConfiguration Create16x9(int width = 1280, string title = "Star Conflicts Revolt", WindowType type = WindowType.Sdl3, WindowState state = WindowState.Resizable ) => new(16.0m / 9.0m, type, width, title, state);
 
     public static WindowConfiguration Create4x3(int width = 1024, string title = "Star Conflicts Revolt", WindowType type = WindowType.Sdl3, WindowState state = WindowState.AlwaysOnTop | WindowState.Resizable) => new(4.0m / 3.0m, type, width, title, state);
 
