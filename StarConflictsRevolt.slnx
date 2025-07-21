@@ -1,4 +1,21 @@
 <Solution>
+  <Folder Name="/DesignDocs/">
+    <File Path="DesignDocs\ApiRefactoring.md" />
+    <File Path="DesignDocs\ARCHITECTURE.md" />
+    <File Path="DesignDocs\BasicUiDescription.md" />
+    <File Path="DesignDocs\BlissClient.md" />
+    <File Path="DesignDocs\CombatSystem.md" />
+    <File Path="DesignDocs\DESIGN.md" />
+    <File Path="DesignDocs\EventingAndDatastoreSystemArchitecture.md" />
+    <File Path="DesignDocs\GameActionsFlow.md" />
+    <File Path="DesignDocs\MissionSystem.md" />
+    <File Path="DesignDocs\RebellionGameMechanics.md" />
+    <File Path="DesignDocs\RebellionGameViews.md" />
+    <File Path="DesignDocs\SessionAggregate.md" />
+    <File Path="DesignDocs\SimpleAuth.md" />
+    <File Path="DesignDocs\SimpleAuthAndSelfRegistration.md" />
+    <File Path="DesignDocs\TODOs.md" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="LICENSE" />
