@@ -79,7 +79,7 @@ public class UITextInput : UIComponent
         primitiveBatch.DrawFilledRectangle(borderRect, Vector2.Zero, 0f, 0.5f, borderColor);
         
         // Draw text content
-        DrawTextContent(textColor, spriteBatch);
+        DrawTextContent(textColor, spriteBatch, primitiveBatch);
         
         // Draw cursor if selected
         if (_isSelected && _showCursor)
@@ -128,7 +128,7 @@ public class UITextInput : UIComponent
         return Color.White;
     }
     
-    private void DrawTextContent(Color textColor, SpriteBatch spriteBatch)
+    private void DrawTextContent(Color textColor, SpriteBatch spriteBatch, PrimitiveBatch primitiveBatch)
     {
         var currentValue = _getValue();
         var displayText = string.IsNullOrEmpty(currentValue) ? _placeholder : currentValue;
@@ -139,7 +139,7 @@ public class UITextInput : UIComponent
             _bounds.X + 10, _bounds.Y + 5,
             _bounds.Width - 20, _bounds.Height - 10);
         // Draw the text using SimpleTextRenderer
-        _textRenderer.DrawTextCentered(displayText, textBounds, spriteBatch, "Default", fontSize, fontColor);
+        _textRenderer.DrawTextCentered(displayText, textBounds, spriteBatch, "Default", fontSize, fontColor, primitiveBatch);
     }
     
     private void DrawCursor(PrimitiveBatch primitiveBatch)

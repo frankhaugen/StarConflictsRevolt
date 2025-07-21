@@ -167,7 +167,7 @@ public class GalaxyScreen : BaseScreen
                 primitiveBatch.DrawFilledCircle(center, 20f, 16, 0.5f, starColor);
                 // Draw system name
                 // (Assume _textRenderer is available)
-                _textRenderer.DrawText(system.Name ?? $"System {i+1}", center + new Vector2(-30, 30), spriteBatch, "Default", 18f, Color.White);
+                _textRenderer.DrawText(system.Name ?? $"System {i+1}", center + new Vector2(-30, 30), spriteBatch, "Default", 18f, Color.White, primitiveBatch);
                 // Draw planets
                 if (system.Planets != null)
                 {
@@ -176,7 +176,7 @@ public class GalaxyScreen : BaseScreen
                     {
                         var planetPos = center + new Vector2(-60 + j * 30, 60);
                         primitiveBatch.DrawFilledCircle(planetPos, 8f, 12, 0.5f, new Color(100, 200, 255, 255));
-                        _textRenderer.DrawText(planet.Name ?? $"P{j+1}", planetPos + new Vector2(-10, 10), spriteBatch, "Default", 12f, Color.LightGray);
+                        _textRenderer.DrawText(planet.Name ?? $"P{j+1}", planetPos + new Vector2(-10, 10), spriteBatch, "Default", 12f, Color.LightGray, primitiveBatch);
                         j++;
                     }
                 }
@@ -194,7 +194,7 @@ public class GalaxyScreen : BaseScreen
             0.5f,
             new Color(26, 26, 51, 204));
         // (Assume _textRenderer is available)
-        _textRenderer.DrawTextCentered("Loading galaxy...", loadingPanel, spriteBatch,"Default", 32f, Color.White);
+        _textRenderer.DrawTextCentered("Loading galaxy...", loadingPanel, spriteBatch,"Default", 32f, Color.White, primitiveBatch);
     }
     
     private void DrawButtons(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)

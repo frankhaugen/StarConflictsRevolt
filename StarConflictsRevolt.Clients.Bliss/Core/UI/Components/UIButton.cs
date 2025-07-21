@@ -94,7 +94,7 @@ public class UIButton : UIComponent
         }
         
         // Draw text using SimpleTextRenderer
-        DrawButtonText(spriteBatch, textColor);
+        DrawButtonText(spriteBatch, textColor, primitiveBatch);
     }
     
     public void SetSelected(bool selected)
@@ -180,9 +180,9 @@ public class UIButton : UIComponent
             glowRect, Vector2.Zero, 0f, 0.3f, new Color(102, 102, 153, 51));
     }
     
-    private void DrawButtonText(SpriteBatch spriteBatch, Color textColor)
+    private void DrawButtonText(SpriteBatch spriteBatch, Color textColor, PrimitiveBatch primitiveBatch)
     {
         // Draw text centered in the button using SimpleTextRenderer
-        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor);
+        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor, primitiveBatch);
     }
 } 

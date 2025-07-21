@@ -112,32 +112,32 @@ public class PlaceholderScreen : BaseScreen
         _backButton.Render(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
         
         // Draw text
-        DrawTitleText(spriteBatch, commandList, framebuffer);
-        DrawMessageText(spriteBatch, commandList, framebuffer);
-        DrawButtonText(spriteBatch, commandList, framebuffer);
+        DrawTitleText(spriteBatch, commandList, framebuffer, primitiveBatch);
+        DrawMessageText(spriteBatch, commandList, framebuffer, primitiveBatch);
+        DrawButtonText(spriteBatch, commandList, framebuffer, primitiveBatch);
     }
     
-    private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
+    private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer, PrimitiveBatch primitiveBatch)
     {
         var baseTitlePanel = new RectangleF(_scalingService.CenterHorizontally(800f), 200f, 800f, 150f);
         var scaledTitlePanel = _scalingService.ScaleRectangle(baseTitlePanel);
         
         _textRenderer.DrawTextCentered(
-            _screenName, scaledTitlePanel, spriteBatch, "Default", 32f, Color.White);
+            _screenName, scaledTitlePanel, spriteBatch, "Default", 32f, Color.White, primitiveBatch);
     }
     
-    private void DrawMessageText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
+    private void DrawMessageText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer, PrimitiveBatch primitiveBatch)
     {
         var baseMessagePanel = new RectangleF(_scalingService.CenterHorizontally(600f), 400f, 600f, 100f);
         var scaledMessagePanel = _scalingService.ScaleRectangle(baseMessagePanel);
         
         _textRenderer.DrawTextCentered(
-            "This screen is not yet implemented.", scaledMessagePanel, spriteBatch, "Default", 18f, Color.White);
+            "This screen is not yet implemented.", scaledMessagePanel, spriteBatch, "Default", 18f, Color.White, primitiveBatch);
     }
     
-    private void DrawButtonText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
+    private void DrawButtonText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer, PrimitiveBatch primitiveBatch)
     {
         _textRenderer.DrawTextCentered(
-            _backButton.Text, _backButton.Bounds, spriteBatch, "Default", 18f, Color.White);
+            _backButton.Text, _backButton.Bounds, spriteBatch, "Default", 18f, Color.White, primitiveBatch);
     }
 } 

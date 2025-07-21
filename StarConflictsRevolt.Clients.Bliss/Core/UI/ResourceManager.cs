@@ -67,6 +67,7 @@ public class ResourceManager : IDisposable
         {
             var galaxyFont = new Font("Assets/Fonts/Galaxy.ttf");
             _fonts["Galaxy"] = galaxyFont;
+            _fonts["Default"] = galaxyFont; // Ensure 'Default' always resolves
             _managedResources.Add(galaxyFont);
         }
         catch (Exception ex)
