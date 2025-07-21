@@ -174,12 +174,6 @@ public class SimpleButton : UIComponent
     
     private void DrawButtonText(SpriteBatch spriteBatch, Color textColor)
     {
-        // Calculate text position (centered in button)
-        var textPosition = new Vector2(
-            _bounds.X + _bounds.Width / 2f,
-            _bounds.Y + _bounds.Height / 2f
-        );
-        
         // Draw text centered in the button
         _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor);
     }

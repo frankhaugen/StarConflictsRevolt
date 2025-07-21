@@ -9,6 +9,7 @@ using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
+using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Bliss.Views;
 
@@ -17,6 +18,8 @@ namespace StarConflictsRevolt.Clients.Bliss.Views;
 /// </summary>
 public class GalaxyScreen : BaseScreen
 {
+    public static Guid CurrentSessionId { get; set; }
+    public static WorldDto? CurrentWorld { get; set; }
     private readonly IInputHandler _inputHandler;
     private readonly SimpleTextRenderer _textRenderer;
     private readonly List<UIButton> _buttons = new();
@@ -55,8 +58,16 @@ public class GalaxyScreen : BaseScreen
         // Draw title
         DrawTitle(primitiveBatch, commandList, framebuffer);
         
-        // Draw placeholder content
-        DrawPlaceholderContent(primitiveBatch, commandList, framebuffer);
+        // Draw real galaxy if loaded
+        if (CurrentWorld != null)
+        {
+            DrawGalaxyContent(primitiveBatch, commandList, framebuffer, CurrentWorld, spriteBatch);
+        }
+        else
+        {
+            // Draw loading message
+            DrawLoadingMessage(primitiveBatch, commandList, framebuffer, spriteBatch);
+        }
         
         // Draw buttons
         DrawButtons(immediateRenderer, primitiveBatch, spriteBatch, commandList, framebuffer);
@@ -143,41 +154,47 @@ public class GalaxyScreen : BaseScreen
             StarWarsTheme.Border);
     }
     
-    private void DrawPlaceholderContent(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
+    private void DrawGalaxyContent(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer, WorldDto world, SpriteBatch spriteBatch)
     {
-        // Draw placeholder galaxy content
-        var contentPanel = new RectangleF(200f, 200f, 1520f, 600f);
-        primitiveBatch.DrawFilledRectangle(
-            contentPanel, 
-            Vector2.Zero, 
-            0f, 
-            0.5f, 
-            new Color(26, 26, 51, 153));
-        
-        // Draw border
-        primitiveBatch.DrawFilledRectangle(
-            new RectangleF(contentPanel.X - 3, contentPanel.Y - 3, contentPanel.Width + 6, contentPanel.Height + 6), 
-            Vector2.Zero, 
-            0f, 
-            0.5f, 
-            StarWarsTheme.Border);
-        
-        // Draw some placeholder star systems
-        for (int i = 0; i < 5; i++)
+        // Example: Draw star systems and planets as circles and text
+        if (world.Galaxy?.StarSystems != null)
         {
-            var center = new Vector2(
-                400f + i * 200f + (float)Math.Sin(_time * 0.5f + i) * 20,
-                400f + (float)Math.Cos(_time * 0.3f + i) * 20
-            );
-            
-            var starColor = new Color(255, 255, 200, 255);
-            primitiveBatch.DrawFilledCircle(
-                center, 
-                20f, 
-                16, 
-                0.5f, 
-                starColor);
+            int i = 0;
+            foreach (var system in world.Galaxy.StarSystems)
+            {
+                var center = new Vector2(400f + i * 200f, 400f);
+                var starColor = new Color(255, 255, 200, 255);
+                primitiveBatch.DrawFilledCircle(center, 20f, 16, 0.5f, starColor);
+                // Draw system name
+                // (Assume _textRenderer is available)
+                _textRenderer.DrawText(system.Name ?? $"System {i+1}", center + new Vector2(-30, 30), spriteBatch, "Default", 18f, Color.White);
+                // Draw planets
+                if (system.Planets != null)
+                {
+                    int j = 0;
+                    foreach (var planet in system.Planets)
+                    {
+                        var planetPos = center + new Vector2(-60 + j * 30, 60);
+                        primitiveBatch.DrawFilledCircle(planetPos, 8f, 12, 0.5f, new Color(100, 200, 255, 255));
+                        _textRenderer.DrawText(planet.Name ?? $"P{j+1}", planetPos + new Vector2(-10, 10), spriteBatch, "Default", 12f, Color.LightGray);
+                        j++;
+                    }
+                }
+                i++;
+            }
         }
+    }
+    private void DrawLoadingMessage(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer, SpriteBatch spriteBatch)
+    {
+        var loadingPanel = new RectangleF(600f, 500f, 600f, 80f);
+        primitiveBatch.DrawFilledRectangle(
+            loadingPanel,
+            Vector2.Zero,
+            0f,
+            0.5f,
+            new Color(26, 26, 51, 204));
+        // (Assume _textRenderer is available)
+        _textRenderer.DrawTextCentered("Loading galaxy...", loadingPanel, spriteBatch,"Default", 32f, Color.White);
     }
     
     private void DrawButtons(ImmediateRenderer immediateRenderer, PrimitiveBatch primitiveBatch, SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)

@@ -2,6 +2,11 @@ using StarConflictsRevolt.Clients.Bliss.Core.UI;
 using StarConflictsRevolt.Clients.Bliss.Core.UI.Interfaces;
 using StarConflictsRevolt.Clients.Bliss.Views;
 using StarConflictsRevolt.Clients.Shared.Player;
+using StarConflictsRevolt.Clients.Shared.Http;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
+using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Bliss.Infrastructure.Configuration;
 
@@ -36,6 +41,15 @@ public static class ServiceCollectionExtensions
         
         // Register screen factory
         services.AddSingleton<IScreenFactory, ScreenFactory>();
+        
+        // Register HTTP API client
+        services.AddHttpClient<IHttpApiClient, HttpApiClient>((provider, client) =>
+        {
+            var config = provider.GetRequiredService<IOptions<GameClientConfiguration>>().Value;
+            client.BaseAddress = new Uri(config.ApiBaseUrl ?? "http://localhost:5267");
+        });
+        // Register SignalR service
+        services.AddSingleton<ISignalRService, SignalRService>();
         
         return services;
     }

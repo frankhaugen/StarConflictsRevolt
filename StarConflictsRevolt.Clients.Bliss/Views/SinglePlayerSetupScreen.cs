@@ -10,6 +10,11 @@ using Veldrid;
 using Color = Bliss.CSharp.Colors.Color;
 using RectangleF = Bliss.CSharp.Transformations.RectangleF;
 using StarConflictsRevolt.Clients.Shared.Player;
+using StarConflictsRevolt.Clients.Shared.Http;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using StarConflictsRevolt.Clients.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace StarConflictsRevolt.Clients.Bliss.Views;
 
@@ -22,6 +27,7 @@ public class SinglePlayerSetupScreen : BaseScreen
     private readonly IInputHandler _inputHandler;
     private readonly IPlayerProfileProvider _playerProfileProvider;
     private readonly SimpleTextRenderer _textRenderer;
+    private readonly IServiceProvider _serviceProvider;
     private readonly List<UIButton> _buttons = new();
     private readonly List<UIComponent> _inputFields = new();
     private int _selectedComponentIndex = 0;
@@ -29,13 +35,14 @@ public class SinglePlayerSetupScreen : BaseScreen
     private string _errorMessage = "";
     private bool _hasError = false;
     
-    public SinglePlayerSetupScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, SimpleTextRenderer textRenderer) 
+    public SinglePlayerSetupScreen(IInputHandler inputHandler, IPlayerProfileProvider playerProfileProvider, SimpleTextRenderer textRenderer, IServiceProvider serviceProvider) 
         : base("single-player-setup", "START NEW SINGLE PLAYER GAME")
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _playerProfileProvider = playerProfileProvider ?? throw new ArgumentNullException(nameof(playerProfileProvider));
         _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
-        
+        this._serviceProvider = serviceProvider;
+
         InitializeComponents();
     }
     
@@ -231,7 +238,7 @@ public class SinglePlayerSetupScreen : BaseScreen
         }
     }
     
-    private void StartGame()
+    private async void StartGame()
     {
         // Validate session name
         if (string.IsNullOrWhiteSpace(_sessionName))
@@ -240,21 +247,49 @@ public class SinglePlayerSetupScreen : BaseScreen
             _hasError = true;
             return;
         }
-        
         if (_sessionName.Length < 3)
         {
             _errorMessage = "Name must be at least 3 characters";
             _hasError = true;
             return;
         }
-        
-        // Clear any previous errors
         _hasError = false;
         _errorMessage = "";
-        
-        // TODO: Create single-player game session
-        // For now, just navigate to a placeholder screen
-        RequestNavigation("galaxy");
+        try
+        {
+            // Get required services
+            var apiClient = _serviceProvider.GetRequiredService<IHttpApiClient>();
+            var signalR = _serviceProvider.GetRequiredService<ISignalRService>();
+            var playerProfileProvider = _serviceProvider.GetRequiredService<IPlayerProfileProvider>();
+            var playerName = playerProfileProvider.GetPlayerProfile()?.Name ?? "Player";
+            // Create session using the extension method
+            var sessionResponse = await apiClient.CreateNewSessionAsync(_sessionName, "SinglePlayer", CancellationToken.None);
+            if (sessionResponse == null || sessionResponse.SessionId == Guid.Empty)
+            {
+                _errorMessage = "Failed to create session. Please check your connection.";
+                _hasError = true;
+                return;
+            }
+            // Store session info for the galaxy screen
+            GalaxyScreen.CurrentSessionId = sessionResponse.SessionId;
+            GalaxyScreen.CurrentWorld = sessionResponse.World;
+            // Start SignalR and join session
+            await signalR.StartAsync();
+            await signalR.JoinSessionAsync(sessionResponse.SessionId);
+            // Subscribe to world updates
+            signalR.FullWorldReceived += world => GalaxyScreen.CurrentWorld = world;
+            signalR.UpdatesReceived += updates =>
+            {
+                // TODO: Apply updates to GalaxyScreen.CurrentWorld
+            };
+            // Navigate to galaxy screen
+            RequestNavigation("galaxy");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error: {ex.Message}";
+            _hasError = true;
+        }
     }
     
     private void DrawBackground(PrimitiveBatch primitiveBatch, CommandList commandList, Framebuffer framebuffer)
