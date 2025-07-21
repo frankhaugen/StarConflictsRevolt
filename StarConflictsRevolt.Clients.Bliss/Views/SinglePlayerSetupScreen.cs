@@ -130,7 +130,7 @@ public class SinglePlayerSetupScreen : BaseScreen
         );
         
         var inputField = new UITextInput(_inputHandler, "Enter session name", inputBounds, 
-            () => _sessionName, (value) => _sessionName = value);
+            () => _sessionName, (value) => _sessionName = value, _textRenderer);
         _inputFields.Add(inputField);
         
         // Create buttons

@@ -23,6 +23,7 @@ public class UITextInput : UIComponent
     private bool _isEnabled = true;
     private float _cursorBlinkTime = 0f;
     private bool _showCursor = true;
+    private readonly SimpleTextRenderer _textRenderer;
     
     public string Placeholder => _placeholder;
     public RectangleF Bounds => _bounds;
@@ -34,13 +35,14 @@ public class UITextInput : UIComponent
     }
     
     public UITextInput(IInputHandler inputHandler, string placeholder, RectangleF bounds, 
-                       Func<string> getValue, Action<string> setValue)
+                       Func<string> getValue, Action<string> setValue, SimpleTextRenderer textRenderer)
     {
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
         _placeholder = placeholder ?? throw new ArgumentNullException(nameof(placeholder));
         _bounds = bounds;
         _getValue = getValue ?? throw new ArgumentNullException(nameof(getValue));
         _setValue = setValue ?? throw new ArgumentNullException(nameof(setValue));
+        _textRenderer = textRenderer ?? throw new ArgumentNullException(nameof(textRenderer));
     }
     
     public void Update(float deltaTime)
@@ -77,7 +79,7 @@ public class UITextInput : UIComponent
         primitiveBatch.DrawFilledRectangle(borderRect, Vector2.Zero, 0f, 0.5f, borderColor);
         
         // Draw text content
-        DrawTextContent(primitiveBatch, textColor);
+        DrawTextContent(textColor, spriteBatch);
         
         // Draw cursor if selected
         if (_isSelected && _showCursor)
@@ -126,17 +128,18 @@ public class UITextInput : UIComponent
         return Color.White;
     }
     
-    private void DrawTextContent(PrimitiveBatch primitiveBatch, Color textColor)
+    private void DrawTextContent(Color textColor, SpriteBatch spriteBatch)
     {
         var currentValue = _getValue();
         var displayText = string.IsNullOrEmpty(currentValue) ? _placeholder : currentValue;
-        
-        // Draw text area (placeholder for actual text rendering)
+        var isPlaceholder = string.IsNullOrEmpty(currentValue);
+        var fontColor = isPlaceholder ? new Color(180, 180, 180, 255) : textColor;
+        var fontSize = 20f;
         var textBounds = new RectangleF(
             _bounds.X + 10, _bounds.Y + 5,
             _bounds.Width - 20, _bounds.Height - 10);
-            
-        primitiveBatch.DrawFilledRectangle(textBounds, Vector2.Zero, 0f, 0.1f, textColor);
+        // Draw the text using SimpleTextRenderer
+        _textRenderer.DrawTextCentered(displayText, textBounds, spriteBatch, "Default", fontSize, fontColor);
     }
     
     private void DrawCursor(PrimitiveBatch primitiveBatch)
