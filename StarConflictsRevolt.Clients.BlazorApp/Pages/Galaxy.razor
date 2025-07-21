@@ -1,0 +1,79 @@
+@page "/galaxy"
+
+<PageTitle>Galaxy View</PageTitle>
+
+<div class="galaxy-background">
+    <!-- TODO: Replace with actual galaxy background/visualization -->
+</div>
+
+<div class="galaxy-title-panel">
+    <h1>GALAXY VIEW</h1>
+</div>
+
+<div class="galaxy-placeholder-content">
+    <p>This is a placeholder for the galaxy view. The full implementation will show the galaxy map and related UI.</p>
+</div>
+
+<div class="galaxy-menu-buttons">
+    <button class="menu-btn" @onclick="GoToMenu">Back to Menu</button>
+    <button class="menu-btn" @onclick="ExitGame">Exit Game</button>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void GoToMenu()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void ExitGame()
+    {
+        // TODO: Implement exit logic (for web, could show a message or close tab)
+        // For now, just navigate to a placeholder
+        NavigationManager.NavigateTo("/placeholder");
+    }
+}
+
+<style>
+.galaxy-background {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(120deg, #1a1a40 0%, #0a0a23 100%);
+    z-index: 0;
+    /* TODO: Add galaxy visualization */
+}
+.galaxy-title-panel {
+    margin-top: 60px;
+    text-align: center;
+    z-index: 1;
+}
+.galaxy-placeholder-content {
+    margin-top: 40px;
+    text-align: center;
+    color: #ccc;
+    z-index: 1;
+}
+.galaxy-menu-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 24px;
+    z-index: 1;
+}
+.menu-btn {
+    font-size: 1.2rem;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: none;
+    background: #222255;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.menu-btn:hover {
+    background: #444488;
+}
+</style> 
