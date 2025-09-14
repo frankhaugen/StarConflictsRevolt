@@ -28,7 +28,7 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "ht
         .WaitFor(redis)
     ;
 
-var blazor = builder.AddProject<StarConflictsRevolt_Client_Blazor>("blazor", "http")
+var blazor = builder.AddProject<StarConflictsRevolt_Clients_Blazor>("blazor", "http")
     .WithReference(webapi)
     .WaitFor(webapi)
     .WithEnvironment("GameClientConfiguration__ApiBaseUrl", webapi.GetEndpoint("http"))
