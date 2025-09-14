@@ -27,13 +27,6 @@
             console.error('Unhandled Promise Rejection:', e.reason);
         });
         
-        // Debug Blazor startup
-        window.Blazor.start().then(function() {
-            console.log('Blazor started successfully');
-        }).catch(function(error) {
-            console.error('Blazor failed to start:', error);
-        });
-        
         // Debug function for button clicks
         window.debugButtonClick = function(buttonName) {
             console.log('Button clicked:', buttonName, new Date().toISOString());
@@ -48,6 +41,13 @@
         window.debugServiceCall = function(service, method, data) {
             console.log('Service call:', service, method, data);
         };
+        
+        // Ensure functions are available immediately
+        console.log('Debug functions initialized:', {
+            debugButtonClick: typeof window.debugButtonClick,
+            debugNavigation: typeof window.debugNavigation,
+            debugServiceCall: typeof window.debugServiceCall
+        });
     </script>
 </head>
 
@@ -70,6 +70,17 @@
             childList: true,
             subtree: true
         });
+        
+        // Debug Blazor startup (after Blazor script has loaded)
+        if (window.Blazor) {
+            window.Blazor.start().then(function() {
+                console.log('Blazor started successfully');
+            }).catch(function(error) {
+                console.error('Blazor failed to start:', error);
+            });
+        } else {
+            console.warn('Blazor object not available yet');
+        }
         
         console.log('Star Conflicts Revolt - App initialized');
     </script>

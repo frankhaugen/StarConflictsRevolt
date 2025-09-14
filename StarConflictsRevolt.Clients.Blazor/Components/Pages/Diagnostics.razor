@@ -338,10 +338,10 @@
     // Raw state variables
     private string rawStateJson = "Loading...";
 
+    private bool isFirstRender = true;
+
     protected override async Task OnInitializedAsync()
     {
-        await JsInterop.LogInfoAsync("Diagnostics component initializing");
-        
         // Subscribe to SignalR events
         SignalRService.UpdatesReceived += OnSignalRMessage;
         SignalRService.ConnectionClosed += OnSignalRConnectionClosed;
@@ -356,8 +356,16 @@
         
         // Initial data load
         await RefreshDataAsync();
-        
-        await JsInterop.LogInfoAsync("Diagnostics component initialized successfully");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isFirstRender = false;
+            await JsInterop.LogInfoAsync("Diagnostics component initializing");
+            await JsInterop.LogInfoAsync("Diagnostics component initialized successfully");
+        }
     }
 
     private async Task RefreshData()
@@ -396,7 +404,10 @@
     {
         try
         {
-            await JsInterop.LogDebugAsync("Updating authentication status");
+            if (!isFirstRender)
+            {
+                await JsInterop.LogDebugAsync("Updating authentication status");
+            }
             
             // Check if we have a valid token
             if (TokenProvider != null)
@@ -406,7 +417,10 @@
                     currentToken = await TokenProvider.GetTokenAsync();
                     hasValidToken = !string.IsNullOrEmpty(currentToken);
                     
-                    await JsInterop.LogInfoAsync($"Token retrieved: {hasValidToken}, Length: {currentToken?.Length ?? 0}");
+                    if (!isFirstRender)
+                    {
+                        await JsInterop.LogInfoAsync($"Token retrieved: {hasValidToken}, Length: {currentToken?.Length ?? 0}");
+                    }
                     
                     if (hasValidToken)
                     {
@@ -417,13 +431,19 @@
                         
                         isAuthenticated = true;
                         AddLogEntry("success", "Authentication successful - valid token available");
-                        await JsInterop.LogInfoAsync("Authentication successful");
+                        if (!isFirstRender)
+                        {
+                            await JsInterop.LogInfoAsync("Authentication successful");
+                        }
                     }
                     else
                     {
                         isAuthenticated = false;
                         AddLogEntry("warning", "No valid token available");
-                        await JsInterop.LogWarningAsync("No valid token available");
+                        if (!isFirstRender)
+                        {
+                            await JsInterop.LogWarningAsync("No valid token available");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -431,8 +451,11 @@
                     isAuthenticated = false;
                     hasValidToken = false;
                     AddLogEntry("error", $"Authentication failed: {ex.Message}");
-                    await JsInterop.LogErrorAsync($"Authentication failed: {ex.Message}");
-                    await JsInterop.LogExceptionAsync(ex);
+                    if (!isFirstRender)
+                    {
+                        await JsInterop.LogErrorAsync($"Authentication failed: {ex.Message}");
+                        await JsInterop.LogExceptionAsync(ex);
+                    }
                 }
             }
             else
@@ -440,14 +463,20 @@
                 isAuthenticated = false;
                 hasValidToken = false;
                 AddLogEntry("warning", "Token provider not available");
-                await JsInterop.LogWarningAsync("Token provider not available");
+                if (!isFirstRender)
+                {
+                    await JsInterop.LogWarningAsync("Token provider not available");
+                }
             }
         }
         catch (Exception ex)
         {
             AddLogEntry("error", $"Error checking authentication status: {ex.Message}");
-            await JsInterop.LogErrorAsync($"Error checking authentication status: {ex.Message}");
-            await JsInterop.LogExceptionAsync(ex);
+            if (!isFirstRender)
+            {
+                await JsInterop.LogErrorAsync($"Error checking authentication status: {ex.Message}");
+                await JsInterop.LogExceptionAsync(ex);
+            }
         }
     }
 
@@ -536,30 +565,33 @@
             activityLog = activityLog.Take(100).ToList();
         }
         
-        // Also log to JavaScript console
-        try
+        // Also log to JavaScript console (only if component is rendered)
+        if (!isFirstRender)
         {
-            var jsMessage = $"[{type.ToUpper()}] {message}";
-            switch (type.ToLower())
+            try
             {
-                case "error":
-                    await JsInterop.LogErrorAsync(jsMessage);
-                    break;
-                case "warning":
-                    await JsInterop.LogWarningAsync(jsMessage);
-                    break;
-                case "success":
-                    await JsInterop.LogInfoAsync(jsMessage);
-                    break;
-                default:
-                    await JsInterop.LogDebugAsync(jsMessage);
-                    break;
+                var jsMessage = $"[{type.ToUpper()}] {message}";
+                switch (type.ToLower())
+                {
+                    case "error":
+                        await JsInterop.LogErrorAsync(jsMessage);
+                        break;
+                    case "warning":
+                        await JsInterop.LogWarningAsync(jsMessage);
+                        break;
+                    case "success":
+                        await JsInterop.LogInfoAsync(jsMessage);
+                        break;
+                    default:
+                        await JsInterop.LogDebugAsync(jsMessage);
+                        break;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            // Don't let JS logging errors break the main functionality
-            Logger.LogWarning(ex, "Failed to log to JavaScript console");
+            catch (Exception ex)
+            {
+                // Don't let JS logging errors break the main functionality
+                Logger.LogWarning(ex, "Failed to log to JavaScript console");
+            }
         }
         
         InvokeAsync(StateHasChanged);
@@ -679,7 +711,10 @@
     {
         try
         {
-            await JsInterop.LogInfoAsync("Requesting new token");
+            if (!isFirstRender)
+            {
+                await JsInterop.LogInfoAsync("Requesting new token");
+            }
             AddLogEntry("info", "Requesting new token...");
             
             // Force token refresh by clearing cache if possible
@@ -697,25 +732,37 @@
                     isAuthenticated = true;
                     
                     AddLogEntry("success", "New token obtained successfully");
-                    await JsInterop.LogInfoAsync("New token obtained successfully");
+                    if (!isFirstRender)
+                    {
+                        await JsInterop.LogInfoAsync("New token obtained successfully");
+                    }
                 }
                 else
                 {
                     AddLogEntry("error", "Failed to obtain new token");
-                    await JsInterop.LogErrorAsync("Failed to obtain new token");
+                    if (!isFirstRender)
+                    {
+                        await JsInterop.LogErrorAsync("Failed to obtain new token");
+                    }
                 }
             }
             else
             {
                 AddLogEntry("error", "Token provider not available");
-                await JsInterop.LogErrorAsync("Token provider not available");
+                if (!isFirstRender)
+                {
+                    await JsInterop.LogErrorAsync("Token provider not available");
+                }
             }
         }
         catch (Exception ex)
         {
             AddLogEntry("error", $"Error requesting new token: {ex.Message}");
-            await JsInterop.LogErrorAsync($"Error requesting new token: {ex.Message}");
-            await JsInterop.LogExceptionAsync(ex);
+            if (!isFirstRender)
+            {
+                await JsInterop.LogErrorAsync($"Error requesting new token: {ex.Message}");
+                await JsInterop.LogExceptionAsync(ex);
+            }
         }
     }
 

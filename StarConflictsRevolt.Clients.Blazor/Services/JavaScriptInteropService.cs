@@ -33,6 +33,11 @@ public class JavaScriptInteropService : IJavaScriptInteropService
             await _jsRuntime.InvokeVoidAsync("console.log", $"[Blazor] {message}");
             _logger.LogDebug("JS Log: {Message}", message);
         }
+        catch (Exception ex) when (ex is InvalidOperationException && ex.Message.Contains("prerendering"))
+        {
+            // Ignore prerendering errors - this is expected during server-side rendering
+            _logger.LogDebug("JS Log skipped during prerendering: {Message}", message);
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to log to JavaScript console: {Message}", message);
@@ -45,6 +50,10 @@ public class JavaScriptInteropService : IJavaScriptInteropService
         {
             await _jsRuntime.InvokeVoidAsync("console.error", $"[Blazor ERROR] {message}");
             _logger.LogError("JS Error: {Message}", message);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException && ex.Message.Contains("prerendering"))
+        {
+            _logger.LogDebug("JS Error skipped during prerendering: {Message}", message);
         }
         catch (Exception ex)
         {
@@ -59,6 +68,10 @@ public class JavaScriptInteropService : IJavaScriptInteropService
             await _jsRuntime.InvokeVoidAsync("console.warn", $"[Blazor WARNING] {message}");
             _logger.LogWarning("JS Warning: {Message}", message);
         }
+        catch (Exception ex) when (ex is InvalidOperationException && ex.Message.Contains("prerendering"))
+        {
+            _logger.LogDebug("JS Warning skipped during prerendering: {Message}", message);
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to log warning to JavaScript console: {Message}", message);
@@ -71,6 +84,10 @@ public class JavaScriptInteropService : IJavaScriptInteropService
         {
             await _jsRuntime.InvokeVoidAsync("console.info", $"[Blazor INFO] {message}");
             _logger.LogInformation("JS Info: {Message}", message);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException && ex.Message.Contains("prerendering"))
+        {
+            _logger.LogDebug("JS Info skipped during prerendering: {Message}", message);
         }
         catch (Exception ex)
         {
@@ -85,6 +102,10 @@ public class JavaScriptInteropService : IJavaScriptInteropService
             await _jsRuntime.InvokeVoidAsync("console.debug", $"[Blazor DEBUG] {message}");
             _logger.LogDebug("JS Debug: {Message}", message);
         }
+        catch (Exception ex) when (ex is InvalidOperationException && ex.Message.Contains("prerendering"))
+        {
+            _logger.LogDebug("JS Debug skipped during prerendering: {Message}", message);
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to log debug to JavaScript console: {Message}", message);
@@ -96,11 +117,30 @@ public class JavaScriptInteropService : IJavaScriptInteropService
         await LogInfoAsync($"Button clicked: {buttonName}");
         try
         {
-            await _jsRuntime.InvokeVoidAsync("debugButtonClick", buttonName);
+            // Check if the function exists before calling it
+            var functionExists = await _jsRuntime.InvokeAsync<bool>("typeof window.debugButtonClick === 'function'");
+            if (functionExists)
+            {
+                await _jsRuntime.InvokeVoidAsync("debugButtonClick", buttonName);
+            }
+            else
+            {
+                _logger.LogDebug("debugButtonClick function not available yet, using console.log instead");
+                await _jsRuntime.InvokeVoidAsync("console.log", $"Button clicked: {buttonName} (fallback)");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to call debugButtonClick: {ButtonName}", buttonName);
+            // Fallback to basic console.log
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("console.log", $"Button clicked: {buttonName} (fallback after error)");
+            }
+            catch (Exception fallbackEx)
+            {
+                _logger.LogError(fallbackEx, "Even fallback console.log failed for button: {ButtonName}", buttonName);
+            }
         }
     }
 

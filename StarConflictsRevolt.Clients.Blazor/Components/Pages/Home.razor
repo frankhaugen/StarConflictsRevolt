@@ -145,11 +145,13 @@
     private DateTime tokenExpiry = DateTime.MinValue;
     private DateTime lastUpdate = DateTime.Now;
 
+    private bool isFirstRender = true;
+
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("Home component initialized");
         
-        // Check authentication status
+        // Check authentication status (without JS interop)
         await UpdateAuthenticationStatus();
         
         // Subscribe to game state changes
@@ -157,8 +159,15 @@
         
         // Update debug info periodically
         _ = Task.Run(UpdateDebugInfoPeriodically);
-        
-        await JSRuntime.InvokeVoidAsync("console.log", "Home component initialized successfully");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isFirstRender = false;
+            await JSRuntime.InvokeVoidAsync("console.log", "Home component initialized successfully");
+        }
     }
 
     private async Task UpdateAuthenticationStatus()
@@ -176,13 +185,20 @@
                     tokenExpiry = DateTime.UtcNow.AddHours(1);
                 }
                 
-                await JSRuntime.InvokeVoidAsync("console.log", $"Authentication status: {hasValidToken}");
+                // Only log to JS console if component is already rendered
+                if (!isFirstRender)
+                {
+                    await JSRuntime.InvokeVoidAsync("console.log", $"Authentication status: {hasValidToken}");
+                }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error checking authentication status");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Authentication error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Authentication error: {ex.Message}");
+            }
         }
     }
 
@@ -209,8 +225,11 @@
             currentAction = "single-player";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "single-player");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/singleplayer");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "single-player");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/singleplayer");
+            }
             
             Logger.LogInformation("Navigating to single player");
             Navigation.NavigateTo("/singleplayer");
@@ -218,7 +237,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to single player");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
@@ -230,14 +252,20 @@
 
     private async Task NavigateToMultiplayer()
     {
+        // Log navigation attempt
+        await JSRuntime.InvokeVoidAsync("console.log", "Attempting to navigate to multiplayer");
+        
         try
         {
             isLoading = true;
             currentAction = "multiplayer";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "multiplayer");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/multiplayer");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "multiplayer");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/multiplayer");
+            }
             
             Logger.LogInformation("Navigating to multiplayer");
             Navigation.NavigateTo("/multiplayer");
@@ -245,7 +273,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to multiplayer");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
@@ -263,8 +294,11 @@
             currentAction = "join-session";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "join-session");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/sessions");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "join-session");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/sessions");
+            }
             
             Logger.LogInformation("Navigating to sessions");
             Navigation.NavigateTo("/sessions");
@@ -272,7 +306,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to sessions");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
@@ -290,8 +327,11 @@
             currentAction = "options";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "options");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/options");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "options");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/options");
+            }
             
             Logger.LogInformation("Navigating to options");
             Navigation.NavigateTo("/options");
@@ -299,7 +339,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to options");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
@@ -317,8 +360,11 @@
             currentAction = "diagnostics";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "diagnostics");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/diagnostics");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "diagnostics");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/diagnostics");
+            }
             
             Logger.LogInformation("Navigating to diagnostics");
             Navigation.NavigateTo("/diagnostics");
@@ -326,7 +372,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to diagnostics");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
@@ -344,8 +393,11 @@
             currentAction = "test";
             StateHasChanged();
             
-            await JSRuntime.InvokeVoidAsync("debugButtonClick", "test");
-            await JSRuntime.InvokeVoidAsync("debugNavigation", "/test");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("debugButtonClick", "test");
+                await JSRuntime.InvokeVoidAsync("debugNavigation", "/test");
+            }
             
             Logger.LogInformation("Navigating to test page");
             Navigation.NavigateTo("/test");
@@ -353,7 +405,10 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error navigating to test page");
-            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            if (!isFirstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+            }
         }
         finally
         {
