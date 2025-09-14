@@ -45,6 +45,7 @@ public class BlazorProgramConfigurationTests
         });
 
         // Add Blazor-specific services
+        builder.Services.AddSingleton<TelemetryService>();
         builder.Services.AddScoped<IGameStateService, GameStateService>();
         builder.Services.AddScoped<BlazorSignalRService>();
 
@@ -125,6 +126,7 @@ public class BlazorProgramConfigurationTests
         });
         builder.Services.AddScoped<IGameStateService, GameStateService>();
         builder.Services.AddScoped<BlazorSignalRService>();
+        builder.Services.AddSingleton<TelemetryService>();
 
         // Act
         var app = builder.Build();

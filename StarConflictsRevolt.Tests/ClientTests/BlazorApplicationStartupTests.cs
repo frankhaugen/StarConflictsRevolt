@@ -41,6 +41,7 @@ public class BlazorApplicationStartupTests
         });
 
         // Add Blazor-specific services
+        builder.Services.AddSingleton<TelemetryService>();
         builder.Services.AddScoped<IGameStateService, GameStateService>();
         builder.Services.AddScoped<BlazorSignalRService>();
 
@@ -126,6 +127,8 @@ public class BlazorApplicationStartupTests
         });
         
         builder.Services.AddSingleton<ISignalRService, SignalRService>();
+        builder.Services.AddSingleton<TelemetryService>();
+
         builder.Services.AddHttpClient("GameApi", client =>
         {
             client.BaseAddress = new Uri("http://localhost:5000");

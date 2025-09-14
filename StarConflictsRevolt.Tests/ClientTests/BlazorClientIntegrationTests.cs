@@ -45,6 +45,7 @@ public class BlazorClientIntegrationTests
         });
         
         // Add Blazor-specific services
+        services.AddSingleton<TelemetryService>();
         services.AddScoped<IGameStateService, GameStateService>();
         services.AddScoped<BlazorSignalRService>();
 
@@ -116,6 +117,8 @@ public class BlazorClientIntegrationTests
         });
         
         services.AddSingleton<ISignalRService, SignalRService>();
+        services.AddSingleton<TelemetryService>();
+
         services.AddHttpClient("GameApi", client =>
         {
             client.BaseAddress = new Uri($"http://localhost:{testHost.Port}");
@@ -156,6 +159,7 @@ public class BlazorClientIntegrationTests
         });
         
         services.AddSingleton<ISignalRService, SignalRService>();
+        services.AddSingleton<TelemetryService>();
         services.AddHttpClient("GameApi", client =>
         {
             client.BaseAddress = new Uri($"http://localhost:{testHost.Port}");
@@ -194,6 +198,7 @@ public class BlazorClientIntegrationTests
         });
         
         services.AddSingleton<ISignalRService, SignalRService>();
+        services.AddSingleton<TelemetryService>();
         services.AddHttpClient("GameApi", client =>
         {
             client.BaseAddress = new Uri("http://localhost:5000");

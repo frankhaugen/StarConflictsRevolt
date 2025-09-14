@@ -32,6 +32,16 @@ public class GameStateServiceTests
         // Create service under test
         _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService);
     }
+    
+    private static StringContent CreateJsonContent<T>(T obj)
+    {
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(obj, jsonOptions);
+        return new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+    }
 
     public void Dispose()
     {
@@ -54,8 +64,11 @@ public class GameStateServiceTests
             )
         };
         
-        _mockHttpClient.CreateNewSessionAsync(sessionName, "SinglePlayer")
-            .Returns(Task.FromResult(sessionResponse));
+        _mockHttpClient.PostAsync("/game/session", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = CreateJsonContent(sessionResponse)
+            }));
 
         // Act
         var result = await _gameStateService.CreateSessionAsync(sessionName);
@@ -75,8 +88,8 @@ public class GameStateServiceTests
     {
         // Arrange
         var sessionName = "Test Session";
-        _mockHttpClient.CreateNewSessionAsync(sessionName, "SinglePlayer")
-            .Returns(Task.FromException<SessionResponse?>(new Exception("Network error")));
+        _mockHttpClient.PostAsync("/game/session", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<HttpResponseMessage>(new Exception("Network error")));
 
         // Act
         var result = await _gameStateService.CreateSessionAsync(sessionName);
@@ -101,8 +114,11 @@ public class GameStateServiceTests
             )
         };
         
-        _mockHttpClient.JoinSessionAsync(sessionId, "Player")
-            .Returns(Task.FromResult(sessionResponse));
+        _mockHttpClient.PostAsync($"/game/session/{sessionId}/join", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = CreateJsonContent(sessionResponse)
+            }));
 
         // Act
         var result = await _gameStateService.JoinSessionAsync(sessionId);
@@ -131,8 +147,11 @@ public class GameStateServiceTests
             )
         };
         
-        _mockHttpClient.CreateNewSessionAsync(Arg.Any<string>(), "SinglePlayer")
-            .Returns(Task.FromResult(sessionResponse));
+        _mockHttpClient.PostAsync("/game/session", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = CreateJsonContent(sessionResponse)
+            }));
         
         // Create a session first
         await _gameStateService.CreateSessionAsync("Test Session");
@@ -171,7 +190,8 @@ public class GameStateServiceTests
             }
         };
         
-        _mockHttpClient.GetSessionsAsync().Returns(Task.FromResult(sessionInfos));
+        _mockHttpClient.GetAsync<List<SessionInfo>>("/game/sessions", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(sessionInfos));
 
         // Act
         var result = await _gameStateService.GetAvailableSessionsAsync();
@@ -191,15 +211,15 @@ public class GameStateServiceTests
         var fromPlanetId = Guid.NewGuid();
         var toPlanetId = Guid.NewGuid();
         
-        _mockHttpClient.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId)
-            .Returns(Task.FromResult(true));
+        _mockHttpClient.PostAsync("/game/move-fleet", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)));
 
         // Act
         var result = await _gameStateService.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _mockHttpClient.Received(1).MoveFleetAsync(fleetId, fromPlanetId, toPlanetId);
+        await _mockHttpClient.Received(1).PostAsync("/game/move-fleet", Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -209,15 +229,15 @@ public class GameStateServiceTests
         var planetId = Guid.NewGuid();
         var structureType = "factory";
         
-        _mockHttpClient.BuildStructureAsync(planetId, structureType)
-            .Returns(Task.FromResult(true));
+        _mockHttpClient.PostAsync("/game/build-structure", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)));
 
         // Act
         var result = await _gameStateService.BuildStructureAsync(planetId, structureType);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _mockHttpClient.Received(1).BuildStructureAsync(planetId, structureType);
+        await _mockHttpClient.Received(1).PostAsync("/game/build-structure", Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -227,15 +247,15 @@ public class GameStateServiceTests
         var attackerFleetId = Guid.NewGuid();
         var targetFleetId = Guid.NewGuid();
         
-        _mockHttpClient.AttackAsync(attackerFleetId, targetFleetId, Guid.Empty)
-            .Returns(Task.FromResult(true));
+        _mockHttpClient.PostAsync("/game/attack", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)));
 
         // Act
         var result = await _gameStateService.AttackAsync(attackerFleetId, targetFleetId);
 
         // Assert
         await Assert.That(result).IsTrue();
-        await _mockHttpClient.Received(1).AttackAsync(attackerFleetId, targetFleetId, Guid.Empty);
+        await _mockHttpClient.Received(1).PostAsync("/game/attack", Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -255,8 +275,11 @@ public class GameStateServiceTests
             )
         };
         
-        _mockHttpClient.CreateNewSessionAsync(Arg.Any<string>(), "SinglePlayer")
-            .Returns(Task.FromResult(sessionResponse));
+        _mockHttpClient.PostAsync("/game/session", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = CreateJsonContent(sessionResponse)
+            }));
 
         // Act
         await _gameStateService.CreateSessionAsync("Test Session");
