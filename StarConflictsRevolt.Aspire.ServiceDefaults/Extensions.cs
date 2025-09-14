@@ -1,3 +1,4 @@
+using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace StarConflictsRevolt.Aspire.ServiceDefaults;
@@ -57,6 +59,9 @@ public static class Extensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
+                metrics.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+                    .AddService(builder.Environment.ApplicationName));
+                metrics.AddMeter(builder.Environment.ApplicationName);
             })
             .WithTracing(tracing =>
             {
@@ -68,6 +73,10 @@ public static class Extensions
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
                     .AddHttpClientInstrumentation();
+                tracing.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                    .AddService(builder.Environment.ApplicationName));
+
+                tracing.AddSignalRInstrumentation();
             });
 
         builder.AddOpenTelemetryExporters();

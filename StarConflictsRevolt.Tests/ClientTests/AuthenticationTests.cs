@@ -19,9 +19,9 @@ public class AuthenticationTests
         services.AddHttpClient("TokenProvider");
         services.Configure<TokenProviderOptions>(options =>
         {
-            options.TokenEndpoint = "http://localhost:5267/token";
+            options.TokenEndpoint = "http://localhost:5153/token";
             options.ClientId = "test-client";
-            options.Secret = "test-secret";
+            options.Secret = "SuperSecretKeyForJwtTokenGeneration123";
         });
         services.AddSingleton<ITokenProvider, CachingTokenProvider>();
         
@@ -80,9 +80,9 @@ public class AuthenticationTests
         services.AddHttpClient("TokenProvider");
         services.Configure<TokenProviderOptions>(options =>
         {
-            options.TokenEndpoint = "http://localhost:5267/token";
+            options.TokenEndpoint = "http://localhost:5153/token";
             options.ClientId = "test-client";
-            options.Secret = "test-secret";
+            options.Secret = "SuperSecretKeyForJwtTokenGeneration123";
         });
         services.AddSingleton<ITokenProvider, CachingTokenProvider>();
         
@@ -117,9 +117,9 @@ public class AuthenticationTests
         });
         services.Configure<TokenProviderOptions>(options =>
         {
-            options.TokenEndpoint = "http://localhost:5267/token";
+            options.TokenEndpoint = "http://localhost:5153/token";
             options.ClientId = "test-client";
-            options.Secret = "test-secret";
+            options.Secret = "SuperSecretKeyForJwtTokenGeneration123";
         });
         services.AddHttpClient("TokenProvider");
         services.AddSingleton<ITokenProvider, CachingTokenProvider>();

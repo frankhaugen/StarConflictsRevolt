@@ -9,6 +9,7 @@ builder.AddServiceDefaults();
 StartupHelper.RegisterAllServices(builder);
 StartupHelper.RegisterRavenDb(builder);
 StartupHelper.RegisterGameDbContext(builder);
+StartupHelper.RegisterTelemetry(builder);
 
 var app = builder.Build();
 

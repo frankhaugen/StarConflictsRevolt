@@ -13,6 +13,8 @@ using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.PulseFlow;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
@@ -194,6 +196,21 @@ public static class StartupHelper
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
+    }
+
+    public static void RegisterTelemetry(WebApplicationBuilder builder)
+    {
+        // Add Application Insights telemetry
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracingBuilder =>
+            {
+                tracingBuilder.AddAspNetCoreInstrumentation();
+                tracingBuilder.AddHttpClientInstrumentation();
+                
+                tracingBuilder.AddSource("StarConflictsRevolt.Server.WebApi");
+                tracingBuilder.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+                    .AddService("StarConflictsRevolt.Server.WebApi"));
+            });
     }
 }
 
