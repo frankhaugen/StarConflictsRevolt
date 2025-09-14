@@ -105,7 +105,7 @@ public class BlazorApplicationStartupTests
             var app = builder.Build();
             using var scope = app.Services.CreateScope();
             scope.ServiceProvider.GetRequiredService<ServiceA>();
-        }).Throws<AggregateException>()
+        }).Throws<InvalidOperationException>()
             .WithMessageContaining("circular dependency");
     }
 

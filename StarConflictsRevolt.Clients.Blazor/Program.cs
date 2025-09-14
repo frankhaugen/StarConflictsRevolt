@@ -4,6 +4,7 @@ using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using StarConflictsRevolt.Clients.Shared.Http;
+using StarConflictsRevolt.Clients.Shared.Authentication;
 using StarConflictsRevolt.Clients.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -23,19 +24,14 @@ builder.Services.Configure<GameClientConfiguration>(
     builder.Configuration.GetSection("GameClientConfiguration"));
 builder.Services.AddSingleton<ISignalRService, SignalRService>();
 
-// Register HTTP client with proper configuration
-builder.Services.AddHttpClient("GameApi", client =>
+// Add authentication and HTTP client services
+builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", client =>
 {
     var apiBaseUrl = builder.Configuration["GameClientConfiguration:ApiBaseUrl"];
     if (!string.IsNullOrEmpty(apiBaseUrl))
     {
         client.BaseAddress = new Uri(apiBaseUrl);
     }
-});
-builder.Services.AddScoped<IHttpApiClient>(provider =>
-{
-    var factory = provider.GetRequiredService<IHttpClientFactory>();
-    return new HttpApiClient(factory, "GameApi");
 });
 
 // Add Blazor-specific services
