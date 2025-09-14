@@ -11,7 +11,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="text-center mb-5">
-                <h1 class="display-4 text-primary">Star Conflicts Revolt</h1>
+                <h1 data-testid="home-title" class="display-4 text-primary">Star Conflicts Revolt</h1>
                 <p class="lead">A modern reimagining of Star Wars: Rebellion</p>
             </div>
             
@@ -20,20 +20,20 @@
                     <h3>Main Menu</h3>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <button class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer">
+                    <div data-testid="main-menu-buttons" class="d-grid gap-3">
+                        <button data-testid="single-player-btn" class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer">
                             <i class="fas fa-play"></i> Single Player
                         </button>
-                        <button class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer">
+                        <button data-testid="multiplayer-btn" class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer">
                             <i class="fas fa-users"></i> Multiplayer
                         </button>
-                        <button class="btn btn-info btn-lg" @onclick="NavigateToSessions">
+                        <button data-testid="join-session-btn" class="btn btn-info btn-lg" @onclick="NavigateToSessions">
                             <i class="fas fa-list"></i> Join Session
                         </button>
-                        <button class="btn btn-warning btn-lg" @onclick="NavigateToOptions">
+                        <button data-testid="options-btn" class="btn btn-warning btn-lg" @onclick="NavigateToOptions">
                             <i class="fas fa-cog"></i> Options
                         </button>
-                        <button class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics">
+                        <button data-testid="diagnostics-btn" class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics">
                             <i class="fas fa-heartbeat"></i> Diagnostics
                         </button>
                     </div>
@@ -42,13 +42,13 @@
             
             @if (GameState.IsConnected)
             {
-                <div class="alert alert-success mt-3">
+                <div data-testid="connection-status" class="alert alert-success mt-3">
                     <i class="fas fa-check-circle"></i> Connected to game server
                 </div>
             }
             else
             {
-                <div class="alert alert-warning mt-3">
+                <div data-testid="connection-status" class="alert alert-warning mt-3">
                     <i class="fas fa-exclamation-triangle"></i> Not connected to game server
                 </div>
             }

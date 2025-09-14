@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using TUnit.Playwright;
+using TUnit;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 
@@ -9,13 +10,19 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public abstract class BaseUITest : PageTest
 {
     protected string BaseUrl => UITestRunner.GetBaseUrl();
-    protected const string ServerUrl = "https://localhost:7002"; // API server URL
     
     [Before(Class)]
     public static async Task Setup()
     {
-        // Note: This method will be called before each test class
-        // Individual test setup should be done in each test method
+        // Ensure test host is running before each test class
+        await UITestRunner.SetupTestEnvironment();
+    }
+    
+    [After(Class)]
+    public static async Task Cleanup()
+    {
+        // Clean up after each test class
+        await UITestRunner.CleanupTestEnvironment();
     }
     
     protected async Task NavigateToAppAsync()
@@ -68,7 +75,7 @@ public abstract class BaseUITest : PageTest
     
     protected async Task AssertElementContainsTextAsync(string selector, string expectedText)
     {
-        var element = Page.Locator(selector);
+        var element = Page.Locator(selector).First;
         var text = await element.TextContentAsync();
         await Assert.That(text).Contains(expectedText);
     }

@@ -8,7 +8,8 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public class GalaxyViewTests : BaseUITest
 {
     [Test]
-    public async Task GalaxyPage_DisplaysCorrectTitle()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysCorrectTitle(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -19,7 +20,8 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysSidebar()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysSidebar(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -31,7 +33,8 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysGameControls()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysGameControls(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -44,7 +47,8 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysGalaxyMap()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysGalaxyMap(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -56,7 +60,8 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_HomeButton_ReturnsToHome()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_HomeButton_ReturnsToHome(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -72,7 +77,8 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysLoadingState()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysLoadingState(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
@@ -90,24 +96,26 @@ public class GalaxyViewTests : BaseUITest
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysFleetManagementSection()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysFleetManagementSection(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
         await WaitForNavigationAsync();
         
         // Verify fleet management section is present
-        await AssertElementContainsTextAsync("h6", "Fleet Management");
+        await AssertElementContainsTextAsync("h6:has-text('Fleet Management')", "Fleet Management");
     }
     
     [Test]
-    public async Task GalaxyPage_DisplaysQuickActions()
+    [Timeout(30_000)]
+    public async Task GalaxyPage_DisplaysQuickActions(CancellationToken cancellationToken)
     {
         // Navigate to galaxy page
         await Page.GotoAsync($"{BaseUrl}/galaxy");
         await WaitForNavigationAsync();
         
         // Verify quick actions section is present
-        await AssertElementContainsTextAsync("h6", "Quick Actions");
+        await AssertElementContainsTextAsync("h6:has-text('Quick Actions')", "Quick Actions");
     }
 }

@@ -8,28 +8,31 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public class HomePageTests : BaseUITest
 {
     [Test]
-    public async Task HomePage_DisplaysCorrectTitle()
+    [Timeout(30_000)]
+    public async Task HomePage_DisplaysCorrectTitle(CancellationToken cancellationToken)
     {
         // Verify the main title is displayed
-        await AssertElementContainsTextAsync("h1", "Star Conflicts Revolt");
+        await AssertElementContainsTextAsync("[data-testid='home-title']", "Star Conflicts Revolt");
         await AssertElementContainsTextAsync(".lead", "A modern reimagining of Star Wars: Rebellion");
     }
     
     [Test]
-    public async Task HomePage_DisplaysMainMenuButtons()
+    [Timeout(30_000)]
+    public async Task HomePage_DisplaysMainMenuButtons(CancellationToken cancellationToken)
     {
         // Verify all main menu buttons are present
-        await AssertElementVisibleAsync("button:has-text('Single Player')");
-        await AssertElementVisibleAsync("button:has-text('Multiplayer')");
-        await AssertElementVisibleAsync("button:has-text('Join Session')");
-        await AssertElementVisibleAsync("button:has-text('Options')");
+        await AssertElementVisibleAsync("[data-testid='single-player-btn']");
+        await AssertElementVisibleAsync("[data-testid='multiplayer-btn']");
+        await AssertElementVisibleAsync("[data-testid='join-session-btn']");
+        await AssertElementVisibleAsync("[data-testid='options-btn']");
     }
     
     [Test]
-    public async Task HomePage_SinglePlayerButton_NavigatesToSinglePlayer()
+    [Timeout(30_000)]
+    public async Task HomePage_SinglePlayerButton_NavigatesToSinglePlayer(CancellationToken cancellationToken)
     {
         // Click the Single Player button
-        await ClickButtonByTextAsync("Single Player");
+        await Page.GetByTestId("single-player-btn").ClickAsync();
         
         // Wait for navigation
         await WaitForNavigationAsync();
@@ -40,10 +43,11 @@ public class HomePageTests : BaseUITest
     }
     
     [Test]
-    public async Task HomePage_MultiplayerButton_NavigatesToMultiplayer()
+    [Timeout(30_000)]
+    public async Task HomePage_MultiplayerButton_NavigatesToMultiplayer(CancellationToken cancellationToken)
     {
         // Click the Multiplayer button
-        await ClickButtonByTextAsync("Multiplayer");
+        await Page.GetByTestId("multiplayer-btn").ClickAsync();
         
         // Wait for navigation
         await WaitForNavigationAsync();
@@ -54,29 +58,30 @@ public class HomePageTests : BaseUITest
     }
     
     [Test]
-    public async Task HomePage_JoinSessionButton_NavigatesToSessions()
+    [Timeout(30_000)]
+    public async Task HomePage_JoinSessionButton_NavigatesToSessions(CancellationToken cancellationToken)
     {
         // Click the Join Session button
-        await ClickButtonByTextAsync("Join Session");
+        await Page.GetByTestId("join-session-btn").ClickAsync();
         
         // Wait for navigation
         await WaitForNavigationAsync();
         
         // Verify we're on the sessions page
         await Page.WaitForURLAsync("**/sessions");
-        await AssertElementContainsTextAsync("h3", "Available Sessions");
+        await AssertElementContainsTextAsync("[data-testid='sessions-title']", "Available Sessions");
     }
     
     [Test]
-    public async Task HomePage_DisplaysConnectionStatus()
+    [Timeout(30_000)]
+    public async Task HomePage_DisplaysConnectionStatus(CancellationToken cancellationToken)
     {
         // Verify connection status is displayed
-        var connectionAlert = Page.Locator(".alert");
+        var connectionAlert = Page.GetByTestId("connection-status");
         await Assert.That(await connectionAlert.IsVisibleAsync()).IsTrue();
         
         // The status should be either connected or not connected
         var alertText = await connectionAlert.TextContentAsync();
-        await Assert.That(alertText).IsNotNull();
         await Assert.That(alertText).IsNotNull();
         var hasConnected = alertText!.Contains("Connected");
         var hasNotConnected = alertText.Contains("Not connected");
@@ -84,18 +89,19 @@ public class HomePageTests : BaseUITest
     }
     
     [Test]
-    public async Task HomePage_BackButton_ReturnsToHome()
+    [Timeout(30_000)]
+    public async Task HomePage_BackButton_ReturnsToHome(CancellationToken cancellationToken)
     {
         // Navigate to sessions page first
-        await ClickButtonByTextAsync("Join Session");
+        await Page.GetByTestId("join-session-btn").ClickAsync();
         await WaitForNavigationAsync();
         
         // Click back button
-        await ClickButtonByIconAsync("fa-arrow-left");
+        await Page.GetByTestId("back-btn").ClickAsync();
         await WaitForNavigationAsync();
         
         // Verify we're back on the home page
         await Page.WaitForURLAsync("**/");
-        await AssertElementContainsTextAsync("h1", "Star Conflicts Revolt");
+        await AssertElementContainsTextAsync("[data-testid='home-title']", "Star Conflicts Revolt");
     }
 }

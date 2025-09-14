@@ -11,10 +11,10 @@
 <div class="container-fluid h-100">
     <div class="row h-100">
         <!-- Game Sidebar -->
-        <div class="col-md-3 bg-dark text-light p-3">
+        <div data-testid="game-sidebar" class="col-md-3 bg-dark text-light p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5>Game Controls</h5>
-                <button class="btn btn-outline-light btn-sm" @onclick="NavigateToHome">
+                <h5 data-testid="game-controls-header">Game Controls</h5>
+                <button data-testid="home-btn" class="btn btn-outline-light btn-sm" @onclick="NavigateToHome">
                     <i class="fas fa-home"></i>
                 </button>
             </div>
@@ -33,26 +33,26 @@
             }
             
             <div class="mb-3">
-                <h6>Quick Actions</h6>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary btn-sm" @onclick="ShowFleetManager">
+                <h6 data-testid="quick-actions-header">Quick Actions</h6>
+                <div data-testid="quick-actions" class="d-grid gap-2">
+                    <button data-testid="fleet-manager-btn" class="btn btn-outline-primary btn-sm" @onclick="ShowFleetManager">
                         <i class="fas fa-ship"></i> Fleet Manager
                     </button>
-                    <button class="btn btn-outline-success btn-sm" @onclick="ShowPlanetManager">
+                    <button data-testid="planet-manager-btn" class="btn btn-outline-success btn-sm" @onclick="ShowPlanetManager">
                         <i class="fas fa-globe"></i> Planet Manager
                     </button>
-                    <button class="btn btn-outline-warning btn-sm" @onclick="ShowDiplomacy">
+                    <button data-testid="diplomacy-btn" class="btn btn-outline-warning btn-sm" @onclick="ShowDiplomacy">
                         <i class="fas fa-handshake"></i> Diplomacy
                     </button>
-                    <button class="btn btn-outline-info btn-sm" @onclick="ShowResearch">
+                    <button data-testid="research-btn" class="btn btn-outline-info btn-sm" @onclick="ShowResearch">
                         <i class="fas fa-flask"></i> Research
                     </button>
                 </div>
             </div>
             
             <div class="mb-3">
-                <h6>Resources</h6>
-                <div class="resource-display">
+                <h6 data-testid="resources-header">Resources</h6>
+                <div data-testid="resources" class="resource-display">
                     <div class="resource-item">
                         <i class="fas fa-coins text-warning"></i>
                         <span>Credits: @GetResourceValue("credits")</span>
@@ -69,8 +69,8 @@
             </div>
             
             <div class="mb-3">
-                <h6>Game Status</h6>
-                <div class="status-display">
+                <h6 data-testid="game-status-header">Game Status</h6>
+                <div data-testid="game-status" class="status-display">
                     <div class="status-item">
                         <span class="status-label">Turn:</span>
                         <span class="status-value">@currentTurn</span>
@@ -85,7 +85,7 @@
         
         <!-- Main Game Area -->
         <div class="col-md-9 p-0">
-            <div class="game-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
+            <div data-testid="game-container" class="game-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
                 <!-- Galaxy Map -->
                 <div class="galaxy-map position-absolute w-100 h-100">
                     @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)

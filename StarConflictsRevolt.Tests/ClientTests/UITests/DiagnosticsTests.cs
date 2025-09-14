@@ -8,7 +8,8 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public class DiagnosticsTests : BaseUITest
 {
     [Test]
-    public async Task DiagnosticsPage_DisplaysCorrectTitle()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysCorrectTitle(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
@@ -19,82 +20,89 @@ public class DiagnosticsTests : BaseUITest
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysConnectionStatus()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysConnectionStatus(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify connection status section
-        await AssertElementContainsTextAsync("h5", "Connection Status");
-        await AssertElementVisibleAsync(".status-indicator");
+        await AssertElementContainsTextAsync("h5:has-text('Connection Status')", "Connection Status");
+        await AssertElementVisibleAsync(".status-indicator.connected");
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysSessionInformation()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysSessionInformation(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify session information section
-        await AssertElementContainsTextAsync("h5", "Session Information");
+        await AssertElementContainsTextAsync("h5:has-text('Session Information')", "Session Information");
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysSignalRStatistics()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysSignalRStatistics(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify SignalR statistics section
-        await AssertElementContainsTextAsync("h5", "SignalR Statistics");
-        await AssertElementContainsTextAsync("Messages Received");
-        await AssertElementContainsTextAsync("Reconnections");
+        await AssertElementContainsTextAsync("h5:has-text('SignalR Statistics')", "SignalR Statistics");
+        await AssertElementContainsTextAsync("text=Messages Received");
+        await AssertElementContainsTextAsync("text=Reconnections");
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysHTTPStatistics()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysHTTPStatistics(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify HTTP statistics section
-        await AssertElementContainsTextAsync("h5", "HTTP Statistics");
-        await AssertElementContainsTextAsync("Requests Sent");
-        await AssertElementContainsTextAsync("Errors");
+        await AssertElementContainsTextAsync("h5:has-text('HTTP Statistics')", "HTTP Statistics");
+        await AssertElementContainsTextAsync("text=Requests Sent");
+        await AssertElementContainsTextAsync("text=Errors");
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysActivityLog()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysActivityLog(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify activity log section
-        await AssertElementContainsTextAsync("h5", "Activity Log");
+        await AssertElementContainsTextAsync("h5:has-text('Activity Log')", "Activity Log");
         await AssertElementVisibleAsync(".activity-log");
     }
     
     [Test]
-    public async Task DiagnosticsPage_DisplaysPerformanceMetrics()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_DisplaysPerformanceMetrics(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
         await WaitForNavigationAsync();
         
         // Verify performance metrics section
-        await AssertElementContainsTextAsync("h5", "Performance Metrics");
-        await AssertElementContainsTextAsync("Memory Usage");
-        await AssertElementContainsTextAsync("CPU Usage");
-        await AssertElementContainsTextAsync("Uptime");
+        await AssertElementContainsTextAsync("h5:has-text('Performance Metrics')", "Performance Metrics");
+        await AssertElementContainsTextAsync("text=Memory Usage");
+        await AssertElementContainsTextAsync("text=CPU Usage");
+        await AssertElementContainsTextAsync("text=Uptime");
     }
     
     [Test]
-    public async Task DiagnosticsPage_RefreshButton_UpdatesData()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_RefreshButton_UpdatesData(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
@@ -115,7 +123,8 @@ public class DiagnosticsTests : BaseUITest
     }
     
     [Test]
-    public async Task DiagnosticsPage_BackButton_ReturnsToHome()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_BackButton_ReturnsToHome(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");
@@ -131,7 +140,8 @@ public class DiagnosticsTests : BaseUITest
     }
     
     [Test]
-    public async Task DiagnosticsPage_ClearLogButton_ClearsActivityLog()
+    [Timeout(30_000)]
+    public async Task DiagnosticsPage_ClearLogButton_ClearsActivityLog(CancellationToken cancellationToken)
     {
         // Navigate to diagnostics page
         await Page.GotoAsync($"{BaseUrl}/diagnostics");

@@ -8,7 +8,8 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public class SessionManagementTests : BaseUITest
 {
     [Test]
-    public async Task SessionsPage_DisplaysCorrectTitle()
+    [Timeout(30_000)]
+    public async Task SessionsPage_DisplaysCorrectTitle(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");
@@ -19,7 +20,8 @@ public class SessionManagementTests : BaseUITest
     }
     
     [Test]
-    public async Task SessionsPage_DisplaysRefreshButton()
+    [Timeout(30_000)]
+    public async Task SessionsPage_DisplaysRefreshButton(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");
@@ -30,7 +32,8 @@ public class SessionManagementTests : BaseUITest
     }
     
     [Test]
-    public async Task SessionsPage_DisplaysBackButton()
+    [Timeout(30_000)]
+    public async Task SessionsPage_DisplaysBackButton(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");
@@ -41,7 +44,8 @@ public class SessionManagementTests : BaseUITest
     }
     
     [Test]
-    public async Task SessionsPage_RefreshButton_LoadsSessions()
+    [Timeout(30_000)]
+    public async Task SessionsPage_RefreshButton_LoadsSessions(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");
@@ -65,7 +69,8 @@ public class SessionManagementTests : BaseUITest
     }
     
     [Test]
-    public async Task SessionsPage_BackButton_ReturnsToHome()
+    [Timeout(30_000)]
+    public async Task SessionsPage_BackButton_ReturnsToHome(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");
@@ -81,7 +86,8 @@ public class SessionManagementTests : BaseUITest
     }
     
     [Test]
-    public async Task SessionsPage_NoSessions_DisplaysCreateSessionButton()
+    [Timeout(30_000)]
+    public async Task SessionsPage_NoSessions_DisplaysCreateSessionButton(CancellationToken cancellationToken)
     {
         // Navigate to sessions page
         await Page.GotoAsync($"{BaseUrl}/sessions");

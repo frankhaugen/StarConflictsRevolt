@@ -8,7 +8,8 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 public class GameFunctionalityTests : BaseUITest
 {
     [Test]
-    public async Task SinglePlayerGame_CreatesSession_DisplaysGameInterface()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_CreatesSession_DisplaysGameInterface(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -28,7 +29,8 @@ public class GameFunctionalityTests : BaseUITest
     }
     
     [Test]
-    public async Task SinglePlayerGame_DisplaysGameControls()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_DisplaysGameControls(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -45,7 +47,8 @@ public class GameFunctionalityTests : BaseUITest
     }
     
     [Test]
-    public async Task SinglePlayerGame_DisplaysResources()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_DisplaysResources(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -55,14 +58,15 @@ public class GameFunctionalityTests : BaseUITest
         await Page.WaitForSelectorAsync(".game-container");
         
         // Verify resource display
-        await AssertElementContainsTextAsync("h6", "Resources");
-        await AssertElementContainsTextAsync("Credits:");
-        await AssertElementContainsTextAsync("Materials:");
-        await AssertElementContainsTextAsync("Fuel:");
+        await AssertElementContainsTextAsync("h6:has-text('Resources')", "Resources");
+        await AssertElementContainsTextAsync("text=Credits:");
+        await AssertElementContainsTextAsync("text=Materials:");
+        await AssertElementContainsTextAsync("text=Fuel:");
     }
     
     [Test]
-    public async Task SinglePlayerGame_DisplaysGameStatus()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_DisplaysGameStatus(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -72,13 +76,14 @@ public class GameFunctionalityTests : BaseUITest
         await Page.WaitForSelectorAsync(".game-container");
         
         // Verify game status display
-        await AssertElementContainsTextAsync("h6", "Game Status");
-        await AssertElementContainsTextAsync("Turn:");
-        await AssertElementContainsTextAsync("Phase:");
+        await AssertElementContainsTextAsync("h6:has-text('Game Status')", "Game Status");
+        await AssertElementContainsTextAsync("text=Turn:");
+        await AssertElementContainsTextAsync("text=Phase:");
     }
     
     [Test]
-    public async Task SinglePlayerGame_FleetManagerButton_OpensFleetManager()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_FleetManagerButton_OpensFleetManager(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -96,7 +101,8 @@ public class GameFunctionalityTests : BaseUITest
     }
     
     [Test]
-    public async Task SinglePlayerGame_PlanetManagerButton_OpensPlanetManager()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_PlanetManagerButton_OpensPlanetManager(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -114,7 +120,8 @@ public class GameFunctionalityTests : BaseUITest
     }
     
     [Test]
-    public async Task SinglePlayerGame_DisplaysGameMessages()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_DisplaysGameMessages(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");
@@ -136,7 +143,8 @@ public class GameFunctionalityTests : BaseUITest
     }
     
     [Test]
-    public async Task SinglePlayerGame_HomeButton_ReturnsToHome()
+    [Timeout(30_000)]
+    public async Task SinglePlayerGame_HomeButton_ReturnsToHome(CancellationToken cancellationToken)
     {
         // Navigate to single player page
         await Page.GotoAsync($"{BaseUrl}/singleplayer");

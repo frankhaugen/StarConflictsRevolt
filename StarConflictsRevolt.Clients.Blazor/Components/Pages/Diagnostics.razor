@@ -14,9 +14,9 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-heartbeat text-danger"></i> System Diagnostics</h1>
+                <h1 data-testid="diagnostics-title"><i class="fas fa-heartbeat text-danger"></i> System Diagnostics</h1>
                 <div>
-                    <button class="btn btn-outline-primary me-2" @onclick="RefreshData" disabled="@isLoading">
+                    <button data-testid="refresh-btn" class="btn btn-outline-primary me-2" @onclick="RefreshData" disabled="@isLoading">
                         @if (isLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -27,7 +27,7 @@
                         }
                         Refresh
                     </button>
-                    <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
+                    <button data-testid="back-btn" class="btn btn-outline-secondary" @onclick="NavigateToHome">
                         <i class="fas fa-arrow-left"></i> Back to Menu
                     </button>
                 </div>
@@ -40,17 +40,17 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-wifi"></i> Connection Status</h5>
+                    <h5 data-testid="connection-status-header"><i class="fas fa-wifi"></i> Connection Status</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
                             <div class="d-flex align-items-center mb-2">
-                                <div class="status-indicator @(GameState.IsConnected ? "connected" : "disconnected")"></div>
+                                <div data-testid="game-server-status" class="status-indicator @(GameState.IsConnected ? "connected" : "disconnected")"></div>
                                 <span class="ms-2">Game Server</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
-                                <div class="status-indicator @(signalRConnected ? "connected" : "disconnected")"></div>
+                                <div data-testid="signalr-status" class="status-indicator @(signalRConnected ? "connected" : "disconnected")"></div>
                                 <span class="ms-2">SignalR</span>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-gamepad"></i> Session Information</h5>
+                    <h5 data-testid="session-info-header"><i class="fas fa-gamepad"></i> Session Information</h5>
                 </div>
                 <div class="card-body">
                     @if (GameState.CurrentSession != null)
@@ -103,7 +103,7 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-broadcast-tower"></i> SignalR Statistics</h5>
+                    <h5 data-testid="signalr-stats-header"><i class="fas fa-broadcast-tower"></i> SignalR Statistics</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -136,7 +136,7 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-globe"></i> HTTP Statistics</h5>
+                    <h5 data-testid="http-stats-header"><i class="fas fa-globe"></i> HTTP Statistics</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -171,13 +171,13 @@
         <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="fas fa-list"></i> Activity Log</h5>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="ClearLog">
+                    <h5 data-testid="activity-log-header"><i class="fas fa-list"></i> Activity Log</h5>
+                    <button data-testid="clear-log-btn" class="btn btn-sm btn-outline-secondary" @onclick="ClearLog">
                         <i class="fas fa-trash"></i> Clear
                     </button>
                 </div>
                 <div class="card-body">
-                    <div class="activity-log" style="height: 300px; overflow-y: auto;">
+                    <div data-testid="activity-log" class="activity-log" style="height: 300px; overflow-y: auto;">
                         @foreach (var logEntry in activityLog.Take(50))
                         {
                             <div class="log-entry @logEntry.Type.ToLower()">
@@ -196,7 +196,7 @@
         <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-chart-line"></i> Performance Metrics</h5>
+                    <h5 data-testid="performance-metrics-header"><i class="fas fa-chart-line"></i> Performance Metrics</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">

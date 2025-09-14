@@ -21,7 +21,7 @@ public class BlazorTestHost : IDisposable
     private bool _disposed = false;
     
     public int Port { get; private set; }
-    public string BaseUrl => $"https://localhost:{Port}";
+    public string BaseUrl => $"http://localhost:{Port}";
     
     public async Task StartAsync()
     {
@@ -29,6 +29,12 @@ public class BlazorTestHost : IDisposable
         Port = await FindAvailablePortAsync();
         
         var builder = WebApplication.CreateBuilder();
+        
+        // Configure Kestrel with HTTP only for testing (simpler setup)
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenLocalhost(Port);
+        });
         
         // Configure services
         builder.Services.AddRazorComponents()
@@ -56,7 +62,6 @@ public class BlazorTestHost : IDisposable
         var app = builder.Build();
         
         // Configure pipeline
-        app.UseHttpsRedirection();
         app.UseAntiforgery();
         app.UseStaticFiles();
         
@@ -64,7 +69,10 @@ public class BlazorTestHost : IDisposable
             .AddInteractiveServerRenderMode();
             
         _host = app;
+        
+        Console.WriteLine($"Starting test host on port {Port}...");
         await _host.StartAsync();
+        Console.WriteLine($"Test host started successfully on {BaseUrl}");
     }
     
     public async Task StopAsync()
@@ -79,6 +87,7 @@ public class BlazorTestHost : IDisposable
     
     private static async Task<int> FindAvailablePortAsync()
     {
+        // Use system-assigned port for reliability
         var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
         var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
@@ -220,15 +229,3 @@ public class MockGameStateService : IGameStateService
     }
 }
 
-/// <summary>
-/// Test certificate provider for HTTPS in tests
-/// </summary>
-public static class TestCertificateProvider
-{
-    public static System.Security.Cryptography.X509Certificates.X509Certificate2 GetCertificate()
-    {
-        // In a real implementation, you would generate or load a test certificate
-        // For now, we'll use a self-signed certificate
-        return new System.Security.Cryptography.X509Certificates.X509Certificate2();
-    }
-}

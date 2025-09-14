@@ -11,9 +11,9 @@
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3>Available Sessions</h3>
+                    <h3 data-testid="sessions-title">Available Sessions</h3>
                     <div>
-                        <button class="btn btn-outline-primary me-2" @onclick="RefreshSessions" disabled="@isLoading">
+                        <button data-testid="refresh-btn" class="btn btn-outline-primary me-2" @onclick="RefreshSessions" disabled="@isLoading">
                             @if (isLoading)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -24,7 +24,7 @@
                             }
                             Refresh
                         </button>
-                        <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
+                        <button data-testid="back-btn" class="btn btn-outline-secondary" @onclick="NavigateToHome">
                             <i class="fas fa-arrow-left"></i> Back to Menu
                         </button>
                     </div>
