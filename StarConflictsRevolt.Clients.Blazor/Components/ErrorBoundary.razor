@@ -1,0 +1,78 @@
+@using Microsoft.AspNetCore.Components.Web
+@inject IJSRuntime JSRuntime
+@inject ILogger<ErrorBoundary> Logger
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@if (CurrentException is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">
+            <i class="fas fa-exclamation-triangle"></i> An error occurred
+        </h4>
+        <p>Something went wrong while rendering this component.</p>
+        <hr>
+        <p class="mb-0">
+            <button class="btn btn-outline-danger btn-sm" @onclick="Recover">
+                <i class="fas fa-redo"></i> Try Again
+            </button>
+            <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="ShowDetails">
+                <i class="fas fa-info-circle"></i> Show Details
+            </button>
+        </p>
+    </div>
+
+    @if (showDetails)
+    {
+        <div class="alert alert-info">
+            <h6>Error Details:</h6>
+            <pre class="mb-0">@CurrentException.ToString()</pre>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<Exception> OnError { get; set; }
+
+    private Exception? CurrentException { get; set; }
+    private bool showDetails = false;
+
+    public void Recover()
+    {
+        CurrentException = null;
+        showDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        showDetails = !showDetails;
+        StateHasChanged();
+    }
+
+    public async Task HandleExceptionAsync(Exception exception)
+    {
+        CurrentException = exception;
+        Logger.LogError(exception, "Error boundary caught an exception");
+        
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", "Error boundary caught exception:", exception.Message);
+            await JSRuntime.InvokeVoidAsync("console.error", "Stack trace:", exception.StackTrace);
+        }
+        catch (Exception jsEx)
+        {
+            Logger.LogWarning(jsEx, "Failed to log exception to JavaScript console");
+        }
+
+        if (OnError.HasDelegate)
+        {
+            await OnError.InvokeAsync(exception);
+        }
+
+        StateHasChanged();
+    }
+}

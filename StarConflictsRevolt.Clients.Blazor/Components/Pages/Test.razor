@@ -1,0 +1,145 @@
+@page "/test"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@inject IJavaScriptInteropService JsInterop
+@inject ILogger<Test> Logger
+
+<PageTitle>Blazor Test Page</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-vial"></i> Blazor Functionality Test</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> This page tests basic Blazor functionality and JavaScript interop.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Button Tests</h5>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" @onclick="TestButtonClick">
+                                    <i class="fas fa-mouse-pointer"></i> Test Button Click
+                                </button>
+                                <button class="btn btn-success" @onclick="TestJavaScriptLog">
+                                    <i class="fas fa-terminal"></i> Test JS Console Log
+                                </button>
+                                <button class="btn btn-warning" @onclick="TestCounter">
+                                    <i class="fas fa-calculator"></i> Test Counter (@counter)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Input Tests</h5>
+                            <div class="mb-3">
+                                <label for="testInput" class="form-label">Test Input:</label>
+                                <input id="testInput" type="text" class="form-control" @bind="testInput" @oninput="OnInputChanged" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="testSelect" class="form-label">Test Select:</label>
+                                <select id="testSelect" class="form-select" @bind="selectedOption" @onchange="OnSelectChanged">
+                                    <option value="">Choose an option...</option>
+                                    <option value="option1">Option 1</option>
+                                    <option value="option2">Option 2</option>
+                                    <option value="option3">Option 3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Test Results</h5>
+                            <div class="alert @(testResults.Count > 0 ? "alert-success" : "alert-light")">
+                                @if (testResults.Count > 0)
+                                {
+                                    <ul class="mb-0">
+                                        @foreach (var result in testResults.Take(10))
+                                        {
+                                            <li>@result</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <em>No test results yet. Click the buttons above to test functionality.</em>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int counter = 0;
+    private string testInput = "";
+    private string selectedOption = "";
+    private List<string> testResults = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await JsInterop.LogInfoAsync("Test page initialized");
+        AddTestResult("Page initialized successfully");
+    }
+
+    private async Task TestButtonClick()
+    {
+        await JsInterop.LogButtonClickAsync("test-button");
+        AddTestResult($"Button clicked at {DateTime.Now:HH:mm:ss}");
+    }
+
+    private async Task TestJavaScriptLog()
+    {
+        await JsInterop.LogInfoAsync("JavaScript interop test successful");
+        AddTestResult("JavaScript console log test completed");
+    }
+
+    private async Task TestCounter()
+    {
+        counter++;
+        await JsInterop.LogInfoAsync($"Counter incremented to {counter}");
+        AddTestResult($"Counter incremented to {counter}");
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        testInput = e.Value?.ToString() ?? "";
+        await JsInterop.LogDebugAsync($"Input changed to: {testInput}");
+        AddTestResult($"Input changed to: '{testInput}'");
+    }
+
+    private async Task OnSelectChanged(ChangeEventArgs e)
+    {
+        selectedOption = e.Value?.ToString() ?? "";
+        await JsInterop.LogInfoAsync($"Select changed to: {selectedOption}");
+        AddTestResult($"Select changed to: '{selectedOption}'");
+    }
+
+    private void AddTestResult(string result)
+    {
+        testResults.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {result}");
+        
+        // Keep only last 20 results
+        if (testResults.Count > 20)
+        {
+            testResults = testResults.Take(20).ToList();
+        }
+        
+        StateHasChanged();
+    }
+}

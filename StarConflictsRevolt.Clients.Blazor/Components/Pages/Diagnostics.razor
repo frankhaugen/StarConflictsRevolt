@@ -10,6 +10,7 @@
 @inject ILogger<Diagnostics> Logger
 @inject ITokenProvider TokenProvider
 @inject IJSRuntime JSRuntime
+@inject IJavaScriptInteropService JsInterop
 
 <PageTitle>System Diagnostics</PageTitle>
 
@@ -70,6 +71,11 @@
                                 <i class="fas fa-check-circle"></i> Token valid for @tokenTimeRemaining
                             </small>
                         </div>
+                        <div class="mt-2">
+                            <small class="text-info">
+                                <i class="fas fa-key"></i> Token: @(currentToken != null ? $"{currentToken[..Math.Min(20, currentToken.Length)]}..." : "None")
+                            </small>
+                        </div>
                     }
                     else
                     {
@@ -77,6 +83,11 @@
                             <small class="text-warning">
                                 <i class="fas fa-exclamation-triangle"></i> No valid token available
                             </small>
+                        </div>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="RequestNewToken">
+                                <i class="fas fa-refresh"></i> Request New Token
+                            </button>
                         </div>
                     }
                 </div>
@@ -327,8 +338,10 @@
     // Raw state variables
     private string rawStateJson = "Loading...";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await JsInterop.LogInfoAsync("Diagnostics component initializing");
+        
         // Subscribe to SignalR events
         SignalRService.UpdatesReceived += OnSignalRMessage;
         SignalRService.ConnectionClosed += OnSignalRConnectionClosed;
@@ -342,7 +355,9 @@
         refreshTimer = new Timer(RefreshDataCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
         
         // Initial data load
-        _ = Task.Run(RefreshDataAsync);
+        await RefreshDataAsync();
+        
+        await JsInterop.LogInfoAsync("Diagnostics component initialized successfully");
     }
 
     private async Task RefreshData()
@@ -381,6 +396,8 @@
     {
         try
         {
+            await JsInterop.LogDebugAsync("Updating authentication status");
+            
             // Check if we have a valid token
             if (TokenProvider != null)
             {
@@ -388,6 +405,8 @@
                 {
                     currentToken = await TokenProvider.GetTokenAsync();
                     hasValidToken = !string.IsNullOrEmpty(currentToken);
+                    
+                    await JsInterop.LogInfoAsync($"Token retrieved: {hasValidToken}, Length: {currentToken?.Length ?? 0}");
                     
                     if (hasValidToken)
                     {
@@ -398,11 +417,13 @@
                         
                         isAuthenticated = true;
                         AddLogEntry("success", "Authentication successful - valid token available");
+                        await JsInterop.LogInfoAsync("Authentication successful");
                     }
                     else
                     {
                         isAuthenticated = false;
                         AddLogEntry("warning", "No valid token available");
+                        await JsInterop.LogWarningAsync("No valid token available");
                     }
                 }
                 catch (Exception ex)
@@ -410,6 +431,8 @@
                     isAuthenticated = false;
                     hasValidToken = false;
                     AddLogEntry("error", $"Authentication failed: {ex.Message}");
+                    await JsInterop.LogErrorAsync($"Authentication failed: {ex.Message}");
+                    await JsInterop.LogExceptionAsync(ex);
                 }
             }
             else
@@ -417,11 +440,14 @@
                 isAuthenticated = false;
                 hasValidToken = false;
                 AddLogEntry("warning", "Token provider not available");
+                await JsInterop.LogWarningAsync("Token provider not available");
             }
         }
         catch (Exception ex)
         {
             AddLogEntry("error", $"Error checking authentication status: {ex.Message}");
+            await JsInterop.LogErrorAsync($"Error checking authentication status: {ex.Message}");
+            await JsInterop.LogExceptionAsync(ex);
         }
     }
 
@@ -493,7 +519,7 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void AddLogEntry(string type, string message)
+    private async void AddLogEntry(string type, string message)
     {
         var logEntry = new LogEntry
         {
@@ -508,6 +534,32 @@
         if (activityLog.Count > 100)
         {
             activityLog = activityLog.Take(100).ToList();
+        }
+        
+        // Also log to JavaScript console
+        try
+        {
+            var jsMessage = $"[{type.ToUpper()}] {message}";
+            switch (type.ToLower())
+            {
+                case "error":
+                    await JsInterop.LogErrorAsync(jsMessage);
+                    break;
+                case "warning":
+                    await JsInterop.LogWarningAsync(jsMessage);
+                    break;
+                case "success":
+                    await JsInterop.LogInfoAsync(jsMessage);
+                    break;
+                default:
+                    await JsInterop.LogDebugAsync(jsMessage);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Don't let JS logging errors break the main functionality
+            Logger.LogWarning(ex, "Failed to log to JavaScript console");
         }
         
         InvokeAsync(StateHasChanged);
@@ -621,6 +673,50 @@
     private void NavigateToHome()
     {
         Navigation.NavigateTo("/");
+    }
+
+    private async Task RequestNewToken()
+    {
+        try
+        {
+            await JsInterop.LogInfoAsync("Requesting new token");
+            AddLogEntry("info", "Requesting new token...");
+            
+            // Force token refresh by clearing cache if possible
+            if (TokenProvider != null)
+            {
+                // Try to get a fresh token
+                currentToken = await TokenProvider.GetTokenAsync();
+                hasValidToken = !string.IsNullOrEmpty(currentToken);
+                
+                if (hasValidToken)
+                {
+                    var timeRemaining = TimeSpan.FromHours(1);
+                    tokenExpiry = DateTime.UtcNow.Add(timeRemaining);
+                    tokenTimeRemaining = timeRemaining.ToString(@"hh\:mm\:ss");
+                    isAuthenticated = true;
+                    
+                    AddLogEntry("success", "New token obtained successfully");
+                    await JsInterop.LogInfoAsync("New token obtained successfully");
+                }
+                else
+                {
+                    AddLogEntry("error", "Failed to obtain new token");
+                    await JsInterop.LogErrorAsync("Failed to obtain new token");
+                }
+            }
+            else
+            {
+                AddLogEntry("error", "Token provider not available");
+                await JsInterop.LogErrorAsync("Token provider not available");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLogEntry("error", $"Error requesting new token: {ex.Message}");
+            await JsInterop.LogErrorAsync($"Error requesting new token: {ex.Message}");
+            await JsInterop.LogExceptionAsync(ex);
+        }
     }
 
     public void Dispose()

@@ -38,6 +38,7 @@ builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", c
 builder.Services.AddScoped<IGameStateService, GameStateService>();
 builder.Services.AddScoped<BlazorSignalRService>();
 builder.Services.AddSingleton<TelemetryService>();
+builder.Services.AddScoped<IJavaScriptInteropService, JavaScriptInteropService>();
 
 // Add OpenTelemetry
 builder.Services.AddOpenTelemetry()

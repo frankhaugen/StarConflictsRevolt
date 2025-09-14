@@ -11,11 +11,68 @@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
+    
+    <!-- Add debugging scripts -->
+    <script>
+        console.log('Star Conflicts Revolt - App starting...');
+        
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global JavaScript Error:', e.error);
+            console.error('Stack:', e.error?.stack);
+        });
+        
+        // Blazor error handler
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e.reason);
+        });
+        
+        // Debug Blazor startup
+        window.Blazor.start().then(function() {
+            console.log('Blazor started successfully');
+        }).catch(function(error) {
+            console.error('Blazor failed to start:', error);
+        });
+        
+        // Debug function for button clicks
+        window.debugButtonClick = function(buttonName) {
+            console.log('Button clicked:', buttonName, new Date().toISOString());
+        };
+        
+        // Debug function for navigation
+        window.debugNavigation = function(url) {
+            console.log('Navigating to:', url, new Date().toISOString());
+        };
+        
+        // Debug function for service calls
+        window.debugServiceCall = function(service, method, data) {
+            console.log('Service call:', service, method, data);
+        };
+    </script>
 </head>
 
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    
+    <!-- Additional debugging script -->
+    <script>
+        // Monitor DOM changes for debugging
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    console.log('DOM changed:', mutation.addedNodes.length, 'nodes added');
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        console.log('Star Conflicts Revolt - App initialized');
+    </script>
 </body>
 
 </html>

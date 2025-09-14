@@ -1,7 +1,11 @@
 ﻿@page "/"
 @using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Shared.Authentication
 @inject IGameStateService GameState
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject ITokenProvider TokenProvider
+@inject ILogger<Home> Logger
 
 <PageTitle>Star Conflicts Revolt</PageTitle>
 
@@ -21,20 +25,71 @@
                 </div>
                 <div class="card-body">
                     <div data-testid="main-menu-buttons" class="d-grid gap-3">
-                        <button data-testid="single-player-btn" class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer">
-                            <i class="fas fa-play"></i> Single Player
+                        <button data-testid="single-player-btn" class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer" disabled="@isLoading">
+                            @if (isLoading && currentAction == "single-player")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-play"></i>
+                            }
+                            Single Player
                         </button>
-                        <button data-testid="multiplayer-btn" class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer">
-                            <i class="fas fa-users"></i> Multiplayer
+                        <button data-testid="multiplayer-btn" class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer" disabled="@isLoading">
+                            @if (isLoading && currentAction == "multiplayer")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-users"></i>
+                            }
+                            Multiplayer
                         </button>
-                        <button data-testid="join-session-btn" class="btn btn-info btn-lg" @onclick="NavigateToSessions">
-                            <i class="fas fa-list"></i> Join Session
+                        <button data-testid="join-session-btn" class="btn btn-info btn-lg" @onclick="NavigateToSessions" disabled="@isLoading">
+                            @if (isLoading && currentAction == "join-session")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-list"></i>
+                            }
+                            Join Session
                         </button>
-                        <button data-testid="options-btn" class="btn btn-warning btn-lg" @onclick="NavigateToOptions">
-                            <i class="fas fa-cog"></i> Options
+                        <button data-testid="options-btn" class="btn btn-warning btn-lg" @onclick="NavigateToOptions" disabled="@isLoading">
+                            @if (isLoading && currentAction == "options")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-cog"></i>
+                            }
+                            Options
                         </button>
-                        <button data-testid="diagnostics-btn" class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics">
-                            <i class="fas fa-heartbeat"></i> Diagnostics
+                        <button data-testid="diagnostics-btn" class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics" disabled="@isLoading">
+                            @if (isLoading && currentAction == "diagnostics")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-heartbeat"></i>
+                            }
+                            Diagnostics
+                        </button>
+                        <button data-testid="test-btn" class="btn btn-dark btn-lg" @onclick="NavigateToTest" disabled="@isLoading">
+                            @if (isLoading && currentAction == "test")
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-vial"></i>
+                            }
+                            Test Page
                         </button>
                     </div>
                 </div>
@@ -52,33 +107,266 @@
                     <i class="fas fa-exclamation-triangle"></i> Not connected to game server
                 </div>
             }
+            
+            <!-- Debug Information -->
+            <div class="mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-bug"></i> Debug Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Authentication:</strong> @(hasValidToken ? "Valid Token" : "No Token")<br/>
+                                    <strong>Connection:</strong> @(GameState.IsConnected ? "Connected" : "Disconnected")<br/>
+                                    <strong>Session:</strong> @(GameState.CurrentSession?.SessionName ?? "None")
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Last Update:</strong> @lastUpdate.ToString("HH:mm:ss")<br/>
+                                    <strong>Token Expiry:</strong> @tokenExpiry.ToString("HH:mm:ss")<br/>
+                                    <strong>Action:</strong> @(currentAction ?? "None")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @code {
-    private void NavigateToSinglePlayer()
+    private bool isLoading = false;
+    private string? currentAction = null;
+    private bool hasValidToken = false;
+    private DateTime tokenExpiry = DateTime.MinValue;
+    private DateTime lastUpdate = DateTime.Now;
+
+    protected override async Task OnInitializedAsync()
     {
-        Navigation.NavigateTo("/singleplayer");
+        Logger.LogInformation("Home component initialized");
+        
+        // Check authentication status
+        await UpdateAuthenticationStatus();
+        
+        // Subscribe to game state changes
+        GameState.StateChanged += OnGameStateChanged;
+        
+        // Update debug info periodically
+        _ = Task.Run(UpdateDebugInfoPeriodically);
+        
+        await JSRuntime.InvokeVoidAsync("console.log", "Home component initialized successfully");
     }
 
-    private void NavigateToMultiplayer()
+    private async Task UpdateAuthenticationStatus()
     {
-        Navigation.NavigateTo("/multiplayer");
+        try
+        {
+            if (TokenProvider != null)
+            {
+                var token = await TokenProvider.GetTokenAsync();
+                hasValidToken = !string.IsNullOrEmpty(token);
+                
+                if (hasValidToken)
+                {
+                    // Simple token expiry assumption (1 hour)
+                    tokenExpiry = DateTime.UtcNow.AddHours(1);
+                }
+                
+                await JSRuntime.InvokeVoidAsync("console.log", $"Authentication status: {hasValidToken}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error checking authentication status");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Authentication error: {ex.Message}");
+        }
     }
 
-    private void NavigateToSessions()
+    private async Task UpdateDebugInfoPeriodically()
     {
-        Navigation.NavigateTo("/sessions");
+        while (true)
+        {
+            await Task.Delay(5000); // Update every 5 seconds
+            lastUpdate = DateTime.Now;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void NavigateToOptions()
+    private void OnGameStateChanged()
     {
-        Navigation.NavigateTo("/options");
+        InvokeAsync(StateHasChanged);
     }
 
-    private void NavigateToDiagnostics()
+    private async Task NavigateToSinglePlayer()
     {
-        Navigation.NavigateTo("/diagnostics");
+        try
+        {
+            isLoading = true;
+            currentAction = "single-player";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "single-player");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/singleplayer");
+            
+            Logger.LogInformation("Navigating to single player");
+            Navigation.NavigateTo("/singleplayer");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to single player");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateToMultiplayer()
+    {
+        try
+        {
+            isLoading = true;
+            currentAction = "multiplayer";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "multiplayer");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/multiplayer");
+            
+            Logger.LogInformation("Navigating to multiplayer");
+            Navigation.NavigateTo("/multiplayer");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to multiplayer");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateToSessions()
+    {
+        try
+        {
+            isLoading = true;
+            currentAction = "join-session";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "join-session");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/sessions");
+            
+            Logger.LogInformation("Navigating to sessions");
+            Navigation.NavigateTo("/sessions");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to sessions");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateToOptions()
+    {
+        try
+        {
+            isLoading = true;
+            currentAction = "options";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "options");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/options");
+            
+            Logger.LogInformation("Navigating to options");
+            Navigation.NavigateTo("/options");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to options");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateToDiagnostics()
+    {
+        try
+        {
+            isLoading = true;
+            currentAction = "diagnostics";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "diagnostics");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/diagnostics");
+            
+            Logger.LogInformation("Navigating to diagnostics");
+            Navigation.NavigateTo("/diagnostics");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to diagnostics");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateToTest()
+    {
+        try
+        {
+            isLoading = true;
+            currentAction = "test";
+            StateHasChanged();
+            
+            await JSRuntime.InvokeVoidAsync("debugButtonClick", "test");
+            await JSRuntime.InvokeVoidAsync("debugNavigation", "/test");
+            
+            Logger.LogInformation("Navigating to test page");
+            Navigation.NavigateTo("/test");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error navigating to test page");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            currentAction = null;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        GameState.StateChanged -= OnGameStateChanged;
     }
 }
+
+@implements IDisposable
