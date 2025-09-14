@@ -18,9 +18,24 @@ public class JwtTokenHandler : DelegatingHandler
     {
         try
         {
+            _logger.LogDebug("Attempting to get JWT token for request to {Uri}", request.RequestUri);
             var token = await _tokenProvider.GetTokenAsync(cancellationToken);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _logger.LogDebug("Added Bearer token to request to {Uri}", request.RequestUri);
+            
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Received empty token from token provider for request to {Uri}", request.RequestUri);
+            }
+            else
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _logger.LogDebug("Successfully added Bearer token to request to {Uri}. Token length: {TokenLength}", 
+                    request.RequestUri, token.Length);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP request failed when getting token for request to {Uri}. This will result in a 401 Unauthorized response.", request.RequestUri);
+            // Continue without token - the server will handle authentication failure
         }
         catch (Exception ex)
         {
@@ -28,6 +43,19 @@ public class JwtTokenHandler : DelegatingHandler
             // Continue without token - the server will handle authentication failure
         }
 
-        return await base.SendAsync(request, cancellationToken);
+        var response = await base.SendAsync(request, cancellationToken);
+        
+        // Log response status for authentication debugging
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _logger.LogWarning("Received 401 Unauthorized response from {Uri}. Authentication may have failed.", request.RequestUri);
+        }
+        else if (response.IsSuccessStatusCode)
+        {
+            _logger.LogDebug("Successfully authenticated request to {Uri} with status {StatusCode}", 
+                request.RequestUri, response.StatusCode);
+        }
+        
+        return response;
     }
 }

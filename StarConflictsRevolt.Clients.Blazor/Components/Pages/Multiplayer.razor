@@ -1,0 +1,63 @@
+@page "/multiplayer"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+
+<PageTitle>Multiplayer - Star Conflicts Revolt</PageTitle>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 data-testid="multiplayer-title" class="display-4 text-primary">Multiplayer</h1>
+                <p class="lead">Play with friends in real-time</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Multiplayer Options</h3>
+                </div>
+                <div class="card-body">
+                    <div data-testid="multiplayer-buttons" class="d-grid gap-3">
+                        <button data-testid="create-session-btn" class="btn btn-primary btn-lg" @onclick="NavigateToSessions">
+                            <i class="fas fa-plus"></i> Create Session
+                        </button>
+                        <button data-testid="join-session-btn" class="btn btn-info btn-lg" @onclick="NavigateToSessions">
+                            <i class="fas fa-list"></i> Join Session
+                        </button>
+                        <button data-testid="back-btn" class="btn btn-secondary btn-lg" @onclick="NavigateToHome">
+                            <i class="fas fa-arrow-left"></i> Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            @if (GameState.IsConnected)
+            {
+                <div data-testid="connection-status" class="alert alert-success mt-3">
+                    <i class="fas fa-check-circle"></i> Connected to game server
+                </div>
+            }
+            else
+            {
+                <div data-testid="connection-status" class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> Not connected to game server
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private void NavigateToSessions()
+    {
+        Navigation.NavigateTo("/sessions");
+    }
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

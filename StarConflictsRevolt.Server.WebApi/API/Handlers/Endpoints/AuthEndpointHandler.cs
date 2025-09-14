@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Clients.Models.Authentication;
@@ -138,10 +139,40 @@ public static class AuthEndpointHandler
 
             if (existingClient == null)
             {
-                existingClient = new Client { Id = request.ClientId, LastSeen = DateTime.UtcNow };
-                gameDbContext.Clients.Add(existingClient);
-                await gameDbContext.SaveChangesAsync(context.RequestAborted);
-                logger.LogInformation("Created new client record for {ClientId}", request.ClientId);
+                try
+                {
+                    existingClient = new Client { Id = request.ClientId, LastSeen = DateTime.UtcNow };
+                    gameDbContext.Clients.Add(existingClient);
+                    await gameDbContext.SaveChangesAsync(context.RequestAborted);
+                    logger.LogInformation("Created new client record for {ClientId}", request.ClientId);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
+                {
+                    // Handle duplicate key constraint violation
+                    logger.LogWarning("Client {ClientId} already exists, attempting to update instead", request.ClientId);
+                    
+                    // Try to find the existing client again
+                    existingClient = gameDbContext.Clients.FirstOrDefault(c => c.Id == request.ClientId);
+                    if (existingClient != null)
+                    {
+                        existingClient.LastSeen = DateTime.UtcNow;
+                        gameDbContext.Clients.Update(existingClient);
+                        await gameDbContext.SaveChangesAsync(context.RequestAborted);
+                        logger.LogInformation("Updated existing client record for {ClientId} after duplicate key error", request.ClientId);
+                    }
+                    else
+                    {
+                        logger.LogError("Could not find or create client {ClientId} after duplicate key error", request.ClientId);
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            error = "server_error",
+                            error_description = "Failed to create or update client record",
+                            timestamp = DateTime.UtcNow
+                        }, context.RequestAborted);
+                        return;
+                    }
+                }
             }
             else
             {

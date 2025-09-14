@@ -3,6 +3,7 @@ using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace StarConflictsRevolt.Clients.Blazor.Services;
 
@@ -12,24 +13,33 @@ public class GameStateService : IGameStateService
     private readonly ISignalRService _signalRService;
     private readonly TelemetryService _telemetryService;
     private readonly ActivitySource _activitySource;
+    private readonly ILogger<GameStateService> _logger;
     private WorldDto? _currentWorld;
     private SessionDto? _currentSession;
+    private bool _isConnected = false;
+    private DateTime _lastConnectionCheck = DateTime.MinValue;
+    private readonly TimeSpan _connectionCheckInterval = TimeSpan.FromSeconds(30);
 
-    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService)
+    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, ILogger<GameStateService> logger)
     {
         _httpClient = httpClient;
         _signalRService = signalRService;
         _telemetryService = telemetryService;
+        _logger = logger;
         _activitySource = new ActivitySource("StarConflictsRevolt.Blazor");
         
         // Subscribe to SignalR updates
         _signalRService.FullWorldReceived += OnWorldUpdated;
         _signalRService.UpdatesReceived += OnSignalRUpdates;
+        _signalRService.ConnectionClosed += OnSignalRConnectionClosed;
+        _signalRService.Reconnected += OnSignalRReconnected;
+        
+        _logger.LogInformation("GameStateService initialized");
     }
 
     public WorldDto? CurrentWorld => _currentWorld;
     public SessionDto? CurrentSession => _currentSession;
-    public bool IsConnected => true; // TODO: Implement proper connection status
+    public bool IsConnected => _isConnected;
 
     public event Action? StateChanged;
 
@@ -39,11 +49,17 @@ public class GameStateService : IGameStateService
         activity?.SetTag("session.name", sessionName);
         activity?.SetTag("session.type", "SinglePlayer");
         
+        _logger.LogInformation("Creating new session: {SessionName}", sessionName);
+        
         try
         {
+            // Check connection status before making request
+            await CheckConnectionStatusAsync();
+            
             _telemetryService.RecordHttpRequest();
             var stopwatch = Stopwatch.StartNew();
             
+            _logger.LogDebug("Sending create session request to server");
             var sessionResponse = await _httpClient.CreateNewSessionAsync(sessionName, "SinglePlayer");
             
             stopwatch.Stop();
@@ -51,6 +67,9 @@ public class GameStateService : IGameStateService
             
             if (sessionResponse != null)
             {
+                _logger.LogInformation("Successfully created session {SessionId} with name {SessionName}", 
+                    sessionResponse.SessionId, sessionName);
+                
                 _currentSession = new SessionDto
                 {
                     Id = sessionResponse.SessionId,
@@ -60,30 +79,44 @@ public class GameStateService : IGameStateService
                     IsActive = true
                 };
                 _currentWorld = sessionResponse.World;
+                
+                _logger.LogDebug("Joining SignalR session {SessionId}", sessionResponse.SessionId);
                 await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
+                
+                _isConnected = true;
                 NotifyStateChanged();
                 
                 _telemetryService.RecordGameAction("create_session");
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 return true;
             }
+            else
+            {
+                _logger.LogWarning("Server returned null response for session creation");
+            }
         }
         catch (Exception ex)
         {
             _telemetryService.RecordHttpError();
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            Console.WriteLine($"Error creating session: {ex.Message}");
+            _logger.LogError(ex, "Error creating session {SessionName}: {ErrorMessage}", sessionName, ex.Message);
         }
         return false;
     }
 
     public async Task<bool> JoinSessionAsync(Guid sessionId)
     {
+        _logger.LogInformation("Joining session: {SessionId}", sessionId);
+        
         try
         {
+            await CheckConnectionStatusAsync();
+            
             var sessionResponse = await _httpClient.JoinSessionAsync(sessionId, "Player");
             if (sessionResponse != null)
             {
+                _logger.LogInformation("Successfully joined session {SessionId}", sessionId);
+                
                 _currentSession = new SessionDto
                 {
                     Id = sessionResponse.SessionId,
@@ -93,15 +126,22 @@ public class GameStateService : IGameStateService
                     IsActive = true
                 };
                 _currentWorld = sessionResponse.World;
+                
+                _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
                 await _signalRService.JoinSessionAsync(sessionId);
+                
+                _isConnected = true;
                 NotifyStateChanged();
                 return true;
+            }
+            else
+            {
+                _logger.LogWarning("Server returned null response for session join {SessionId}", sessionId);
             }
         }
         catch (Exception ex)
         {
-            // Log error
-            Console.WriteLine($"Error joining session: {ex.Message}");
+            _logger.LogError(ex, "Error joining session {SessionId}: {ErrorMessage}", sessionId, ex.Message);
         }
         return false;
     }
@@ -208,8 +248,63 @@ public class GameStateService : IGameStateService
         // Process updates as needed
     }
 
+    private async Task CheckConnectionStatusAsync()
+    {
+        // Only check if enough time has passed since last check
+        if (DateTime.UtcNow - _lastConnectionCheck < _connectionCheckInterval)
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogDebug("Checking connection status with server");
+            var isHealthy = await _httpClient.IsHealthyAsync();
+            
+            if (isHealthy != _isConnected)
+            {
+                _isConnected = isHealthy;
+                _logger.LogInformation("Connection status changed to: {IsConnected}", _isConnected);
+                NotifyStateChanged();
+            }
+            
+            _lastConnectionCheck = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to check connection status");
+            if (_isConnected)
+            {
+                _isConnected = false;
+                NotifyStateChanged();
+            }
+        }
+    }
+
+    private void OnSignalRConnectionClosed(Exception? exception)
+    {
+        _logger.LogWarning("SignalR connection closed: {Exception}", exception?.Message ?? "Unknown reason");
+        if (_isConnected)
+        {
+            _isConnected = false;
+            NotifyStateChanged();
+        }
+    }
+
+    private void OnSignalRReconnected(string connectionId)
+    {
+        _logger.LogInformation("SignalR reconnected with connection ID: {ConnectionId}", connectionId);
+        if (!_isConnected)
+        {
+            _isConnected = true;
+            NotifyStateChanged();
+        }
+    }
+
     private void NotifyStateChanged()
     {
+        _logger.LogDebug("Notifying state change. Connected: {IsConnected}, Session: {SessionId}", 
+            _isConnected, _currentSession?.Id);
         StateChanged?.Invoke();
     }
 }

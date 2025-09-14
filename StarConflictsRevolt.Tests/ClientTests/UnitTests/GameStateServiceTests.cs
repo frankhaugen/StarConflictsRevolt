@@ -1,5 +1,6 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Models;
@@ -30,7 +31,8 @@ public class GameStateServiceTests
         _telemetryService = new TelemetryService();
         
         // Create service under test
-        _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService);
+        var logger = Substitute.For<ILogger<GameStateService>>();
+        _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService, logger);
     }
     
     private static StringContent CreateJsonContent<T>(T obj)

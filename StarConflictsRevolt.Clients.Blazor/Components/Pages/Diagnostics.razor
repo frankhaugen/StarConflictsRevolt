@@ -2,11 +2,14 @@
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
 @using StarConflictsRevolt.Clients.Blazor.Models
+@using StarConflictsRevolt.Clients.Shared.Authentication
 @inject IGameStateService GameState
 @inject BlazorSignalRService SignalRService
 @inject TelemetryService TelemetryService
 @inject NavigationManager Navigation
 @inject ILogger<Diagnostics> Logger
+@inject ITokenProvider TokenProvider
+@inject IJSRuntime JSRuntime
 
 <PageTitle>System Diagnostics</PageTitle>
 
@@ -36,6 +39,50 @@
     </div>
 
     <div class="row">
+        <!-- Authentication Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 data-testid="auth-status-header"><i class="fas fa-shield-alt"></i> Authentication Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div data-testid="auth-status" class="status-indicator @(isAuthenticated ? "connected" : "disconnected")"></div>
+                                <span class="ms-2">Authentication</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div data-testid="token-status" class="status-indicator @(hasValidToken ? "connected" : "disconnected")"></div>
+                                <span class="ms-2">JWT Token</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                Token Expires: @tokenExpiry.ToString("HH:mm:ss")
+                            </small>
+                        </div>
+                    </div>
+                    @if (hasValidToken)
+                    {
+                        <div class="mt-2">
+                            <small class="text-success">
+                                <i class="fas fa-check-circle"></i> Token valid for @tokenTimeRemaining
+                            </small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-2">
+                            <small class="text-warning">
+                                <i class="fas fa-exclamation-triangle"></i> No valid token available
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
         <!-- Connection Status -->
         <div class="col-md-6 mb-4">
             <div class="card">
@@ -229,6 +276,28 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <!-- Raw State Block -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 data-testid="raw-state-header"><i class="fas fa-code"></i> Raw State Block</h5>
+                    <button data-testid="copy-state-btn" class="btn btn-sm btn-outline-primary" @onclick="CopyStateToClipboard">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">This block contains the raw application state for debugging purposes.</small>
+                    </div>
+                    <div data-testid="raw-state-content" class="raw-state-block" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.875rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+@rawStateJson
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -247,6 +316,16 @@
     private DateTime lastUpdate = DateTime.Now;
     private List<LogEntry> activityLog = new();
     private Timer? refreshTimer;
+    
+    // Authentication status variables
+    private bool isAuthenticated = false;
+    private bool hasValidToken = false;
+    private DateTime tokenExpiry = DateTime.MinValue;
+    private string tokenTimeRemaining = "Unknown";
+    private string? currentToken = null;
+    
+    // Raw state variables
+    private string rawStateJson = "Loading...";
 
     protected override void OnInitialized()
     {
@@ -283,12 +362,66 @@
             // Update connection status
             signalRConnected = GameState.IsConnected;
             
+            // Update authentication status
+            await UpdateAuthenticationStatus();
+            
+            // Update raw state
+            await UpdateRawState();
+            
             lastUpdate = DateTime.Now;
             AddLogEntry("info", "Diagnostics data refreshed");
         }
         catch (Exception ex)
         {
             AddLogEntry("error", $"Error refreshing data: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateAuthenticationStatus()
+    {
+        try
+        {
+            // Check if we have a valid token
+            if (TokenProvider != null)
+            {
+                try
+                {
+                    currentToken = await TokenProvider.GetTokenAsync();
+                    hasValidToken = !string.IsNullOrEmpty(currentToken);
+                    
+                    if (hasValidToken)
+                    {
+                        // Try to decode token to get expiry (simplified - in production use proper JWT library)
+                        var timeRemaining = TimeSpan.FromHours(1); // Default assumption
+                        tokenExpiry = DateTime.UtcNow.Add(timeRemaining);
+                        tokenTimeRemaining = timeRemaining.ToString(@"hh\:mm\:ss");
+                        
+                        isAuthenticated = true;
+                        AddLogEntry("success", "Authentication successful - valid token available");
+                    }
+                    else
+                    {
+                        isAuthenticated = false;
+                        AddLogEntry("warning", "No valid token available");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    isAuthenticated = false;
+                    hasValidToken = false;
+                    AddLogEntry("error", $"Authentication failed: {ex.Message}");
+                }
+            }
+            else
+            {
+                isAuthenticated = false;
+                hasValidToken = false;
+                AddLogEntry("warning", "Token provider not available");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLogEntry("error", $"Error checking authentication status: {ex.Message}");
         }
     }
 
@@ -383,6 +516,106 @@
     private void ClearLog()
     {
         activityLog.Clear();
+    }
+
+    private async Task UpdateRawState()
+    {
+        try
+        {
+            var state = new
+            {
+                Timestamp = DateTime.UtcNow,
+                Application = new
+                {
+                    Name = "Star Conflicts Revolt",
+                    Version = "1.0.0",
+                    Environment = "Development"
+                },
+                Authentication = new
+                {
+                    IsAuthenticated = isAuthenticated,
+                    HasValidToken = hasValidToken,
+                    TokenExpiry = tokenExpiry,
+                    TokenTimeRemaining = tokenTimeRemaining,
+                    CurrentToken = currentToken != null ? $"{currentToken[..Math.Min(20, currentToken.Length)]}..." : null
+                },
+                Connection = new
+                {
+                    GameServerConnected = GameState.IsConnected,
+                    SignalRConnected = signalRConnected,
+                    LastUpdate = lastUpdate
+                },
+                Session = new
+                {
+                    CurrentSession = GameState.CurrentSession != null ? new
+                    {
+                        Id = GameState.CurrentSession.Id,
+                        Name = GameState.CurrentSession.SessionName,
+                        Type = GameState.CurrentSession.SessionType,
+                        IsActive = GameState.CurrentSession.IsActive,
+                        Created = GameState.CurrentSession.Created
+                    } : null,
+                    CurrentWorld = GameState.CurrentWorld != null ? new
+                    {
+                        Id = GameState.CurrentWorld.Id,
+                        GalaxyId = GameState.CurrentWorld.Galaxy.Id,
+                        StarSystemsCount = GameState.CurrentWorld.Galaxy.StarSystems.Count()
+                    } : null
+                },
+                Statistics = new
+                {
+                    SignalR = new
+                    {
+                        MessageCount = signalRMessageCount,
+                        ReconnectCount = signalRReconnectCount,
+                        LastMessage = lastSignalRMessage
+                    },
+                    HTTP = new
+                    {
+                        RequestCount = httpRequestCount,
+                        ErrorCount = httpErrorCount,
+                        AverageResponseTime = averageResponseTime
+                    }
+                },
+                Performance = new
+                {
+                    MemoryUsageMB = memoryUsage,
+                    CpuUsagePercent = cpuUsage,
+                    Uptime = uptime,
+                    ActiveConnections = activeConnections
+                },
+                ActivityLog = activityLog.Take(10).Select(log => new
+                {
+                    Timestamp = log.Timestamp,
+                    Type = log.Type,
+                    Message = log.Message
+                }).ToArray()
+            };
+
+            rawStateJson = System.Text.Json.JsonSerializer.Serialize(state, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            });
+        }
+        catch (Exception ex)
+        {
+            rawStateJson = $"Error generating state: {ex.Message}";
+            AddLogEntry("error", $"Error updating raw state: {ex.Message}");
+        }
+    }
+
+    private async Task CopyStateToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", rawStateJson);
+            AddLogEntry("success", "Raw state copied to clipboard");
+        }
+        catch (Exception ex)
+        {
+            AddLogEntry("error", $"Failed to copy to clipboard: {ex.Message}");
+        }
     }
 
     private void NavigateToHome()
