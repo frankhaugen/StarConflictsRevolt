@@ -24,7 +24,7 @@
                             }
                             Refresh
                         </button>
-                        <button class="btn btn-outline-secondary" @onclick="() => Navigation.NavigateTo('/')">
+                        <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
                             <i class="fas fa-arrow-left"></i> Back to Menu
                         </button>
                     </div>
@@ -57,13 +57,13 @@
                                         <tr>
                                             <td>
                                                 <strong>@session.SessionName</strong>
-                                                @if (session.SessionId == GameState.CurrentSession?.SessionId)
+                                                @if (session.Id == GameState.CurrentSession?.Id)
                                                 {
                                                     <span class="badge bg-success ms-2">Current</span>
                                                 }
                                             </td>
                                             <td>
-                                                <span class="badge bg-info">@session.PlayerCount / @session.MaxPlayers</span>
+                                                <span class="badge bg-info">@session.SessionType</span>
                                             </td>
                                             <td>
                                                 @if (session.IsActive)
@@ -75,17 +75,17 @@
                                                     <span class="badge bg-warning">Waiting</span>
                                                 }
                                             </td>
-                                            <td>@session.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>@session.Created.ToString("MMM dd, yyyy HH:mm")</td>
                                             <td>
-                                                @if (session.SessionId == GameState.CurrentSession?.SessionId)
+                                                @if (session.Id == GameState.CurrentSession?.Id)
                                                 {
-                                                    <button class="btn btn-success btn-sm" @onclick="() => Navigation.NavigateTo('/galaxy')">
-                                                        <i class="fas fa-play"></i> Continue
+                                                    <button class="btn btn-success btn-sm" @onclick="NavigateToGalaxy">
+                                                        <i class="fas fa-play"></i> <text>Continue</text>
                                                     </button>
                                                 }
-                                                else if (session.PlayerCount < session.MaxPlayers)
+                                                else
                                                 {
-                                                    <button class="btn btn-primary btn-sm" @onclick="() => JoinSession(session.SessionId)" 
+                                                    <button class="btn btn-primary btn-sm" @onclick="() => JoinSession(session.Id)" 
                                                             disabled="@isJoining">
                                                         @if (isJoining)
                                                         {
@@ -93,9 +93,8 @@
                                                         }
                                                         else
                                                         {
-                                                            <i class="fas fa-sign-in-alt"></i>
+                                                            <i class="fas fa-sign-in-alt"></i> <text>Join</text>
                                                         }
-                                                        Join
                                                     </button>
                                                 }
                                                 else
@@ -114,7 +113,7 @@
                         <div class="text-center text-muted">
                             <i class="fas fa-inbox fa-3x mb-3"></i>
                             <p>No sessions available. Create a new session to get started.</p>
-                            <button class="btn btn-primary" @onclick="() => Navigation.NavigateTo('/singleplayer')">
+                            <button class="btn btn-primary" @onclick="NavigateToSinglePlayer">
                                 <i class="fas fa-plus"></i> Create Session
                             </button>
                         </div>
@@ -160,6 +159,21 @@
         {
             isLoading = false;
         }
+    }
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void NavigateToGalaxy()
+    {
+        Navigation.NavigateTo("/galaxy");
+    }
+
+    private void NavigateToSinglePlayer()
+    {
+        Navigation.NavigateTo("/singleplayer");
     }
 
     private async Task JoinSession(Guid sessionId)

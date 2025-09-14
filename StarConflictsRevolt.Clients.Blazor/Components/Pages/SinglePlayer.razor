@@ -48,18 +48,18 @@
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="button" class="btn btn-secondary me-md-2" @onclick="() => Navigation.NavigateTo('/')">
+                            <button type="button" class="btn btn-secondary me-md-2" @onclick="NavigateToHome">
                                 Cancel
                             </button>
                             <button type="submit" class="btn btn-primary" disabled="@isCreating">
                                 @if (isCreating)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    Creating...
+                                    <text>Creating...</text>
                                 }
                                 else
                                 {
-                                    <i class="fas fa-play"></i> Start Game
+                                    <i class="fas fa-play"></i> <text>Start Game</text>
                                 }
                             </button>
                         </div>

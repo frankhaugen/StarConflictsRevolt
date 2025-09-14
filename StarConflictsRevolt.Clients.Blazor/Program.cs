@@ -1,6 +1,9 @@
 using StarConflictsRevolt.Clients.Blazor.Components;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Clients.Blazor.Services;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using StarConflictsRevolt.Clients.Shared.Http;
+using StarConflictsRevolt.Clients.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,11 +12,14 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add shared client services
-builder.Services.AddSharedClientServices(builder.Configuration);
+builder.Services.Configure<GameClientConfiguration>(
+    builder.Configuration.GetSection("GameClientConfiguration"));
+builder.Services.AddSingleton<ISignalRService, SignalRService>();
+builder.Services.AddHttpClient<IHttpApiClient, HttpApiClient>();
 
 // Add Blazor-specific services
 builder.Services.AddScoped<IGameStateService, GameStateService>();
-builder.Services.AddScoped<ISignalRService, BlazorSignalRService>();
+builder.Services.AddScoped<BlazorSignalRService>();
 
 var app = builder.Build();
 

@@ -31,11 +31,19 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var session = await _httpClient.CreateNewSessionAsync(sessionName);
-            if (session != null)
+            var sessionResponse = await _httpClient.CreateNewSessionAsync(sessionName, "SinglePlayer");
+            if (sessionResponse != null)
             {
-                _currentSession = session;
-                await _signalRService.JoinSessionAsync(session.SessionId);
+                _currentSession = new SessionDto
+                {
+                    Id = sessionResponse.SessionId,
+                    SessionName = sessionName,
+                    SessionType = "SinglePlayer",
+                    Created = DateTime.UtcNow,
+                    IsActive = true
+                };
+                _currentWorld = sessionResponse.World;
+                await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
                 NotifyStateChanged();
                 return true;
             }
@@ -52,10 +60,18 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var session = await _httpClient.JoinSessionAsync(sessionId);
-            if (session != null)
+            var sessionResponse = await _httpClient.JoinSessionAsync(sessionId, "Player");
+            if (sessionResponse != null)
             {
-                _currentSession = session;
+                _currentSession = new SessionDto
+                {
+                    Id = sessionResponse.SessionId,
+                    SessionName = "Joined Session",
+                    SessionType = "Multiplayer",
+                    Created = DateTime.UtcNow,
+                    IsActive = true
+                };
+                _currentWorld = sessionResponse.World;
                 await _signalRService.JoinSessionAsync(sessionId);
                 NotifyStateChanged();
                 return true;
@@ -73,7 +89,7 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            await _signalRService.LeaveSessionAsync();
+            await _signalRService.StopAsync();
             _currentSession = null;
             _currentWorld = null;
             NotifyStateChanged();
@@ -91,8 +107,19 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var sessions = await _httpClient.GetSessionsAsync();
-            return sessions?.ToList() ?? new List<SessionDto>();
+            var sessionInfos = await _httpClient.GetSessionsAsync();
+            if (sessionInfos != null)
+            {
+                return sessionInfos.Select(si => new SessionDto
+                {
+                    Id = si.Id,
+                    SessionName = si.SessionName,
+                    SessionType = si.SessionType,
+                    Created = si.Created,
+                    IsActive = true
+                }).ToList();
+            }
+            return new List<SessionDto>();
         }
         catch (Exception ex)
         {
@@ -136,7 +163,8 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var result = await _httpClient.AttackAsync(attackerFleetId, targetFleetId);
+            // TODO: Need location planet ID for attack
+            var result = await _httpClient.AttackAsync(attackerFleetId, targetFleetId, Guid.Empty);
             return result;
         }
         catch (Exception ex)

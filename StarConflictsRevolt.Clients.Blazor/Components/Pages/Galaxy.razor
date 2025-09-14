@@ -12,7 +12,7 @@
         <div class="col-md-3 bg-dark text-light p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5>Game Controls</h5>
-                <button class="btn btn-outline-light btn-sm" @onclick="() => Navigation.NavigateTo('/')">
+                <button class="btn btn-outline-light btn-sm" @onclick="NavigateToHome">
                     <i class="fas fa-home"></i>
                 </button>
             </div>
@@ -23,7 +23,7 @@
                     <div class="card-body">
                         <h6 class="card-title">@GameState.CurrentSession.SessionName</h6>
                         <p class="card-text small">
-                            Players: @GameState.CurrentSession.PlayerCount<br/>
+                            Type: @GameState.CurrentSession.SessionType<br/>
                             Status: @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
                         </p>
                     </div>
@@ -73,17 +73,17 @@
             <div class="galaxy-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
                 <!-- Galaxy Map -->
                 <div class="galaxy-map position-absolute w-100 h-100">
-                    @if (GameState.CurrentWorld?.Planets != null)
+                    @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
                     {
-                        @foreach (var planet in GameState.CurrentWorld.Planets)
+                        @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
                         {
                             <div class="planet position-absolute" 
                                  style="left: @(GetRandomPosition().x)%; top: @(GetRandomPosition().y)%;"
-                                 @onclick="() => SelectPlanet(planet)">
-                                <div class="planet-icon @GetPlanetClass(planet)">
+                                 @onclick="() => SelectStarSystem(starSystem)">
+                                <div class="planet-icon @GetStarSystemClass(starSystem)">
                                     <i class="fas fa-circle"></i>
                                 </div>
-                                <div class="planet-name">@planet.Name</div>
+                                <div class="planet-name">@starSystem.Name</div>
                             </div>
                         }
                     }
@@ -96,26 +96,26 @@
                     }
                 </div>
                 
-                <!-- Selected Planet Info -->
-                @if (selectedPlanet != null)
+                <!-- Selected Star System Info -->
+                @if (selectedStarSystem != null)
                 {
                     <div class="planet-info position-absolute top-0 end-0 m-3" style="max-width: 300px;">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="mb-0">@selectedPlanet.Name</h6>
+                                <h6 class="mb-0">@selectedStarSystem.Name</h6>
                             </div>
                             <div class="card-body">
                                 <p class="small mb-2">
-                                    <strong>Name:</strong> @selectedPlanet.Name<br/>
-                                    <strong>Radius:</strong> @selectedPlanet.Radius<br/>
-                                    <strong>Mass:</strong> @selectedPlanet.Mass
+                                    <strong>Name:</strong> @selectedStarSystem.Name<br/>
+                                    <strong>Planets:</strong> @selectedStarSystem.Planets.Count()<br/>
+                                    <strong>Coordinates:</strong> @selectedStarSystem.Coordinates
                                 </p>
                                 <div class="d-grid gap-1">
-                                    <button class="btn btn-primary btn-sm" @onclick="() => ShowPlanetDetails(selectedPlanet)">
-                                        <i class="fas fa-info-circle"></i> Details
+                                    <button class="btn btn-primary btn-sm" @onclick="() => ShowStarSystemDetails(selectedStarSystem)">
+                                        <i class="fas fa-info-circle"></i> <text>Details</text>
                                     </button>
-                                    <button class="btn btn-success btn-sm" @onclick="() => ShowFleetActions(selectedPlanet)">
-                                        <i class="fas fa-ship"></i> Fleet Actions
+                                    <button class="btn btn-success btn-sm" @onclick="() => ShowFleetActions(selectedStarSystem)">
+                                        <i class="fas fa-ship"></i> <text>Fleet Actions</text>
                                     </button>
                                 </div>
                             </div>
@@ -128,21 +128,21 @@
 </div>
 
 @code {
-    private PlanetDto? selectedPlanet;
+    private StarSystemDto? selectedStarSystem;
 
     protected override void OnInitialized()
     {
         GameState.StateChanged += StateHasChanged;
     }
 
-    private void SelectPlanet(PlanetDto planet)
+    private void SelectStarSystem(StarSystemDto starSystem)
     {
-        selectedPlanet = planet;
+        selectedStarSystem = starSystem;
     }
 
-    private string GetPlanetClass(PlanetDto planet)
+    private string GetStarSystemClass(StarSystemDto starSystem)
     {
-        // TODO: Add loyalty property to PlanetDto
+        // TODO: Add loyalty property to StarSystemDto
         return "planet-neutral";
     }
 
@@ -161,14 +161,19 @@
         // TODO: Implement diplomacy modal
     }
 
-    private void ShowPlanetDetails(PlanetDto planet)
+    private void ShowStarSystemDetails(StarSystemDto starSystem)
     {
-        // TODO: Implement planet details modal
+        // TODO: Implement star system details modal
     }
 
-    private void ShowFleetActions(PlanetDto planet)
+    private void ShowFleetActions(StarSystemDto starSystem)
     {
         // TODO: Implement fleet actions modal
+    }
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
     }
 
     private (int x, int y) GetRandomPosition()
