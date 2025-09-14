@@ -4,11 +4,11 @@ This repository contains all core projects for the Star Conflicts Revolt game, a
 
 ## Project Structure
 
-- **StarConflictsRevolt.Clients.Bliss**
-  - Modern, Veldrid-powered 2D game client using the Bliss library
-  - SOLID, testable, battery-friendly architecture
-  - View-based UI, cross-platform (Windows, Linux, macOS)
-  - See [StarConflictsRevolt.Clients.Bliss/README.md](StarConflictsRevolt.Clients.Bliss/README.md)
+- **StarConflictsRevolt.Clients.Blazor**
+  - Modern, web-based game client using Blazor Server
+  - Responsive, cross-platform web UI that works in any browser
+  - Real-time updates via SignalR, testable architecture
+  - See [DesignDocs/BlazorClient.md](DesignDocs/BlazorClient.md)
 
 - **StarConflictsRevolt.Clients.Shared**
   - Shared client logic for HTTP/SignalR communication, authentication, and configuration
@@ -52,9 +52,9 @@ This repository contains all core projects for the Star Conflicts Revolt game, a
    ```
    This will spin up RavenDB, Redis, API, and simulation services.
 
-2. **Run the Bliss Client:**
+2. **Run the Blazor Client:**
    ```bash
-   dotnet run --project StarConflictsRevolt.Clients.Bliss
+   dotnet run --project StarConflictsRevolt.Clients.Blazor
    ```
 
 3. **Run Tests:**

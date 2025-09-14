@@ -54,6 +54,6 @@ public class WebApiServerTest
         var tokenContent = await tokenResponse.Content.ReadAsStringAsync(cancellationToken);
         await Context.Current.OutputWriter.WriteLineAsync($"Token response: {tokenContent}");
 
-        tokenContent.Should().Contain("access_token", "because the response should contain an access token");
+        tokenContent.Should().Contain("accessToken", "because the response should contain an access token");
     }
 }

@@ -8,7 +8,7 @@
 
 | Slice                     | Purpose                                        | Typical Tech                               | Runs in                              |
 | ------------------------- | ---------------------------------------------- | ------------------------------------------ | ------------------------------------ |
-| **Presentation**          | Visualise the galaxy and capture player intent | Bliss (Veldrid-powered) desktop client     | Player devices                       |
+| **Presentation**          | Visualise the galaxy and capture player intent | Blazor (web) or Bliss (Veldrid-powered) desktop client | Player devices                       |
 | **Connectivity**          | Real-time, low-latency duplex transport        | ASP.NET Core SignalR + optional plain REST | `StarConflictsRevolt.Server.WebApi`  |
 | **Domain Simulation**     | Deterministic world state, AI, rules engine    | .NET worker process                        | `StarConflictsRevolt.EngineWorker`   |
 | **Persistence & Replay**  | Immutable event log + periodic snapshots       | RavenDB                                    | `StarConflictsRevolt.Server.WebApi`  |
@@ -63,10 +63,11 @@ Because the EngineWorker is the *sole* writer for its world, concurrency is simp
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **State cache**      | `IClientWorldStore` keeps the latest `WorldDto` plus a ring-buffer of history for UX rewind or debugging.                                     |
 | **Transport**        | Wrapper over SignalR that *transparently* transforms outgoing player actions into `CommandDto`s and incoming deltas into `GameObjectUpdate`s. |
-| **Renderer plug-in** | Any module implementing `IGameRenderer` can consume `WorldDto` – e.g., a Bliss 2-D star-map.                                                  |
+| **Renderer plug-in** | Any module implementing `IGameRenderer` can consume `WorldDto` – e.g., a Blazor web UI or Bliss 2-D star-map.                                                  |
 | **Offline support**  | Because every change is event-sourced, a thin “inspect & replay” tool can run entirely client-side for battle analysis.                       |
 
-- **Bliss client** is the main UI implementation in this repository. (Raylib/Blazor clients are not present.)
+- **Blazor client** is the primary web-based UI implementation in this repository.
+- **Bliss client** was previously implemented but has been removed in favor of the Blazor client.
 - **Shared client logic** (HTTP, SignalR, auth, config) is in `StarConflictsRevolt.Clients.Shared`.
 - **DTOs** for all API and world state are in `StarConflictsRevolt.Clients.Models`.
 
@@ -116,4 +117,4 @@ Because the EngineWorker is the *sole* writer for its world, concurrency is simp
 
 ### Summary
 
-Star Conflicts Revolt organises its codebase around a **single-writer, event-sourced core** protected behind a thin real-time API. Clients—whether Bliss desktop or future web/other clients—receive *only* deterministic deltas, apply them locally, and render however they like. All long-running work (simulation, AI, persistence) lives in back-end workers that the Aspire AppHost can spin up on a laptop or a cloud cluster with equal ease. The result is a modern, cloud-friendly re-imagining of *Star Wars Rebellion* that stays maintainable, scalable, and replayable from day one.
+Star Conflicts Revolt organises its codebase around a **single-writer, event-sourced core** protected behind a thin real-time API. Clients—whether Blazor web or future desktop/other clients—receive *only* deterministic deltas, apply them locally, and render however they like. All long-running work (simulation, AI, persistence) lives in back-end workers that the Aspire AppHost can spin up on a laptop or a cloud cluster with equal ease. The result is a modern, cloud-friendly re-imagining of *Star Wars Rebellion* that stays maintainable, scalable, and replayable from day one.

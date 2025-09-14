@@ -1,3 +1,6 @@
+> **⚠️ OUTDATED DOCUMENT**  
+> This document describes the Bliss client architecture, which has been removed from the project in favor of the Blazor web client. This document is kept for historical reference only.
+
 Bliss is a lightweight, Veldrid-powered 2-D framework that exposes its entire surface as plain C# objects, so a Rebellion remake can be structured like any other cleanly layered .NET library. Below is a SOLID-centric spec-sheet showing how to wire Bliss into an IoC container, slice responsibilities, and meet the gameplay, rendering, and maintainability goals of a 1998-style grand-strategy game.
 
 ## 1 · Goals & non-goals

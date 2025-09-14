@@ -2,6 +2,7 @@ using System.DirectoryServices.AccountManagement;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Principal;
+using StarConflictsRevolt.Clients.Shared.Authentication;
 
 namespace StarConflictsRevolt.Clients.Shared.User;
 
@@ -9,7 +10,7 @@ public class UserProfileProvider : IUserProfileProvider
 {
     private UserProfile? _userProfile;
     
-    public UserProfile GetUserProfile() => _userProfile ??= GetUserProfileInternal();
+    public IUserProfile GetUserProfile() => _userProfile ??= GetUserProfileInternal();
 
     private static UserProfile GetUserProfileInternal()
     {

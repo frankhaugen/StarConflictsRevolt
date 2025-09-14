@@ -34,7 +34,7 @@ public class GameTickServiceUnitTest
         await gameTickService.StopAsync(cancellationToken);
         
         // Assert: Service should have started and stopped without errors
-        await Assert.That(true).IsTrue(); // Basic test that service runs without crashing
+        // If we get here, the service ran without crashing - no assertion needed
     }
 
     [Test]
@@ -63,7 +63,7 @@ public class GameTickServiceUnitTest
         await gameTickService.StopAsync(cancellationToken);
         
         // Assert: Service should have started and stopped without errors
-        await Assert.That(true).IsTrue(); // Basic test that service runs without crashing
+        // If we get here, the service ran without crashing - no assertion needed
     }
 
     [Test]
@@ -92,6 +92,6 @@ public class GameTickServiceUnitTest
         await gameTickService.StopAsync(cancellationToken);
         
         // Assert: Service should have started and stopped without errors
-        await Assert.That(true).IsTrue(); // Basic test that service runs without crashing
+        // If we get here, the service ran without crashing - no assertion needed
     }
 } 

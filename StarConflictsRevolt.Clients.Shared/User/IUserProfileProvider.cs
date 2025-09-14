@@ -1,6 +1,8 @@
+using StarConflictsRevolt.Clients.Shared.Authentication;
+
 namespace StarConflictsRevolt.Clients.Shared.User;
 
 public interface IUserProfileProvider
 {
-    UserProfile GetUserProfile();
+    IUserProfile GetUserProfile();
 }

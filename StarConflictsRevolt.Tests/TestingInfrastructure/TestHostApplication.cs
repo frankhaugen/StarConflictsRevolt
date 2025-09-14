@@ -22,11 +22,13 @@ using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 using Frank.PulseFlow;
+using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Shared.Authentication;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using StarConflictsRevolt.Clients.Shared.Configuration;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Infrastructure;
+using StarConflictsRevolt.Clients.Shared.User;
 using ServiceCollectionExtensions = StarConflictsRevolt.Clients.Shared.Authentication.ServiceCollectionExtensions;
 
 namespace StarConflictsRevolt.Tests.TestingInfrastructure;
@@ -61,9 +63,12 @@ public class TestHostApplication : IDisposable
             // Register client initialization services
             builder.Services.AddSingleton<IClientIdentityService, ClientIdentityService>();
             builder.Services.AddSingleton<IClientInitializer, ClientInitializer>();
+            builder.Services.AddSingleton<IUserProfileProvider, UserProfileProvider>();
 
             // Add client services
             builder.Services.AddSingleton<IClientWorldStore, ClientWorldStore>();
+            builder.Services.AddSingleton<IClientContext, ClientContext>();
+            
         }
 
         // Use the same shared document store as RavenDbDataSourceAttribute

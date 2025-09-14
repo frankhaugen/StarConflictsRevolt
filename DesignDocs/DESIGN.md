@@ -7,7 +7,7 @@ A real-time turn-based-ish 4X strategy game inspired by *Star Wars: Rebellion*.
 ## 📘 Overview
 
 A turn-based 4X strategy game inspired by *Star Wars: Rebellion*.
-Written in C#/.NET, with a backend using Aspire, SignalR, and RavenDB, and a modern Bliss/Veldrid-powered desktop client.
+Written in C#/.NET, with a backend using Aspire, SignalR, and RavenDB, and a modern Blazor web client.
 
 ---
 
@@ -15,7 +15,7 @@ Written in C#/.NET, with a backend using Aspire, SignalR, and RavenDB, and a mod
 
 ```
 StarConflictsRevolt/
-├── StarConflictsRevolt.Clients.Bliss         # Main desktop client (Bliss/Veldrid)
+├── StarConflictsRevolt.Clients.Blazor        # Main web client (Blazor Server)
 ├── StarConflictsRevolt.Clients.Shared        # Shared client logic (HTTP, SignalR, auth, config)
 ├── StarConflictsRevolt.Clients.Models        # DTOs for API and world state
 ├── StarConflictsRevolt.Server.WebApi         # Backend API (Handlers-based, event-sourced)
@@ -25,7 +25,7 @@ StarConflictsRevolt/
 └── DesignDocs/                               # Architecture and design docs
 ```
 
-- Bliss client is the main UI implementation in this repository.
+- Blazor client is the main UI implementation in this repository.
 - DTOs are strictly separated in Clients.Models.
 - Shared client logic is in Clients.Shared.
 - API is organized using modular Handlers (not Controllers).

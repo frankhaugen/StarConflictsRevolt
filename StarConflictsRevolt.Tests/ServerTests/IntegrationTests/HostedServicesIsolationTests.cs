@@ -49,7 +49,7 @@ public class HostedServicesIsolationTests
         await hostedService.StopAsync(cancellationToken);
 
         // If we get here, the service didn't hang
-        await Assert.That(true).IsTrue();
+        // If we get here, the service ran without crashing - no assertion needed
     }
 
     [Test]
@@ -95,7 +95,7 @@ public class HostedServicesIsolationTests
         await hostedService.StopAsync(cancellationToken);
 
         // If we get here, the service didn't hang
-        await Assert.That(true).IsTrue();
+        // If we get here, the service ran without crashing - no assertion needed
     }
 
     [Test]
@@ -161,6 +161,6 @@ public class HostedServicesIsolationTests
         foreach (var service in hostedServices) await service.StopAsync(cancellationToken);
 
         // If we get here, no service hung
-        await Assert.That(true).IsTrue();
+        // If we get here, the service ran without crashing - no assertion needed
     }
 }

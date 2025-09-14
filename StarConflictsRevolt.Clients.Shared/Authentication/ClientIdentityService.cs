@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using StarConflictsRevolt.Clients.Shared.User;
 
 namespace StarConflictsRevolt.Clients.Shared.Authentication;
 
@@ -50,16 +51,3 @@ public class ClientIdentityService : IClientIdentityService
         return userProfile;
     }
 }
-
-/// <summary>
-/// Interface for providing user profile information
-/// This allows different platforms to implement their own user profile retrieval
-/// </summary>
-public interface IUserProfileProvider
-{
-    /// <summary>
-    /// Gets the user profile for the current platform
-    /// </summary>
-    /// <returns>User profile information</returns>
-    IUserProfile GetUserProfile();
-} 

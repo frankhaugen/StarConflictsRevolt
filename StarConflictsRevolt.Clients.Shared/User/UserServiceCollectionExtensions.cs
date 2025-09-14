@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using StarConflictsRevolt.Clients.Shared.Authentication;
 
 namespace StarConflictsRevolt.Clients.Shared.User;
 
@@ -25,7 +26,7 @@ public static class UserServiceCollectionExtensions
     public static IServiceCollection AddUserService(this IServiceCollection services)
     {
         services.AddSingleton<IUserProfileProvider, UserProfileProvider>();
-        services.AddSingleton<UserProfile>(sp => sp.GetRequiredService<IUserProfileProvider>().GetUserProfile());
+        services.AddSingleton<IUserProfile>(sp => sp.GetRequiredService<IUserProfileProvider>().GetUserProfile());
         return services;
     }
 }

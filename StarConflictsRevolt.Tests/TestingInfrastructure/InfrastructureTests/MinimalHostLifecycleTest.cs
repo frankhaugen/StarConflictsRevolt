@@ -12,7 +12,7 @@ public class MinimalHostLifecycleTest
         await app.StartAsync();
         await app.StopAsync();
         await app.DisposeAsync();
-        await Assert.That(true).IsTrue(); // If we get here, the host started and stopped cleanly
+        // If we get here, the host started and stopped cleanly - no assertion needed
     }
 
     [Test]
