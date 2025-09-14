@@ -44,7 +44,11 @@ public static class ServiceCollectionExtensions
             configureClient: client =>
             {
                 // Configure the HTTP client if needed
-                client.BaseAddress = new Uri(builder.Configuration["GameClientConfiguration:ApiBaseUrl"]);
+                var apiBaseUrl = builder.Configuration["GameClientConfiguration:ApiBaseUrl"];
+                if (!string.IsNullOrEmpty(apiBaseUrl))
+                {
+                    client.BaseAddress = new Uri(apiBaseUrl);
+                }
             });
         
         return builder;

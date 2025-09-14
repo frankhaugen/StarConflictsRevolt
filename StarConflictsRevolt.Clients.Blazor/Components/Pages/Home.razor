@@ -1,0 +1,76 @@
+﻿@page "/"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+
+<PageTitle>Star Conflicts Revolt</PageTitle>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-primary">Star Conflicts Revolt</h1>
+                <p class="lead">A modern reimagining of Star Wars: Rebellion</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Main Menu</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer">
+                            <i class="fas fa-play"></i> Single Player
+                        </button>
+                        <button class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer">
+                            <i class="fas fa-users"></i> Multiplayer
+                        </button>
+                        <button class="btn btn-info btn-lg" @onclick="NavigateToSessions">
+                            <i class="fas fa-list"></i> Join Session
+                        </button>
+                        <button class="btn btn-warning btn-lg" @onclick="NavigateToOptions">
+                            <i class="fas fa-cog"></i> Options
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            @if (GameState.IsConnected)
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-check-circle"></i> Connected to game server
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> Not connected to game server
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private void NavigateToSinglePlayer()
+    {
+        Navigation.NavigateTo("/singleplayer");
+    }
+
+    private void NavigateToMultiplayer()
+    {
+        Navigation.NavigateTo("/multiplayer");
+    }
+
+    private void NavigateToSessions()
+    {
+        Navigation.NavigateTo("/sessions");
+    }
+
+    private void NavigateToOptions()
+    {
+        Navigation.NavigateTo("/options");
+    }
+}

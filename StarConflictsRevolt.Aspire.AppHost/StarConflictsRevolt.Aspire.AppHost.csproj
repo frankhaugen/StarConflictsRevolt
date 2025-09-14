@@ -18,8 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\StarConflictsRevolt.Clients.Bliss\StarConflictsRevolt.Clients.Bliss.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj"/>
+        <ProjectReference Include="..\StarConflictsRevolt.Client.Blazor\StarConflictsRevolt.Client.Blazor.csproj"/>
     </ItemGroup>
 
 </Project>

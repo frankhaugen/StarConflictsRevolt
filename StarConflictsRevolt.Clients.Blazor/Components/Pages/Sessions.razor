@@ -1,0 +1,191 @@
+@page "/sessions"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Models
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+
+<PageTitle>Join Session</PageTitle>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Available Sessions</h3>
+                    <div>
+                        <button class="btn btn-outline-primary me-2" @onclick="RefreshSessions" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sync-alt"></i>
+                            }
+                            Refresh
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="() => Navigation.NavigateTo('/')">
+                            <i class="fas fa-arrow-left"></i> Back to Menu
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading sessions...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (sessions.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Session Name</th>
+                                        <th>Players</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var session in sessions)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@session.SessionName</strong>
+                                                @if (session.SessionId == GameState.CurrentSession?.SessionId)
+                                                {
+                                                    <span class="badge bg-success ms-2">Current</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@session.PlayerCount / @session.MaxPlayers</span>
+                                            </td>
+                                            <td>
+                                                @if (session.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Waiting</span>
+                                                }
+                                            </td>
+                                            <td>@session.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>
+                                                @if (session.SessionId == GameState.CurrentSession?.SessionId)
+                                                {
+                                                    <button class="btn btn-success btn-sm" @onclick="() => Navigation.NavigateTo('/galaxy')">
+                                                        <i class="fas fa-play"></i> Continue
+                                                    </button>
+                                                }
+                                                else if (session.PlayerCount < session.MaxPlayers)
+                                                {
+                                                    <button class="btn btn-primary btn-sm" @onclick="() => JoinSession(session.SessionId)" 
+                                                            disabled="@isJoining">
+                                                        @if (isJoining)
+                                                        {
+                                                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fas fa-sign-in-alt"></i>
+                                                        }
+                                                        Join
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Full</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No sessions available. Create a new session to get started.</p>
+                            <button class="btn btn-primary" @onclick="() => Navigation.NavigateTo('/singleplayer')">
+                                <i class="fas fa-plus"></i> Create Session
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-circle"></i> @errorMessage
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SessionDto> sessions = new();
+    private bool isLoading = false;
+    private bool isJoining = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshSessions();
+    }
+
+    private async Task RefreshSessions()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            sessions = await GameState.GetAvailableSessionsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading sessions: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task JoinSession(Guid sessionId)
+    {
+        isJoining = true;
+        errorMessage = null;
+
+        try
+        {
+            var success = await GameState.JoinSessionAsync(sessionId);
+            if (success)
+            {
+                Navigation.NavigateTo("/galaxy");
+            }
+            else
+            {
+                errorMessage = "Failed to join session. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error joining session: {ex.Message}";
+        }
+        finally
+        {
+            isJoining = false;
+        }
+    }
+}

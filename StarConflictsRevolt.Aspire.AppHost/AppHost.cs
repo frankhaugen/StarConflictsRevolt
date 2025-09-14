@@ -28,18 +28,11 @@ var webapi = builder.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "ht
         .WaitFor(redis)
     ;
 
-// var raylib = builder.AddProject<StarConflictsRevolt_Clients_Raylib>("raylib")
-//     .WithReference(webapi)
-//     .WaitFor(webapi)
-//     .WithEnvironment("GameClientConfiguration__ApiBaseUrl", webapi.GetEndpoint("http"))
-//     .WithEnvironment("GameClientConfiguration__GameServerHubUrl", $"{webapi.GetEndpoint("http")}/gamehub")
-//     .WithEnvironment("TokenProviderOptions__TokenEndpoint", $"{webapi.GetEndpoint("http")}/token");
-
-var bliss = builder.AddProject<StarConflictsRevolt_Clients_Bliss>("bliss")
+var blazor = builder.AddProject<StarConflictsRevolt_Client_Blazor>("blazor", "http")
     .WithReference(webapi)
     .WaitFor(webapi)
     .WithEnvironment("GameClientConfiguration__ApiBaseUrl", webapi.GetEndpoint("http"))
     .WithEnvironment("GameClientConfiguration__GameServerHubUrl", $"{webapi.GetEndpoint("http")}/gamehub")
-    .WithEnvironment("TokenProviderOptions__TokenEndpoint", $"{webapi.GetEndpoint("http")}/token");
+    .WithEnvironment("GameClientConfiguration__TokenEndpoint", $"{webapi.GetEndpoint("http")}/token");
 
 builder.Build().Run();

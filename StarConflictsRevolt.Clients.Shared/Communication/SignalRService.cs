@@ -99,7 +99,8 @@ public class SignalRService : ISignalRService
             _logger.LogInformation("Received FullWorld message. WorldId: {WorldId}", worldDto?.Id);
             _logger.LogDebug("FullWorld contains {StarSystemCount} star systems",
                 worldDto?.Galaxy?.StarSystems?.Count() ?? 0);
-            FullWorldReceived?.Invoke(worldDto);
+            if (worldDto != null)
+                FullWorldReceived?.Invoke(worldDto);
         });
 
         _hubConnection.On<List<GameObjectUpdate>>("ReceiveUpdates", updates =>

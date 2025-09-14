@@ -1,0 +1,222 @@
+@page "/galaxy"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Models
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+
+<PageTitle>Galaxy View</PageTitle>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-dark text-light p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Game Controls</h5>
+                <button class="btn btn-outline-light btn-sm" @onclick="() => Navigation.NavigateTo('/')">
+                    <i class="fas fa-home"></i>
+                </button>
+            </div>
+            
+            @if (GameState.CurrentSession != null)
+            {
+                <div class="card bg-secondary mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">@GameState.CurrentSession.SessionName</h6>
+                        <p class="card-text small">
+                            Players: @GameState.CurrentSession.PlayerCount<br/>
+                            Status: @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
+                        </p>
+                    </div>
+                </div>
+            }
+            
+            <div class="mb-3">
+                <h6>Fleet Management</h6>
+                <div class="list-group list-group-flush">
+                    @if (GameState.CurrentWorld?.Galaxy.StarSystems != null)
+                    {
+                        @foreach (var starSystemDto in GameState.CurrentWorld.Galaxy.StarSystems.Take(5))
+                        {
+                            <div class="list-group-item bg-dark border-secondary">
+                                <div class="d-flex justify-content-between">
+                                    <span>@starSystemDto.Name</span>
+                                    <span class="badge bg-info">@starSystemDto.Id</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted small">No planets loaded</div>
+                    }
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <h6>Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="ShowFleetManager">
+                        <i class="fas fa-ship"></i> Fleet Manager
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" @onclick="ShowPlanetManager">
+                        <i class="fas fa-globe"></i> Planet Manager
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" @onclick="ShowDiplomacy">
+                        <i class="fas fa-handshake"></i> Diplomacy
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Galaxy View -->
+        <div class="col-md-9 p-0">
+            <div class="galaxy-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
+                <!-- Galaxy Map -->
+                <div class="galaxy-map position-absolute w-100 h-100">
+                    @if (GameState.CurrentWorld?.Planets != null)
+                    {
+                        @foreach (var planet in GameState.CurrentWorld.Planets)
+                        {
+                            <div class="planet position-absolute" 
+                                 style="left: @(GetRandomPosition().x)%; top: @(GetRandomPosition().y)%;"
+                                 @onclick="() => SelectPlanet(planet)">
+                                <div class="planet-icon @GetPlanetClass(planet)">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <div class="planet-name">@planet.Name</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-light">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading galaxy...</p>
+                        </div>
+                    }
+                </div>
+                
+                <!-- Selected Planet Info -->
+                @if (selectedPlanet != null)
+                {
+                    <div class="planet-info position-absolute top-0 end-0 m-3" style="max-width: 300px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">@selectedPlanet.Name</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small mb-2">
+                                    <strong>Name:</strong> @selectedPlanet.Name<br/>
+                                    <strong>Radius:</strong> @selectedPlanet.Radius<br/>
+                                    <strong>Mass:</strong> @selectedPlanet.Mass
+                                </p>
+                                <div class="d-grid gap-1">
+                                    <button class="btn btn-primary btn-sm" @onclick="() => ShowPlanetDetails(selectedPlanet)">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </button>
+                                    <button class="btn btn-success btn-sm" @onclick="() => ShowFleetActions(selectedPlanet)">
+                                        <i class="fas fa-ship"></i> Fleet Actions
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private PlanetDto? selectedPlanet;
+
+    protected override void OnInitialized()
+    {
+        GameState.StateChanged += StateHasChanged;
+    }
+
+    private void SelectPlanet(PlanetDto planet)
+    {
+        selectedPlanet = planet;
+    }
+
+    private string GetPlanetClass(PlanetDto planet)
+    {
+        // TODO: Add loyalty property to PlanetDto
+        return "planet-neutral";
+    }
+
+    private void ShowFleetManager()
+    {
+        // TODO: Implement fleet manager modal
+    }
+
+    private void ShowPlanetManager()
+    {
+        // TODO: Implement planet manager modal
+    }
+
+    private void ShowDiplomacy()
+    {
+        // TODO: Implement diplomacy modal
+    }
+
+    private void ShowPlanetDetails(PlanetDto planet)
+    {
+        // TODO: Implement planet details modal
+    }
+
+    private void ShowFleetActions(PlanetDto planet)
+    {
+        // TODO: Implement fleet actions modal
+    }
+
+    private (int x, int y) GetRandomPosition()
+    {
+        var random = new Random();
+        return (random.Next(10, 90), random.Next(10, 90));
+    }
+}
+
+<style>
+    .galaxy-container {
+        overflow: hidden;
+    }
+    
+    .planet {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .planet:hover {
+        transform: scale(1.2);
+    }
+    
+    .planet-icon {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    
+    .planet-name {
+        font-size: 0.8rem;
+        text-align: center;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+    
+    .planet-rebellion {
+        color: #007bff;
+    }
+    
+    .planet-empire {
+        color: #dc3545;
+    }
+    
+    .planet-neutral {
+        color: #6c757d;
+    }
+    
+    .planet-unknown {
+        color: #ffc107;
+    }
+</style>

@@ -1,0 +1,125 @@
+@page "/singleplayer"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+
+<PageTitle>Single Player Setup</PageTitle>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Single Player Setup</h3>
+                    <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
+                        <i class="fas fa-arrow-left"></i> Back to Menu
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form @onsubmit="CreateSinglePlayerSession">
+                        <div class="mb-3">
+                            <label for="sessionName" class="form-label">Session Name</label>
+                            <input type="text" class="form-control" id="sessionName" @bind="sessionName" 
+                                   placeholder="Enter session name" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="playerName" class="form-label">Player Name</label>
+                            <input type="text" class="form-control" id="playerName" @bind="playerName" 
+                                   placeholder="Enter your name" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="faction" class="form-label">Faction</label>
+                            <select class="form-select" id="faction" @bind="selectedFaction">
+                                <option value="rebellion">Rebellion</option>
+                                <option value="empire">Empire</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="difficulty" class="form-label">Difficulty</label>
+                            <select class="form-select" id="difficulty" @bind="selectedDifficulty">
+                                <option value="easy">Easy</option>
+                                <option value="normal">Normal</option>
+                                <option value="hard">Hard</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary me-md-2" @onclick="() => Navigation.NavigateTo('/')">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" disabled="@isCreating">
+                                @if (isCreating)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Creating...
+                                }
+                                else
+                                {
+                                    <i class="fas fa-play"></i> Start Game
+                                }
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-circle"></i> @errorMessage
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string sessionName = "My Single Player Game";
+    private string playerName = "Player";
+    private string selectedFaction = "rebellion";
+    private string selectedDifficulty = "normal";
+    private bool isCreating = false;
+    private string? errorMessage;
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task CreateSinglePlayerSession()
+    {
+        if (string.IsNullOrWhiteSpace(sessionName) || string.IsNullOrWhiteSpace(playerName))
+        {
+            errorMessage = "Please fill in all required fields.";
+            return;
+        }
+
+        isCreating = true;
+        errorMessage = null;
+
+        try
+        {
+            var success = await GameState.CreateSessionAsync(sessionName);
+            if (success)
+            {
+                Navigation.NavigateTo("/galaxy");
+            }
+            else
+            {
+                errorMessage = "Failed to create session. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating session: {ex.Message}";
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+}

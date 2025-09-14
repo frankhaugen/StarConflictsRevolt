@@ -21,11 +21,11 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="StarConflictsRevolt.Aspire.AppHost\StarConflictsRevolt.Aspire.AppHost.csproj" Type="C#" />
-  <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" Type="C#" />
-  <Project Path="StarConflictsRevolt.Clients.Bliss\StarConflictsRevolt.Clients.Bliss.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" Type="C#" />
-  <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" Type="Classic C#" />
-  <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" Type="C#" />
-  <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" Type="C#" />
+  <Project Path="StarConflictsRevolt.Aspire.AppHost\StarConflictsRevolt.Aspire.AppHost.csproj" />
+  <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
+  <Project Path="StarConflictsRevolt.Clients.Blazor/StarConflictsRevolt.Clients.Blazor.csproj" />
+  <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
+  <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" Type="C#" />
+  <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
+  <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
 </Solution>
