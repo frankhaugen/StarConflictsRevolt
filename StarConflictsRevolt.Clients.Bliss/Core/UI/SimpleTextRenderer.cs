@@ -28,13 +28,12 @@ public class SimpleTextRenderer : IDisposable
             ?? _resourceManager.GetFont("Galaxy");
     }
 
-    public void DrawTextCentered(string text, RectangleF bounds, SpriteBatch spriteBatch, string fontName, float fontSize, Color color, PrimitiveBatch primitiveBatch)
+    public void DrawTextCentered(string text, RectangleF bounds, SpriteBatch spriteBatch, string fontName, float fontSize, Color color, PrimitiveBatch? primitiveBatch = null)
     {
         var font = GetFont(fontName);
         if (font == null)
         {
-            // Draw a red rectangle to indicate missing font
-            primitiveBatch.DrawFilledRectangle(bounds, color: new Color(255,0,0,128));
+            primitiveBatch?.DrawFilledRectangle(bounds, color: new Color(255,0,0,128));
             return;
         }
         var spriteFont = font.GetSpriteFont(fontSize);
@@ -44,14 +43,13 @@ public class SimpleTextRenderer : IDisposable
         spriteBatch.DrawText(font, text, new Vector2(textX, textY), fontSize, color: color, layerDepth: 1.5f);
     }
 
-    public void DrawText(string text, Vector2 position, SpriteBatch spriteBatch, string fontName, float fontSize, Color color, PrimitiveBatch primitiveBatch)
+    public void DrawText(string text, Vector2 position, SpriteBatch spriteBatch, string fontName, float fontSize, Color color, PrimitiveBatch? primitiveBatch = null)
     {
         var font = GetFont(fontName);
         if (font == null)
         {
-            // Draw a small red rectangle at the position to indicate missing font
             var errorRect = new RectangleF(position.X, position.Y, 40, 20);
-            primitiveBatch.DrawFilledRectangle(errorRect, color: new Color(255,0,0,128));
+            primitiveBatch?.DrawFilledRectangle(errorRect, color: new Color(255,0,0,128));
             return;
         }
         spriteBatch.DrawText(font, text, position, fontSize, color: color, layerDepth: 1.5f);

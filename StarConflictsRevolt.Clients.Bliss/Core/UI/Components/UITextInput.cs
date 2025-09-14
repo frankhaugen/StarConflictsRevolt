@@ -139,7 +139,7 @@ public class UITextInput : UIComponent
             _bounds.X + 10, _bounds.Y + 5,
             _bounds.Width - 20, _bounds.Height - 10);
         // Draw the text using SimpleTextRenderer
-        _textRenderer.DrawTextCentered(displayText, textBounds, spriteBatch, "Default", fontSize, fontColor, primitiveBatch);
+        _textRenderer.DrawTextCentered(displayText, textBounds, spriteBatch, "Default", fontSize, fontColor);
     }
     
     private void DrawCursor(PrimitiveBatch primitiveBatch)

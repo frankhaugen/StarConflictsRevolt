@@ -182,7 +182,7 @@ public class UIButton : UIComponent
     
     private void DrawButtonText(SpriteBatch spriteBatch, Color textColor, PrimitiveBatch primitiveBatch)
     {
-        // Draw text centered in the button using SimpleTextRenderer
-        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor, primitiveBatch);
+        // Always draw text after rectangles, so it's on top
+        _textRenderer.DrawTextCentered(_text, _bounds, spriteBatch, "Default", 20f, textColor);
     }
 } 

@@ -93,7 +93,7 @@ public class LandingScreen : BaseScreen
         }
         
         // Draw title text last (on top of everything)
-        DrawTitleText(spriteBatch, commandList, framebuffer, primitiveBatch);
+        DrawTitleText(spriteBatch, commandList, framebuffer);
     }
     
     public override void HandleInput()
@@ -331,7 +331,7 @@ public class LandingScreen : BaseScreen
             new Color(102, 26, 26, 153));
     }
     
-    private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer, PrimitiveBatch primitiveBatch)
+    private void DrawTitleText(SpriteBatch spriteBatch, CommandList commandList, Framebuffer framebuffer)
     {
         Console.WriteLine("DrawTitleText called");
         
@@ -345,7 +345,7 @@ public class LandingScreen : BaseScreen
         // Draw main title centered in the title panel using fallback method
         _textRenderer.DrawTextCentered("STAR CONFLICTS: REVOLT", 
             scaledTitlePanel, 
-            spriteBatch, "Default", scaledFontSize, Color.White, primitiveBatch);
+            spriteBatch, "Default", scaledFontSize, Color.White);
         
         // Draw subtitle in a smaller area within the title panel
         var subtitleBounds = new RectangleF(
@@ -357,7 +357,7 @@ public class LandingScreen : BaseScreen
         var subtitleFontSize = _scalingService.ScaleFontSize(24f);
         _textRenderer.DrawTextCentered("A New Hope Awaits", 
             subtitleBounds, 
-            spriteBatch, "Default", subtitleFontSize, Color.LightGray, primitiveBatch);
+            spriteBatch, "Default", subtitleFontSize, Color.LightGray);
     }
     
 
