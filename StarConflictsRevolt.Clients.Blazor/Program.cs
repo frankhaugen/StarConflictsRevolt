@@ -1,3 +1,4 @@
+using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Clients.Blazor.Components;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Clients.Blazor.Services;
@@ -8,14 +9,31 @@ using StarConflictsRevolt.Clients.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
+builder.Services
+    .AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.AddServiceDefaults();
 
 // Add shared client services
 builder.Services.Configure<GameClientConfiguration>(
     builder.Configuration.GetSection("GameClientConfiguration"));
 builder.Services.AddSingleton<ISignalRService, SignalRService>();
-builder.Services.AddHttpClient<IHttpApiClient, HttpApiClient>();
+
+// Register HTTP client with proper configuration
+builder.Services.AddHttpClient("GameApi", client =>
+{
+    var apiBaseUrl = builder.Configuration["GameClientConfiguration:ApiBaseUrl"];
+    if (!string.IsNullOrEmpty(apiBaseUrl))
+    {
+        client.BaseAddress = new Uri(apiBaseUrl);
+    }
+});
+builder.Services.AddScoped<IHttpApiClient>(provider =>
+{
+    var factory = provider.GetRequiredService<IHttpClientFactory>();
+    return new HttpApiClient(factory, "GameApi");
+});
 
 // Add Blazor-specific services
 builder.Services.AddScoped<IGameStateService, GameStateService>();

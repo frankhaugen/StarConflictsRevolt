@@ -3,7 +3,7 @@ using StarConflictsRevolt.Clients.Shared.Communication;
 
 namespace StarConflictsRevolt.Clients.Blazor.Services;
 
-public class BlazorSignalRService : ISignalRService
+public class BlazorSignalRService : ISignalRService, IDisposable
 {
     private readonly ISignalRService _baseSignalRService;
 
@@ -60,5 +60,13 @@ public class BlazorSignalRService : ISignalRService
     public async ValueTask DisposeAsync()
     {
         await _baseSignalRService.DisposeAsync();
+    }
+
+    public void Dispose()
+    {
+        if (_baseSignalRService is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 }
