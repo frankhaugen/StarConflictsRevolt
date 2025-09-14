@@ -33,6 +33,9 @@
                         <button class="btn btn-warning btn-lg" @onclick="NavigateToOptions">
                             <i class="fas fa-cog"></i> Options
                         </button>
+                        <button class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics">
+                            <i class="fas fa-heartbeat"></i> Diagnostics
+                        </button>
                     </div>
                 </div>
             </div>
@@ -72,5 +75,10 @@
     private void NavigateToOptions()
     {
         Navigation.NavigateTo("/options");
+    }
+
+    private void NavigateToDiagnostics()
+    {
+        Navigation.NavigateTo("/diagnostics");
     }
 }

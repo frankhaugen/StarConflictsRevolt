@@ -2,6 +2,7 @@ using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Communication;
+using System.Diagnostics;
 
 namespace StarConflictsRevolt.Clients.Blazor.Services;
 
@@ -9,16 +10,21 @@ public class GameStateService : IGameStateService
 {
     private readonly IHttpApiClient _httpClient;
     private readonly ISignalRService _signalRService;
+    private readonly TelemetryService _telemetryService;
+    private readonly ActivitySource _activitySource;
     private WorldDto? _currentWorld;
     private SessionDto? _currentSession;
 
-    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService)
+    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService)
     {
         _httpClient = httpClient;
         _signalRService = signalRService;
+        _telemetryService = telemetryService;
+        _activitySource = new ActivitySource("StarConflictsRevolt.Blazor");
         
         // Subscribe to SignalR updates
         _signalRService.FullWorldReceived += OnWorldUpdated;
+        _signalRService.UpdatesReceived += OnSignalRUpdates;
     }
 
     public WorldDto? CurrentWorld => _currentWorld;
@@ -29,9 +35,20 @@ public class GameStateService : IGameStateService
 
     public async Task<bool> CreateSessionAsync(string sessionName)
     {
+        using var activity = _activitySource.StartActivity("CreateSession");
+        activity?.SetTag("session.name", sessionName);
+        activity?.SetTag("session.type", "SinglePlayer");
+        
         try
         {
+            _telemetryService.RecordHttpRequest();
+            var stopwatch = Stopwatch.StartNew();
+            
             var sessionResponse = await _httpClient.CreateNewSessionAsync(sessionName, "SinglePlayer");
+            
+            stopwatch.Stop();
+            _telemetryService.RecordHttpResponseTime(stopwatch.Elapsed.TotalSeconds);
+            
             if (sessionResponse != null)
             {
                 _currentSession = new SessionDto
@@ -45,12 +62,16 @@ public class GameStateService : IGameStateService
                 _currentWorld = sessionResponse.World;
                 await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
                 NotifyStateChanged();
+                
+                _telemetryService.RecordGameAction("create_session");
+                activity?.SetStatus(ActivityStatusCode.Ok);
                 return true;
             }
         }
         catch (Exception ex)
         {
-            // Log error
+            _telemetryService.RecordHttpError();
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             Console.WriteLine($"Error creating session: {ex.Message}");
         }
         return false;
@@ -181,6 +202,11 @@ public class GameStateService : IGameStateService
         NotifyStateChanged();
     }
 
+    private void OnSignalRUpdates(List<GameObjectUpdate> updates)
+    {
+        _telemetryService.RecordSignalRMessage();
+        // Process updates as needed
+    }
 
     private void NotifyStateChanged()
     {

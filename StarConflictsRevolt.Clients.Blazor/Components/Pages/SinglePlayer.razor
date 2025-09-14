@@ -1,125 +1,417 @@
 @page "/singleplayer"
 @using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Models
 @inject IGameStateService GameState
+@inject TelemetryService TelemetryService
 @inject NavigationManager Navigation
 
-<PageTitle>Single Player Setup</PageTitle>
+<PageTitle>Single Player Game</PageTitle>
 
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3>Single Player Setup</h3>
-                    <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
-                        <i class="fas fa-arrow-left"></i> Back to Menu
-                    </button>
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Game Sidebar -->
+        <div class="col-md-3 bg-dark text-light p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Game Controls</h5>
+                <button class="btn btn-outline-light btn-sm" @onclick="NavigateToHome">
+                    <i class="fas fa-home"></i>
+                </button>
+            </div>
+            
+            @if (GameState.CurrentSession != null)
+            {
+                <div class="card bg-secondary mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">@GameState.CurrentSession.SessionName</h6>
+                        <p class="card-text small">
+                            Type: @GameState.CurrentSession.SessionType<br/>
+                            Status: @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
+                        </p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form @onsubmit="CreateSinglePlayerSession">
-                        <div class="mb-3">
-                            <label for="sessionName" class="form-label">Session Name</label>
-                            <input type="text" class="form-control" id="sessionName" @bind="sessionName" 
-                                   placeholder="Enter session name" required />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="playerName" class="form-label">Player Name</label>
-                            <input type="text" class="form-control" id="playerName" @bind="playerName" 
-                                   placeholder="Enter your name" required />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="faction" class="form-label">Faction</label>
-                            <select class="form-select" id="faction" @bind="selectedFaction">
-                                <option value="rebellion">Rebellion</option>
-                                <option value="empire">Empire</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="difficulty" class="form-label">Difficulty</label>
-                            <select class="form-select" id="difficulty" @bind="selectedDifficulty">
-                                <option value="easy">Easy</option>
-                                <option value="normal">Normal</option>
-                                <option value="hard">Hard</option>
-                                <option value="expert">Expert</option>
-                            </select>
-                        </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="button" class="btn btn-secondary me-md-2" @onclick="NavigateToHome">
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" disabled="@isCreating">
-                                @if (isCreating)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    <text>Creating...</text>
-                                }
-                                else
-                                {
-                                    <i class="fas fa-play"></i> <text>Start Game</text>
-                                }
-                            </button>
-                        </div>
-                    </form>
+            }
+            
+            <div class="mb-3">
+                <h6>Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="ShowFleetManager">
+                        <i class="fas fa-ship"></i> Fleet Manager
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" @onclick="ShowPlanetManager">
+                        <i class="fas fa-globe"></i> Planet Manager
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" @onclick="ShowDiplomacy">
+                        <i class="fas fa-handshake"></i> Diplomacy
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" @onclick="ShowResearch">
+                        <i class="fas fa-flask"></i> Research
+                    </button>
                 </div>
             </div>
             
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger mt-3">
-                    <i class="fas fa-exclamation-circle"></i> @errorMessage
+            <div class="mb-3">
+                <h6>Resources</h6>
+                <div class="resource-display">
+                    <div class="resource-item">
+                        <i class="fas fa-coins text-warning"></i>
+                        <span>Credits: @GetResourceValue("credits")</span>
+                    </div>
+                    <div class="resource-item">
+                        <i class="fas fa-cube text-info"></i>
+                        <span>Materials: @GetResourceValue("materials")</span>
+                    </div>
+                    <div class="resource-item">
+                        <i class="fas fa-fire text-danger"></i>
+                        <span>Fuel: @GetResourceValue("fuel")</span>
+                    </div>
                 </div>
-            }
+            </div>
+            
+            <div class="mb-3">
+                <h6>Game Status</h6>
+                <div class="status-display">
+                    <div class="status-item">
+                        <span class="status-label">Turn:</span>
+                        <span class="status-value">@currentTurn</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Phase:</span>
+                        <span class="status-value">@currentPhase</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Game Area -->
+        <div class="col-md-9 p-0">
+            <div class="game-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
+                <!-- Galaxy Map -->
+                <div class="galaxy-map position-absolute w-100 h-100">
+                    @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+                    {
+                        @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+                        {
+                            <div class="star-system position-absolute" 
+                                 style="left: @(GetStarSystemPosition(starSystem).x)%; top: @(GetStarSystemPosition(starSystem).y)%;"
+                                 @onclick="() => SelectStarSystem(starSystem)">
+                                <div class="star-system-icon @GetStarSystemClass(starSystem)">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="star-system-name">@starSystem.Name</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-light">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading galaxy...</p>
+                        </div>
+                    }
+                </div>
+                
+                <!-- Selected Star System Info -->
+                @if (selectedStarSystem != null)
+                {
+                    <div class="star-system-info position-absolute top-0 end-0 m-3" style="max-width: 300px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">@selectedStarSystem.Name</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small mb-2">
+                                    <strong>Planets:</strong> @selectedStarSystem.Planets.Count()<br/>
+                                    <strong>Coordinates:</strong> @selectedStarSystem.Coordinates
+                                </p>
+                                <div class="d-grid gap-1">
+                                    <button class="btn btn-primary btn-sm" @onclick="() => ShowStarSystemDetails(selectedStarSystem)">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </button>
+                                    <button class="btn btn-success btn-sm" @onclick="() => ShowFleetActions(selectedStarSystem)">
+                                        <i class="fas fa-ship"></i> Fleet Actions
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Game Messages -->
+                @if (gameMessages.Any())
+                {
+                    <div class="game-messages position-absolute bottom-0 start-0 m-3" style="max-width: 400px;">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Game Messages</h6>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="ClearMessages">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                                @foreach (var message in gameMessages.Take(10))
+                                {
+                                    <div class="message-item @message.Type.ToLower()">
+                                        <small>[@message.Timestamp.ToString("HH:mm:ss")] @message.Text</small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Modals -->
+@if (showFleetManager)
+{
+    <FleetManager />
+}
+
+@if (showPlanetManager)
+{
+    <PlanetManager />
+}
+
 @code {
-    private string sessionName = "My Single Player Game";
-    private string playerName = "Player";
-    private string selectedFaction = "rebellion";
-    private string selectedDifficulty = "normal";
-    private bool isCreating = false;
-    private string? errorMessage;
+    private StarSystemDto? selectedStarSystem;
+    private bool showFleetManager = false;
+    private bool showPlanetManager = false;
+    private int currentTurn = 1;
+    private string currentPhase = "Planning";
+    private List<GameMessage> gameMessages = new();
+    private Dictionary<string, int> resources = new()
+    {
+        ["credits"] = 1000,
+        ["materials"] = 500,
+        ["fuel"] = 200
+    };
+
+    protected override void OnInitialized()
+    {
+        GameState.StateChanged += StateHasChanged;
+        
+        // Start the game if no session exists
+        if (GameState.CurrentSession == null)
+        {
+            _ = Task.Run(StartNewGame);
+        }
+        
+        // Add welcome message
+        AddGameMessage("info", "Welcome to Star Conflicts Revolt! Your galactic empire awaits.");
+    }
+
+    private async Task StartNewGame()
+    {
+        var success = await GameState.CreateSessionAsync("Single Player Game");
+        if (success)
+        {
+            AddGameMessage("success", "New game session created successfully!");
+        }
+        else
+        {
+            AddGameMessage("error", "Failed to create game session. Please try again.");
+        }
+    }
+
+    private void SelectStarSystem(StarSystemDto starSystem)
+    {
+        selectedStarSystem = starSystem;
+        TelemetryService.RecordGameAction("select_star_system");
+        AddGameMessage("info", $"Selected star system: {starSystem.Name}");
+    }
+
+    private string GetStarSystemClass(StarSystemDto starSystem)
+    {
+        // TODO: Add loyalty property to StarSystemDto
+        return "star-system-neutral";
+    }
+
+    private (int x, int y) GetStarSystemPosition(StarSystemDto starSystem)
+    {
+        // Generate consistent positions based on star system ID
+        var hash = starSystem.Id.GetHashCode();
+        var random = new Random(hash);
+        return (random.Next(10, 90), random.Next(10, 90));
+    }
+
+    private void ShowFleetManager()
+    {
+        showFleetManager = true;
+        TelemetryService.RecordGameAction("open_fleet_manager");
+    }
+
+    private void ShowPlanetManager()
+    {
+        showPlanetManager = true;
+        TelemetryService.RecordGameAction("open_planet_manager");
+    }
+
+    private void ShowDiplomacy()
+    {
+        AddGameMessage("info", "Diplomacy system coming soon!");
+        TelemetryService.RecordGameAction("open_diplomacy");
+    }
+
+    private void ShowResearch()
+    {
+        AddGameMessage("info", "Research system coming soon!");
+        TelemetryService.RecordGameAction("open_research");
+    }
+
+    private void ShowStarSystemDetails(StarSystemDto starSystem)
+    {
+        AddGameMessage("info", $"Viewing details for {starSystem.Name}");
+        TelemetryService.RecordGameAction("view_star_system_details");
+    }
+
+    private void ShowFleetActions(StarSystemDto starSystem)
+    {
+        AddGameMessage("info", $"Fleet actions for {starSystem.Name}");
+        TelemetryService.RecordGameAction("view_fleet_actions");
+    }
 
     private void NavigateToHome()
     {
         Navigation.NavigateTo("/");
     }
 
-    private async Task CreateSinglePlayerSession()
+    private void ClearMessages()
     {
-        if (string.IsNullOrWhiteSpace(sessionName) || string.IsNullOrWhiteSpace(playerName))
-        {
-            errorMessage = "Please fill in all required fields.";
-            return;
-        }
+        gameMessages.Clear();
+    }
 
-        isCreating = true;
-        errorMessage = null;
+    private void AddGameMessage(string type, string text)
+    {
+        gameMessages.Insert(0, new GameMessage
+        {
+            Timestamp = DateTime.Now,
+            Type = type,
+            Text = text
+        });
+        
+        // Keep only last 50 messages
+        if (gameMessages.Count > 50)
+        {
+            gameMessages = gameMessages.Take(50).ToList();
+        }
+    }
 
-        try
-        {
-            var success = await GameState.CreateSessionAsync(sessionName);
-            if (success)
-            {
-                Navigation.NavigateTo("/galaxy");
-            }
-            else
-            {
-                errorMessage = "Failed to create session. Please try again.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error creating session: {ex.Message}";
-        }
-        finally
-        {
-            isCreating = false;
-        }
+    private int GetResourceValue(string resource)
+    {
+        return resources.TryGetValue(resource, out var value) ? value : 0;
+    }
+
+    public void Dispose()
+    {
+        GameState.StateChanged -= StateHasChanged;
+    }
+}
+
+<style>
+    .game-container {
+        overflow: hidden;
+    }
+    
+    .star-system {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .star-system:hover {
+        transform: scale(1.2);
+    }
+    
+    .star-system-icon {
+        font-size: 2rem;
+        text-align: center;
+        color: #ffd700;
+    }
+    
+    .star-system-name {
+        font-size: 0.8rem;
+        text-align: center;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        margin-top: 5px;
+    }
+    
+    .star-system-rebellion {
+        color: #007bff;
+    }
+    
+    .star-system-empire {
+        color: #dc3545;
+    }
+    
+    .star-system-neutral {
+        color: #6c757d;
+    }
+    
+    .resource-display {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .resource-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-display {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .status-label {
+        font-size: 0.9rem;
+        color: #adb5bd;
+    }
+    
+    .status-value {
+        font-weight: bold;
+        color: #fff;
+    }
+    
+    .message-item {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .message-item.info {
+        color: #0d6efd;
+    }
+    
+    .message-item.success {
+        color: #198754;
+    }
+    
+    .message-item.warning {
+        color: #ffc107;
+    }
+    
+    .message-item.error {
+        color: #dc3545;
+    }
+</style>
+
+@implements IDisposable
+
+@code {
+    public class GameMessage
+    {
+        public DateTime Timestamp { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
     }
 }

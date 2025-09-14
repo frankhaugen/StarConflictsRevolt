@@ -1,0 +1,477 @@
+@page "/diagnostics"
+@using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Models
+@using StarConflictsRevolt.Clients.Blazor.Models
+@inject IGameStateService GameState
+@inject BlazorSignalRService SignalRService
+@inject TelemetryService TelemetryService
+@inject NavigationManager Navigation
+@inject ILogger<Diagnostics> Logger
+
+<PageTitle>System Diagnostics</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-heartbeat text-danger"></i> System Diagnostics</h1>
+                <div>
+                    <button class="btn btn-outline-primary me-2" @onclick="RefreshData" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-sync-alt"></i>
+                        }
+                        Refresh
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="NavigateToHome">
+                        <i class="fas fa-arrow-left"></i> Back to Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Connection Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-wifi"></i> Connection Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="status-indicator @(GameState.IsConnected ? "connected" : "disconnected")"></div>
+                                <span class="ms-2">Game Server</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="status-indicator @(signalRConnected ? "connected" : "disconnected")"></div>
+                                <span class="ms-2">SignalR</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                Last Update: @lastUpdate.ToString("HH:mm:ss")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-gamepad"></i> Session Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (GameState.CurrentSession != null)
+                    {
+                        <div class="mb-2">
+                            <strong>Session:</strong> @GameState.CurrentSession.SessionName
+                        </div>
+                        <div class="mb-2">
+                            <strong>Type:</strong> @GameState.CurrentSession.SessionType
+                        </div>
+                        <div class="mb-2">
+                            <strong>Status:</strong> 
+                            <span class="badge @(GameState.CurrentSession.IsActive ? "bg-success" : "bg-warning")">
+                                @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Created:</strong> @GameState.CurrentSession.Created.ToString("yyyy-MM-dd HH:mm:ss")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No active session</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- SignalR Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-broadcast-tower"></i> SignalR Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="metric-item">
+                                <div class="metric-value">@signalRMessageCount</div>
+                                <div class="metric-label">Messages Received</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-item">
+                                <div class="metric-value">@signalRReconnectCount</div>
+                                <div class="metric-label">Reconnections</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="metric-item">
+                                <div class="metric-value">@lastSignalRMessage.ToString("HH:mm:ss")</div>
+                                <div class="metric-label">Last Message</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HTTP Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-globe"></i> HTTP Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="metric-item">
+                                <div class="metric-value">@httpRequestCount</div>
+                                <div class="metric-label">Requests Sent</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-item">
+                                <div class="metric-value">@httpErrorCount</div>
+                                <div class="metric-label">Errors</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="metric-item">
+                                <div class="metric-value">@averageResponseTime ms</div>
+                                <div class="metric-label">Avg Response Time</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Real-time Activity Log -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list"></i> Activity Log</h5>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="ClearLog">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="activity-log" style="height: 300px; overflow-y: auto;">
+                        @foreach (var logEntry in activityLog.Take(50))
+                        {
+                            <div class="log-entry @logEntry.Type.ToLower()">
+                                <span class="log-time">[@logEntry.Timestamp.ToString("HH:mm:ss")]</span>
+                                <span class="log-message">@logEntry.Message</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Performance Metrics -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Performance Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="metric-item">
+                                <div class="metric-value">@memoryUsage MB</div>
+                                <div class="metric-label">Memory Usage</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-item">
+                                <div class="metric-value">@cpuUsage %</div>
+                                <div class="metric-label">CPU Usage</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-item">
+                                <div class="metric-value">@uptime</div>
+                                <div class="metric-label">Uptime</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-item">
+                                <div class="metric-value">@activeConnections</div>
+                                <div class="metric-label">Active Connections</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = false;
+    private bool signalRConnected = false;
+    private int signalRMessageCount = 0;
+    private int signalRReconnectCount = 0;
+    private DateTime lastSignalRMessage = DateTime.MinValue;
+    private int httpRequestCount = 0;
+    private int httpErrorCount = 0;
+    private int averageResponseTime = 0;
+    private long memoryUsage = 0;
+    private int cpuUsage = 0;
+    private string uptime = "00:00:00";
+    private int activeConnections = 0;
+    private DateTime lastUpdate = DateTime.Now;
+    private List<LogEntry> activityLog = new();
+    private Timer? refreshTimer;
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to SignalR events
+        SignalRService.UpdatesReceived += OnSignalRMessage;
+        SignalRService.ConnectionClosed += OnSignalRConnectionClosed;
+        SignalRService.Reconnecting += OnSignalRReconnecting;
+        SignalRService.Reconnected += OnSignalRReconnected;
+        
+        // Subscribe to game state changes
+        GameState.StateChanged += OnGameStateChanged;
+        
+        // Start refresh timer
+        refreshTimer = new Timer(RefreshDataCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        
+        // Initial data load
+        _ = Task.Run(RefreshDataAsync);
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+        await RefreshDataAsync();
+        isLoading = false;
+    }
+
+    private async Task RefreshDataAsync()
+    {
+        try
+        {
+            // Update performance metrics
+            await UpdatePerformanceMetrics();
+            
+            // Update connection status
+            signalRConnected = GameState.IsConnected;
+            
+            lastUpdate = DateTime.Now;
+            AddLogEntry("info", "Diagnostics data refreshed");
+        }
+        catch (Exception ex)
+        {
+            AddLogEntry("error", $"Error refreshing data: {ex.Message}");
+        }
+    }
+
+    private void RefreshDataCallback(object? state)
+    {
+        _ = Task.Run(RefreshDataAsync);
+    }
+
+    private async Task UpdatePerformanceMetrics()
+    {
+        try
+        {
+            // Get memory usage
+            var process = System.Diagnostics.Process.GetCurrentProcess();
+            memoryUsage = process.WorkingSet64 / 1024 / 1024; // Convert to MB
+            
+            // Update telemetry service with memory usage
+            TelemetryService.UpdateMemoryUsage(process.WorkingSet64);
+            
+            // Calculate uptime
+            var startTime = process.StartTime;
+            var elapsed = DateTime.Now - startTime;
+            uptime = elapsed.ToString(@"hh\:mm\:ss");
+            
+            // Simulate CPU usage (in a real implementation, you'd use proper CPU monitoring)
+            cpuUsage = new Random().Next(10, 50);
+            
+            // Update active connections (simulated)
+            activeConnections = signalRConnected ? 1 : 0;
+            TelemetryService.UpdateActiveConnections(activeConnections);
+            
+            // Trigger UI update
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            AddLogEntry("error", $"Error updating performance metrics: {ex.Message}");
+        }
+    }
+
+    private void OnSignalRMessage(List<GameObjectUpdate> updates)
+    {
+        signalRMessageCount += updates.Count;
+        lastSignalRMessage = DateTime.Now;
+        AddLogEntry("info", $"Received {updates.Count} SignalR updates");
+    }
+
+    private void OnSignalRConnectionClosed(Exception? exception)
+    {
+        signalRConnected = false;
+        AddLogEntry("warning", $"SignalR connection closed: {exception?.Message ?? "Unknown reason"}");
+    }
+
+    private void OnSignalRReconnecting(Exception? exception)
+    {
+        AddLogEntry("info", "SignalR reconnecting...");
+    }
+
+    private void OnSignalRReconnected(string connectionId)
+    {
+        signalRConnected = true;
+        signalRReconnectCount++;
+        AddLogEntry("success", $"SignalR reconnected: {connectionId}");
+    }
+
+    private void OnGameStateChanged()
+    {
+        AddLogEntry("info", "Game state changed");
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void AddLogEntry(string type, string message)
+    {
+        var logEntry = new LogEntry
+        {
+            Timestamp = DateTime.Now,
+            Type = type,
+            Message = message
+        };
+        
+        activityLog.Insert(0, logEntry);
+        
+        // Keep only last 100 entries
+        if (activityLog.Count > 100)
+        {
+            activityLog = activityLog.Take(100).ToList();
+        }
+        
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ClearLog()
+    {
+        activityLog.Clear();
+    }
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+        
+        // Unsubscribe from events
+        SignalRService.UpdatesReceived -= OnSignalRMessage;
+        SignalRService.ConnectionClosed -= OnSignalRConnectionClosed;
+        SignalRService.Reconnecting -= OnSignalRReconnecting;
+        SignalRService.Reconnected -= OnSignalRReconnected;
+        GameState.StateChanged -= OnGameStateChanged;
+    }
+}
+
+<style>
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .status-indicator.connected {
+        background-color: #28a745;
+    }
+    
+    .status-indicator.disconnected {
+        background-color: #dc3545;
+    }
+    
+    .metric-item {
+        text-align: center;
+        padding: 10px;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .log-entry {
+        padding: 5px 10px;
+        margin: 2px 0;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+    
+    .log-entry.info {
+        background-color: #e7f3ff;
+        border-left: 3px solid #007bff;
+    }
+    
+    .log-entry.success {
+        background-color: #e8f5e8;
+        border-left: 3px solid #28a745;
+    }
+    
+    .log-entry.warning {
+        background-color: #fff3cd;
+        border-left: 3px solid #ffc107;
+    }
+    
+    .log-entry.error {
+        background-color: #f8d7da;
+        border-left: 3px solid #dc3545;
+    }
+    
+    .log-time {
+        color: #6c757d;
+        margin-right: 10px;
+    }
+    
+    .log-message {
+        color: #333;
+    }
+</style>
+
+@implements IDisposable

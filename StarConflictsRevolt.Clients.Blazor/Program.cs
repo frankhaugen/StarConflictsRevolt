@@ -5,6 +5,9 @@ using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +41,28 @@ builder.Services.AddScoped<IHttpApiClient>(provider =>
 // Add Blazor-specific services
 builder.Services.AddScoped<IGameStateService, GameStateService>();
 builder.Services.AddScoped<BlazorSignalRService>();
+builder.Services.AddSingleton<TelemetryService>();
+
+// Add OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService("StarConflictsRevolt.Blazor", "1.0.0")
+        .AddAttributes(new Dictionary<string, object>
+        {
+            ["service.instance.id"] = Environment.MachineName,
+            ["deployment.environment"] = builder.Environment.EnvironmentName
+        }))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddSource("StarConflictsRevolt.Blazor"))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddMeter("StarConflictsRevolt.Blazor")
+        .AddMeter("Microsoft.AspNetCore.Hosting")
+        .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+        .AddMeter("System.Net.Http"));
 
 var app = builder.Build();
 

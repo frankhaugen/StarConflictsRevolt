@@ -1,0 +1,423 @@
+@using StarConflictsRevolt.Clients.Models
+@using StarConflictsRevolt.Clients.Blazor.Services
+@inject IGameStateService GameState
+@inject TelemetryService TelemetryService
+
+<div class="planet-manager">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-globe"></i> Planet Manager</h5>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ClosePlanetManager">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="card-body">
+            @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+            {
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Planets</h6>
+                        <div class="planet-list">
+                            @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+                            {
+                                <div class="star-system mb-3">
+                                    <h6 class="text-primary">@starSystem.Name</h6>
+                                    @foreach (var planet in starSystem.Planets)
+                                    {
+                                        <div class="planet-item mb-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>@planet.Name</strong>
+                                                    <small class="text-muted d-block">
+                                                        Radius: @planet.Radius.ToString("N0") km
+                                                    </small>
+                                                </div>
+                                                <div class="planet-actions">
+                                                    <button class="btn btn-sm btn-primary" @onclick="() => SelectPlanet(planet.Id)">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </button>
+                                                    <button class="btn btn-sm btn-success" @onclick="() => ShowBuildStructure(planet.Id)">
+                                                        <i class="fas fa-hammer"></i> Build
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Planet Details</h6>
+                        @if (selectedPlanetId != Guid.Empty)
+                        {
+                            <div class="planet-details">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>@GetPlanetName(selectedPlanetId)</h6>
+                                        <div class="planet-stats">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="stat-item">
+                                                        <div class="stat-value">@GetPlanetRadius(selectedPlanetId)</div>
+                                                        <div class="stat-label">Radius (km)</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="stat-item">
+                                                        <div class="stat-value">@GetPlanetMass(selectedPlanetId)</div>
+                                                        <div class="stat-label">Mass (kg)</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-6">
+                                                    <div class="stat-item">
+                                                        <div class="stat-value">@GetPlanetRotationSpeed(selectedPlanetId)</div>
+                                                        <div class="stat-label">Rotation Speed</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="stat-item">
+                                                        <div class="stat-value">@GetPlanetOrbitSpeed(selectedPlanetId)</div>
+                                                        <div class="stat-label">Orbit Speed</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <h6>Structures</h6>
+                                            <div class="structures-list">
+                                                @foreach (var structure in GetPlanetStructures(selectedPlanetId))
+                                                {
+                                                    <div class="structure-item">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span>@structure.Name</span>
+                                                            <span class="badge bg-info">@structure.Level</span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <h6>Actions</h6>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success btn-sm" @onclick="ShowBuildStructureModal">
+                                                    <i class="fas fa-hammer"></i> Build Structure
+                                                </button>
+                                                <button class="btn btn-info btn-sm" @onclick="ShowPlanetDetails">
+                                                    <i class="fas fa-info-circle"></i> Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle"></i> Select a planet to view details
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted">
+                    <i class="fas fa-globe fa-3x mb-3"></i>
+                    <p>No planets available. Create a session to start playing.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (showBuildStructureModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Build Structure</h5>
+                    <button type="button" class="btn-close" @onclick="CloseBuildStructureModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Planet:</label>
+                        <input type="text" class="form-control" value="@GetPlanetName(selectedPlanetId)" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Structure Type:</label>
+                        <select class="form-select" @onchange="OnStructureTypeChanged">
+                            <option value="">Select structure type...</option>
+                            <option value="factory">Factory</option>
+                            <option value="research">Research Lab</option>
+                            <option value="defense">Defense Station</option>
+                            <option value="shipyard">Shipyard</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cost:</label>
+                        <div class="cost-display">
+                            <span class="badge bg-warning me-2">Credits: @GetStructureCost(selectedStructureType)</span>
+                            <span class="badge bg-info">Materials: @GetStructureMaterials(selectedStructureType)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseBuildStructureModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="ExecuteBuildStructure" disabled="@(string.IsNullOrEmpty(selectedStructureType))">
+                        <i class="fas fa-hammer"></i> Build Structure
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private Guid selectedPlanetId = Guid.Empty;
+    private string selectedStructureType = string.Empty;
+    private bool showBuildStructureModal = false;
+
+    private void SelectPlanet(Guid planetId)
+    {
+        selectedPlanetId = planetId;
+        TelemetryService.RecordGameAction("select_planet");
+    }
+
+    private void ShowBuildStructure(Guid planetId)
+    {
+        selectedPlanetId = planetId;
+        showBuildStructureModal = true;
+    }
+
+    private void ShowBuildStructureModal()
+    {
+        showBuildStructureModal = true;
+    }
+
+    private void CloseBuildStructureModal()
+    {
+        showBuildStructureModal = false;
+        selectedStructureType = string.Empty;
+    }
+
+    private void OnStructureTypeChanged(ChangeEventArgs e)
+    {
+        selectedStructureType = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private async Task ExecuteBuildStructure()
+    {
+        if (selectedPlanetId != Guid.Empty && !string.IsNullOrEmpty(selectedStructureType))
+        {
+            var success = await GameState.BuildStructureAsync(selectedPlanetId, selectedStructureType);
+            if (success)
+            {
+                TelemetryService.RecordGameAction("build_structure");
+                CloseBuildStructureModal();
+            }
+        }
+    }
+
+    private void ShowPlanetDetails()
+    {
+        // TODO: Implement planet details modal
+    }
+
+    private void ClosePlanetManager()
+    {
+        // This would be handled by the parent component
+    }
+
+    private string GetPlanetName(Guid planetId)
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+        {
+            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+            {
+                foreach (var planet in starSystem.Planets)
+                {
+                    if (planet.Id == planetId)
+                    {
+                        return planet.Name;
+                    }
+                }
+            }
+        }
+        return "Unknown";
+    }
+
+    private double GetPlanetRadius(Guid planetId)
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+        {
+            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+            {
+                foreach (var planet in starSystem.Planets)
+                {
+                    if (planet.Id == planetId)
+                    {
+                        return planet.Radius;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private double GetPlanetMass(Guid planetId)
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+        {
+            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+            {
+                foreach (var planet in starSystem.Planets)
+                {
+                    if (planet.Id == planetId)
+                    {
+                        return planet.Mass;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private double GetPlanetRotationSpeed(Guid planetId)
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+        {
+            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+            {
+                foreach (var planet in starSystem.Planets)
+                {
+                    if (planet.Id == planetId)
+                    {
+                        return planet.RotationSpeed;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private double GetPlanetOrbitSpeed(Guid planetId)
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+        {
+            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
+            {
+                foreach (var planet in starSystem.Planets)
+                {
+                    if (planet.Id == planetId)
+                    {
+                        return planet.OrbitSpeed;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private List<StructureInfo> GetPlanetStructures(Guid planetId)
+    {
+        // TODO: Implement actual structure data
+        return new List<StructureInfo>
+        {
+            new StructureInfo { Name = "Factory", Level = 1 },
+            new StructureInfo { Name = "Research Lab", Level = 2 }
+        };
+    }
+
+    private int GetStructureCost(string structureType)
+    {
+        return structureType switch
+        {
+            "factory" => 100,
+            "research" => 150,
+            "defense" => 200,
+            "shipyard" => 300,
+            _ => 0
+        };
+    }
+
+    private int GetStructureMaterials(string structureType)
+    {
+        return structureType switch
+        {
+            "factory" => 50,
+            "research" => 75,
+            "defense" => 100,
+            "shipyard" => 150,
+            _ => 0
+        };
+    }
+}
+
+<style>
+    .planet-manager {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 800px;
+        z-index: 1050;
+    }
+    
+    .planet-item {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+    }
+    
+    .planet-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .planet-details {
+        min-height: 300px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .structure-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .cost-display {
+        display: flex;
+        gap: 0.5rem;
+    }
+</style>
+
+@code {
+    public class StructureInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Level { get; set; }
+    }
+}
