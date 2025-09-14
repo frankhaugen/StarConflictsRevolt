@@ -1,4 +1,5 @@
 using StarConflictsRevolt.Clients.Blazor.Services;
+using TUnit;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 
@@ -9,14 +10,12 @@ public class TelemetryServiceTests
 {
     private TelemetryService _telemetryService = null!;
 
-    [SetUp]
-    public void Setup()
+    public TelemetryServiceTests()
     {
         _telemetryService = new TelemetryService();
     }
 
-    [TearDown]
-    public void TearDown()
+    public void Dispose()
     {
         _telemetryService?.Dispose();
     }
@@ -25,56 +24,56 @@ public class TelemetryServiceTests
     public void RecordSignalRMessage_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.RecordSignalRMessage());
+        _telemetryService.RecordSignalRMessage();
     }
 
     [Test]
     public void RecordHttpRequest_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.RecordHttpRequest());
+        _telemetryService.RecordHttpRequest();
     }
 
     [Test]
     public void RecordHttpError_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.RecordHttpError());
+        _telemetryService.RecordHttpError();
     }
 
     [Test]
     public void RecordHttpResponseTime_ValidTime_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.RecordHttpResponseTime(1.5));
+        _telemetryService.RecordHttpResponseTime(1.5);
     }
 
     [Test]
     public void RecordGameAction_ValidAction_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.RecordGameAction("test_action"));
+        _telemetryService.RecordGameAction("test_action");
     }
 
     [Test]
     public void UpdateActiveConnections_ValidCount_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.UpdateActiveConnections(5));
+        _telemetryService.UpdateActiveConnections(5);
     }
 
     [Test]
     public void UpdateMemoryUsage_ValidBytes_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.UpdateMemoryUsage(1024 * 1024));
+        _telemetryService.UpdateMemoryUsage(1024 * 1024);
     }
 
     [Test]
     public void Dispose_DoesNotThrow()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => _telemetryService.Dispose());
+        _telemetryService.Dispose();
     }
 
     [Test]
@@ -82,6 +81,6 @@ public class TelemetryServiceTests
     {
         // Act & Assert
         _telemetryService.Dispose();
-        Assert.DoesNotThrow(() => _telemetryService.Dispose());
+        _telemetryService.Dispose();
     }
 }

@@ -6,7 +6,7 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 /// <summary>
 /// Global test configuration for Playwright tests
 /// </summary>
-public class TestConfiguration : IPlaywrightTestConfiguration
+public class TestConfiguration
 {
     public async Task ConfigureAsync(IPlaywright playwright, IBrowser browser, IPage page)
     {

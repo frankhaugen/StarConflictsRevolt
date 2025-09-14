@@ -61,7 +61,7 @@ public class SessionManagementTests : BaseUITest
         var hasSessions = await Page.Locator("table").IsVisibleAsync();
         var hasNoSessionsMessage = await Page.Locator(".text-center.text-muted").IsVisibleAsync();
         
-        Assert.That(hasSessions || hasNoSessionsMessage, Is.True);
+        await Assert.That(hasSessions || hasNoSessionsMessage).IsTrue();
     }
     
     [Test]

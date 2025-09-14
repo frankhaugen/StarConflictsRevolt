@@ -11,10 +11,15 @@ public abstract class BaseUITest : PageTest
     protected string BaseUrl => UITestRunner.GetBaseUrl();
     protected const string ServerUrl = "https://localhost:7002"; // API server URL
     
-    protected override async Task OnTestSetupAsync()
+    [Before(Class)]
+    public static async Task Setup()
     {
-        await base.OnTestSetupAsync();
-        
+        // Note: This method will be called before each test class
+        // Individual test setup should be done in each test method
+    }
+    
+    protected async Task NavigateToAppAsync()
+    {
         // Navigate to the Blazor app
         await Page.GotoAsync(BaseUrl);
         
@@ -58,12 +63,21 @@ public abstract class BaseUITest : PageTest
     protected async Task AssertElementVisibleAsync(string selector)
     {
         var element = Page.Locator(selector);
-        await Assert.That(element).IsVisibleAsync();
+        await Assert.That(await element.IsVisibleAsync()).IsTrue();
     }
     
     protected async Task AssertElementContainsTextAsync(string selector, string expectedText)
     {
         var element = Page.Locator(selector);
-        await Assert.That(element).ContainsTextAsync(expectedText);
+        var text = await element.TextContentAsync();
+        await Assert.That(text).Contains(expectedText);
+    }
+    
+    protected async Task AssertElementContainsTextAsync(string selector)
+    {
+        var element = Page.Locator(selector);
+        var text = await element.TextContentAsync();
+        await Assert.That(text).IsNotNull();
+        await Assert.That(text).IsNotEmpty();
     }
 }

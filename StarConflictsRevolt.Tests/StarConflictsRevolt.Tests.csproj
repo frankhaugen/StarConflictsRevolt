@@ -17,12 +17,9 @@
         <PackageReference Include="RavenDB.TestDriver" Version="7.1.0" />
         <PackageReference Include="TUnit" Version="0.25.21" />
         <PackageReference Include="TUnit.Playwright" Version="0.25.21" />
-        <PackageReference Include="Microsoft.Playwright" Version="1.40.0" />
-        <PackageReference Include="bunit" Version="2.0.0" />
-        <PackageReference Include="bunit.web" Version="2.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Playwright" Version="1.52.0" />
+        <PackageReference Include="bunit" Version="1.40.0" />
+        <PackageReference Include="bunit.web" Version="1.40.0" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.7" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
     </ItemGroup>

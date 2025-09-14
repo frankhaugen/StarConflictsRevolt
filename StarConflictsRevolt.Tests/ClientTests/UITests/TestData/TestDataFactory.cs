@@ -31,33 +31,32 @@ public static class TestDataFactory
     
     public static WorldDto CreateTestWorld()
     {
-        return new WorldDto
-        {
-            Galaxy = new GalaxyDto
-            {
-                StarSystems = new List<StarSystemDto>
+        return new WorldDto(
+            Guid.NewGuid(),
+            new GalaxyDto(
+                Guid.NewGuid(),
+                new List<StarSystemDto>
                 {
-                    new StarSystemDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Test System 1",
-                        Coordinates = "1,1",
-                        Planets = new List<PlanetDto>
+                    new StarSystemDto(
+                        Guid.NewGuid(),
+                        "Test System 1",
+                        new List<PlanetDto>
                         {
-                            new PlanetDto
-                            {
-                                Id = Guid.NewGuid(),
-                                Name = "Test Planet 1",
-                                Radius = 1000,
-                                Mass = 1000000,
-                                RotationSpeed = 1.0,
-                                OrbitSpeed = 0.1,
-                                DistanceFromSun = 100000
-                            }
-                        }
-                    }
+                            new PlanetDto(
+                                Guid.NewGuid(),
+                                "Test Planet 1",
+                                1000,
+                                1000000,
+                                1.0,
+                                0.1,
+                                100000
+                            )
+                        },
+                        new System.Numerics.Vector2(1, 1)
+                    )
                 }
-            }
-        };
+            ),
+            null
+        );
     }
 }

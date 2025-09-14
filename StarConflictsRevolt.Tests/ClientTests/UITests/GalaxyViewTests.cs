@@ -86,7 +86,7 @@ public class GalaxyViewTests : BaseUITest
         var hasContent = await galaxyContent.IsVisibleAsync();
         
         // Should have either loading state or content
-        Assert.That(hasLoading || hasContent, Is.True);
+        await Assert.That(hasLoading || hasContent).IsTrue();
     }
     
     [Test]

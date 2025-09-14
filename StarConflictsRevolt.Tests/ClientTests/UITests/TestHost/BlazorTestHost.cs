@@ -4,6 +4,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Blazor;
 using StarConflictsRevolt.Clients.Shared;
+using Microsoft.AspNetCore.Builder;
+using StarConflictsRevolt.Clients.Blazor.Services;
+using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Clients.Shared.Communication;
+using StarConflictsRevolt.Clients.Blazor.Components;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UITests.TestHost;
 
@@ -12,7 +17,7 @@ namespace StarConflictsRevolt.Tests.ClientTests.UITests.TestHost;
 /// </summary>
 public class BlazorTestHost : IDisposable
 {
-    private IHost? _host;
+    private WebApplication? _host;
     private bool _disposed = false;
     
     public int Port { get; private set; }
@@ -23,27 +28,42 @@ public class BlazorTestHost : IDisposable
         // Find an available port
         Port = await FindAvailablePortAsync();
         
-        var builder = Host.CreateDefaultBuilder()
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<TestStartup>();
-                webBuilder.UseUrls($"https://localhost:{Port}");
-                webBuilder.UseKestrel(options =>
-                {
-                    options.ConfigureHttpsDefaults(httpsOptions =>
-                    {
-                        httpsOptions.ServerCertificate = TestCertificateProvider.GetCertificate();
-                    });
-                });
-            })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Warning);
-            });
+        var builder = WebApplication.CreateBuilder();
+        
+        // Configure services
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
             
-        _host = builder.Build();
+        // Add test configuration
+        builder.Services.Configure<GameClientConfiguration>(config =>
+        {
+            config.GameServerUrl = "https://localhost:7002";
+            config.GameServerHubUrl = "https://localhost:7002/gamehub";
+            config.ApiBaseUrl = "https://localhost:7002";
+        });
+        
+        // Add mock services for testing
+        builder.Services.AddSingleton<ISignalRService, MockSignalRService>();
+        builder.Services.AddScoped<IGameStateService, MockGameStateService>();
+        builder.Services.AddScoped<BlazorSignalRService>();
+        builder.Services.AddSingleton<TelemetryService>();
+        
+        // Configure logging
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        
+        var app = builder.Build();
+        
+        // Configure pipeline
+        app.UseHttpsRedirection();
+        app.UseAntiforgery();
+        app.UseStaticFiles();
+        
+        app.MapRazorComponents<App>()
+            .AddInteractiveServerRenderMode();
+            
+        _host = app;
         await _host.StartAsync();
     }
     
@@ -52,7 +72,7 @@ public class BlazorTestHost : IDisposable
         if (_host != null)
         {
             await _host.StopAsync();
-            _host.Dispose();
+            await _host.DisposeAsync();
             _host = null;
         }
     }
@@ -76,46 +96,6 @@ public class BlazorTestHost : IDisposable
     }
 }
 
-/// <summary>
-/// Test startup configuration for the Blazor app
-/// </summary>
-public class TestStartup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // Add minimal services needed for testing
-        services.AddRazorComponents()
-            .AddInteractiveServerComponents();
-            
-        // Add test configuration
-        services.Configure<GameClientConfiguration>(config =>
-        {
-            config.GameServerUrl = "https://localhost:7002";
-            config.GameServerHubUrl = "https://localhost:7002/gamehub";
-            config.ApiBaseUrl = "https://localhost:7002";
-        });
-        
-        // Add mock services for testing
-        services.AddSingleton<ISignalRService, MockSignalRService>();
-        services.AddScoped<IGameStateService, MockGameStateService>();
-        services.AddScoped<BlazorSignalRService>();
-    }
-    
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        
-        app.UseHttpsRedirection();
-        app.UseAntiforgery();
-        app.UseStaticFiles();
-        
-        app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
-    }
-}
 
 /// <summary>
 /// Mock SignalR service for testing
@@ -175,22 +155,22 @@ public class MockGameStateService : IGameStateService
             IsActive = true
         };
         
-        CurrentWorld = new WorldDto
-        {
-            Galaxy = new GalaxyDto
-            {
-                StarSystems = new List<StarSystemDto>
+        CurrentWorld = new WorldDto(
+            Guid.NewGuid(),
+            new GalaxyDto(
+                Guid.NewGuid(),
+                new List<StarSystemDto>
                 {
-                    new StarSystemDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Test System",
-                        Coordinates = "0,0",
-                        Planets = new List<PlanetDto>()
-                    }
+                    new StarSystemDto(
+                        Guid.NewGuid(),
+                        "Test System",
+                        new List<PlanetDto>(),
+                        new System.Numerics.Vector2(0, 0)
+                    )
                 }
-            }
-        };
+            ),
+            null
+        );
         
         StateChanged?.Invoke();
         return Task.FromResult(true);

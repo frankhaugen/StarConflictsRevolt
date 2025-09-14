@@ -1,5 +1,7 @@
 using Microsoft.Playwright;
 using TUnit.Playwright;
+using TUnit;
+using StarConflictsRevolt.Tests.ClientTests.UITests.TestHost;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UITests;
 
@@ -10,7 +12,6 @@ public class UITestRunner
 {
     private static BlazorTestHost? _testHost;
     
-    [SetUp]
     public static async Task SetupTestEnvironment()
     {
         // Start the test host
@@ -21,7 +22,6 @@ public class UITestRunner
         await Task.Delay(2000);
     }
     
-    [TearDown]
     public static async Task CleanupTestEnvironment()
     {
         if (_testHost != null)

@@ -5,6 +5,7 @@ using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Communication;
+using TUnit;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 
@@ -13,16 +14,15 @@ namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 /// </summary>
 public class GameStateServiceTests
 {
-    private TestContext _testContext = null!;
+    private Bunit.TestContext _testContext = null!;
     private IHttpApiClient _mockHttpClient = null!;
     private ISignalRService _mockSignalRService = null!;
     private TelemetryService _telemetryService = null!;
     private GameStateService _gameStateService = null!;
 
-    [SetUp]
-    public void Setup()
+    public GameStateServiceTests()
     {
-        _testContext = new TestContext();
+        _testContext = new Bunit.TestContext();
         
         // Create mocks
         _mockHttpClient = Substitute.For<IHttpApiClient>();
@@ -33,8 +33,7 @@ public class GameStateServiceTests
         _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService);
     }
 
-    [TearDown]
-    public void TearDown()
+    public void Dispose()
     {
         _testContext?.Dispose();
         _telemetryService?.Dispose();
@@ -48,26 +47,24 @@ public class GameStateServiceTests
         var sessionResponse = new SessionResponse
         {
             SessionId = Guid.NewGuid(),
-            World = new WorldDto
-            {
-                Galaxy = new GalaxyDto
-                {
-                    StarSystems = new List<StarSystemDto>()
-                }
-            }
+            World = new WorldDto(
+                Guid.NewGuid(),
+                new GalaxyDto(Guid.NewGuid(), new List<StarSystemDto>()),
+                null
+            )
         };
         
         _mockHttpClient.CreateNewSessionAsync(sessionName, "SinglePlayer")
-            .Returns(sessionResponse);
+            .Returns(Task.FromResult(sessionResponse));
 
         // Act
         var result = await _gameStateService.CreateSessionAsync(sessionName);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(_gameStateService.CurrentSession, Is.Not.Null);
-        Assert.That(_gameStateService.CurrentSession!.SessionName, Is.EqualTo(sessionName));
-        Assert.That(_gameStateService.CurrentWorld, Is.Not.Null);
+        await Assert.That(result).IsTrue();
+        await Assert.That(_gameStateService.CurrentSession).IsNotNull();
+        await Assert.That(_gameStateService.CurrentSession!.SessionName).IsEqualTo(sessionName);
+        await Assert.That(_gameStateService.CurrentWorld).IsNotNull();
         
         // Verify SignalR was called
         await _mockSignalRService.Received(1).JoinSessionAsync(sessionResponse.SessionId);
@@ -79,14 +76,14 @@ public class GameStateServiceTests
         // Arrange
         var sessionName = "Test Session";
         _mockHttpClient.CreateNewSessionAsync(sessionName, "SinglePlayer")
-            .Throws(new Exception("Network error"));
+            .Returns(Task.FromException<SessionResponse?>(new Exception("Network error")));
 
         // Act
         var result = await _gameStateService.CreateSessionAsync(sessionName);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(_gameStateService.CurrentSession, Is.Null);
+        await Assert.That(result).IsFalse();
+        await Assert.That(_gameStateService.CurrentSession).IsNull();
     }
 
     [Test]
@@ -97,25 +94,23 @@ public class GameStateServiceTests
         var sessionResponse = new SessionResponse
         {
             SessionId = sessionId,
-            World = new WorldDto
-            {
-                Galaxy = new GalaxyDto
-                {
-                    StarSystems = new List<StarSystemDto>()
-                }
-            }
+            World = new WorldDto(
+                Guid.NewGuid(),
+                new GalaxyDto(Guid.NewGuid(), new List<StarSystemDto>()),
+                null
+            )
         };
         
         _mockHttpClient.JoinSessionAsync(sessionId, "Player")
-            .Returns(sessionResponse);
+            .Returns(Task.FromResult(sessionResponse));
 
         // Act
         var result = await _gameStateService.JoinSessionAsync(sessionId);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(_gameStateService.CurrentSession, Is.Not.Null);
-        Assert.That(_gameStateService.CurrentSession!.Id, Is.EqualTo(sessionId));
+        await Assert.That(result).IsTrue();
+        await Assert.That(_gameStateService.CurrentSession).IsNotNull();
+        await Assert.That(_gameStateService.CurrentSession!.Id).IsEqualTo(sessionId);
         
         // Verify SignalR was called
         await _mockSignalRService.Received(1).JoinSessionAsync(sessionId);
@@ -124,23 +119,31 @@ public class GameStateServiceTests
     [Test]
     public async Task LeaveSessionAsync_CurrentSessionExists_ReturnsTrue()
     {
-        // Arrange
-        _gameStateService.CurrentSession = new SessionDto
+        // Arrange - First create a session to set up the state
+        var sessionId = Guid.NewGuid();
+        var sessionResponse = new SessionResponse
         {
-            Id = Guid.NewGuid(),
-            SessionName = "Test Session",
-            SessionType = "SinglePlayer",
-            Created = DateTime.UtcNow,
-            IsActive = true
+            SessionId = sessionId,
+            World = new WorldDto(
+                Guid.NewGuid(),
+                new GalaxyDto(Guid.NewGuid(), new List<StarSystemDto>()),
+                null
+            )
         };
+        
+        _mockHttpClient.CreateNewSessionAsync(Arg.Any<string>(), "SinglePlayer")
+            .Returns(Task.FromResult(sessionResponse));
+        
+        // Create a session first
+        await _gameStateService.CreateSessionAsync("Test Session");
 
         // Act
         var result = await _gameStateService.LeaveSessionAsync();
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(_gameStateService.CurrentSession, Is.Null);
-        Assert.That(_gameStateService.CurrentWorld, Is.Null);
+        await Assert.That(result).IsTrue();
+        await Assert.That(_gameStateService.CurrentSession).IsNull();
+        await Assert.That(_gameStateService.CurrentWorld).IsNull();
         
         // Verify SignalR was called
         await _mockSignalRService.Received(1).StopAsync();
@@ -168,16 +171,16 @@ public class GameStateServiceTests
             }
         };
         
-        _mockHttpClient.GetSessionsAsync().Returns(sessionInfos);
+        _mockHttpClient.GetSessionsAsync().Returns(Task.FromResult(sessionInfos));
 
         // Act
         var result = await _gameStateService.GetAvailableSessionsAsync();
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count, Is.EqualTo(2));
-        Assert.That(result[0].SessionName, Is.EqualTo("Session 1"));
-        Assert.That(result[1].SessionName, Is.EqualTo("Session 2"));
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(2);
+        await Assert.That(result[0].SessionName).IsEqualTo("Session 1");
+        await Assert.That(result[1].SessionName).IsEqualTo("Session 2");
     }
 
     [Test]
@@ -189,13 +192,13 @@ public class GameStateServiceTests
         var toPlanetId = Guid.NewGuid();
         
         _mockHttpClient.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId)
-            .Returns(true);
+            .Returns(Task.FromResult(true));
 
         // Act
         var result = await _gameStateService.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId);
 
         // Assert
-        Assert.That(result, Is.True);
+        await Assert.That(result).IsTrue();
         await _mockHttpClient.Received(1).MoveFleetAsync(fleetId, fromPlanetId, toPlanetId);
     }
 
@@ -207,13 +210,13 @@ public class GameStateServiceTests
         var structureType = "factory";
         
         _mockHttpClient.BuildStructureAsync(planetId, structureType)
-            .Returns(true);
+            .Returns(Task.FromResult(true));
 
         // Act
         var result = await _gameStateService.BuildStructureAsync(planetId, structureType);
 
         // Assert
-        Assert.That(result, Is.True);
+        await Assert.That(result).IsTrue();
         await _mockHttpClient.Received(1).BuildStructureAsync(planetId, structureType);
     }
 
@@ -225,34 +228,40 @@ public class GameStateServiceTests
         var targetFleetId = Guid.NewGuid();
         
         _mockHttpClient.AttackAsync(attackerFleetId, targetFleetId, Guid.Empty)
-            .Returns(true);
+            .Returns(Task.FromResult(true));
 
         // Act
         var result = await _gameStateService.AttackAsync(attackerFleetId, targetFleetId);
 
         // Assert
-        Assert.That(result, Is.True);
+        await Assert.That(result).IsTrue();
         await _mockHttpClient.Received(1).AttackAsync(attackerFleetId, targetFleetId, Guid.Empty);
     }
 
     [Test]
-    public void StateChanged_EventFired_InvokesEvent()
+    public async Task StateChanged_EventFired_InvokesEvent()
     {
         // Arrange
         var eventFired = false;
         _gameStateService.StateChanged += () => eventFired = true;
+        
+        var sessionResponse = new SessionResponse
+        {
+            SessionId = Guid.NewGuid(),
+            World = new WorldDto(
+                Guid.NewGuid(),
+                new GalaxyDto(Guid.NewGuid(), new List<StarSystemDto>()),
+                null
+            )
+        };
+        
+        _mockHttpClient.CreateNewSessionAsync(Arg.Any<string>(), "SinglePlayer")
+            .Returns(Task.FromResult(sessionResponse));
 
         // Act
-        _gameStateService.CurrentSession = new SessionDto
-        {
-            Id = Guid.NewGuid(),
-            SessionName = "Test Session",
-            SessionType = "SinglePlayer",
-            Created = DateTime.UtcNow,
-            IsActive = true
-        };
+        await _gameStateService.CreateSessionAsync("Test Session");
 
         // Assert
-        Assert.That(eventFired, Is.True);
+        await Assert.That(eventFired).IsTrue();
     }
 }

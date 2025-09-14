@@ -72,12 +72,15 @@ public class HomePageTests : BaseUITest
     {
         // Verify connection status is displayed
         var connectionAlert = Page.Locator(".alert");
-        await Assert.That(connectionAlert).IsVisibleAsync();
+        await Assert.That(await connectionAlert.IsVisibleAsync()).IsTrue();
         
         // The status should be either connected or not connected
         var alertText = await connectionAlert.TextContentAsync();
-        Assert.That(alertText, Is.Not.Null);
-        Assert.That(alertText, Does.Contain("Connected").Or.Contain("Not connected"));
+        await Assert.That(alertText).IsNotNull();
+        await Assert.That(alertText).IsNotNull();
+        var hasConnected = alertText!.Contains("Connected");
+        var hasNotConnected = alertText.Contains("Not connected");
+        await Assert.That(hasConnected || hasNotConnected).IsTrue();
     }
     
     [Test]

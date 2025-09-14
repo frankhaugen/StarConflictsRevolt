@@ -145,6 +145,6 @@ public class DiagnosticsTests : BaseUITest
         
         // Verify log is cleared (should be empty or have minimal content)
         var logContent = await Page.Locator(".activity-log").TextContentAsync();
-        Assert.That(logContent, Is.Not.Null);
+        await Assert.That(logContent).IsNotNull();
     }
 }
