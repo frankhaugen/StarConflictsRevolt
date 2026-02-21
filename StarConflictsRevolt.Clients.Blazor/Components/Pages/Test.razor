@@ -12,7 +12,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-vial"></i> Blazor Functionality Test</h3>
+                    <h3 data-testid="test-page-title"><i class="fas fa-vial"></i> Blazor Functionality Test</h3>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
@@ -23,16 +23,16 @@
                         <div class="col-md-6">
                             <h5>Button Tests</h5>
                             <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-primary" @onclick="TestButtonClick" @onclick:preventDefault="false">
+                                <button type="button" class="btn btn-primary" @onclick="TestButtonClick" @onclick:preventDefault="false" data-testid="test-button-click">
                                     <i class="fas fa-mouse-pointer"></i> Test Button Click
                                 </button>
-                                <button type="button" class="btn btn-success" @onclick="TestJavaScriptLog">
+                                <button type="button" class="btn btn-success" @onclick="TestJavaScriptLog" data-testid="test-js-console-log">
                                     <i class="fas fa-terminal"></i> Test JS Console Log
                                 </button>
-                                <button type="button" class="btn btn-warning" @onclick="TestCounter">
+                                <button type="button" class="btn btn-warning" @onclick="TestCounter" data-testid="test-counter">
                                     <i class="fas fa-calculator"></i> Test Counter (@counter)
                                 </button>
-                                <button type="button" class="btn btn-info" onclick="console.log('Pure JS button clicked!')">
+                                <button type="button" class="btn btn-info" onclick="console.log('Pure JS button clicked!')" data-testid="test-pure-js">
                                     <i class="fas fa-code"></i> Pure JS Test
                                 </button>
                             </div>
@@ -42,11 +42,11 @@
                             <h5>Input Tests</h5>
                             <div class="mb-3">
                                 <label for="testInput" class="form-label">Test Input:</label>
-                                <input id="testInput" type="text" class="form-control" @bind="testInput" @oninput="OnInputChanged" />
+                                <input id="testInput" type="text" class="form-control" @bind="testInput" @oninput="OnInputChanged" data-testid="test-input" />
                             </div>
                             <div class="mb-3">
                                 <label for="testSelect" class="form-label">Test Select:</label>
-                                <select id="testSelect" class="form-select" @bind="selectedOption">
+                                <select id="testSelect" class="form-select" @bind="selectedOption" data-testid="test-select">
                                     <option value="">Choose an option...</option>
                                     <option value="option1">Option 1</option>
                                     <option value="option2">Option 2</option>
@@ -61,10 +61,10 @@
                     <div class="row">
                         <div class="col-12">
                             <h5>Test Results</h5>
-                            <div class="alert @(testResults.Count > 0 ? "alert-success" : "alert-light")">
+                            <div class="alert @(testResults.Count > 0 ? "alert-success" : "alert-light")" data-testid="test-results">
                                 @if (testResults.Count > 0)
                                 {
-                                    <ul class="mb-0">
+                                    <ul class="mb-0" data-testid="test-results-list">
                                         @foreach (var result in testResults.Take(10))
                                         {
                                             <li>@result</li>
@@ -73,14 +73,14 @@
                                 }
                                 else
                                 {
-                                    <em>No test results yet. Click the buttons above to test functionality.</em>
+                                    <em data-testid="no-results-message">No test results yet. Click the buttons above to test functionality.</em>
                                 }
                             </div>
                         </div>
                     </div>
                     
                     <div class="mt-3">
-                        <a href="/" class="btn btn-outline-secondary" type="button">
+                        <a href="/" class="btn btn-outline-secondary" type="button" data-testid="back-to-home">
                             <i class="fas fa-arrow-left"></i> Back to Home
                         </a>
                     </div>
