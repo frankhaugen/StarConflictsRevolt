@@ -114,16 +114,33 @@ public class EventBroadcastService(IEventStore eventStore, IHubContext<WorldHub>
                     EventType = "DiplomacyEvent"
                 }));
                 break;
+            case FleetOrderAccepted accepted:
+                updates.Add(GameObjectUpdate.Update(accepted.FleetId, new
+                {
+                    accepted.FleetId,
+                    accepted.FromPlanetId,
+                    accepted.ToPlanetId,
+                    accepted.EtaTick,
+                    EventType = "FleetOrderAccepted"
+                }));
+                break;
+            case CommandRejected rejected:
+                updates.Add(GameObjectUpdate.Update(rejected.PlayerId, new
+                {
+                    rejected.PlayerId,
+                    rejected.Reason,
+                    EventType = "CommandRejected"
+                }));
+                break;
             default:
-                logger.LogWarning("Unknown event type: {EventType}", envelope.Event.GetType().Name);
+                logger.LogDebug("No broadcast for event type {EventType}", envelope.Event.GetType().Name);
                 break;
         }
 
         if (updates.Count > 0)
             try
             {
-                // Broadcast to the world group with timeout
-                await hubContext.Clients.All.SendAsync("ReceiveUpdates", updates, cancellationToken);
+                await hubContext.Clients.Group(envelope.WorldId.ToString()).SendAsync("ReceiveUpdates", updates, cancellationToken);
                 logger.LogInformation("Successfully broadcast {UpdateCount} updates for event {EventType} in world {WorldId}",
                     updates.Count, envelope.Event.GetType().Name, envelope.WorldId);
             }

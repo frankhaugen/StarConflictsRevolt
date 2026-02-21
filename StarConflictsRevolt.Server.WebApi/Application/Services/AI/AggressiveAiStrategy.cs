@@ -1,8 +1,8 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
@@ -12,16 +12,16 @@ public class AggressiveAiStrategy : BaseAiStrategy
     {
     }
 
-    public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
+    public override List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
-        if (!CanAct(playerId, TimeSpan.FromSeconds(2))) // Aggressive AI acts quickly
-            return new List<IGameEvent>();
+        if (!CanAct(playerId, TimeSpan.FromSeconds(2)))
+            return new List<IGameCommand>();
 
         RecordAction(playerId);
-        return GenerateCommandsInternal(playerId, world, logger);
+        return GenerateCommandsInternal(playerId, world, clientTick, logger);
     }
 
-    protected override void UpdateGoals(Guid playerId, World world)
+    protected override void UpdateGoals(Guid playerId, WorldState world)
     {
         var aiFleets = GetPlayerFleets(playerId, world);
         var aiPlanets = GetPlayerPlanets(playerId, world);
@@ -51,7 +51,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         }
     }
 
-    protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected override List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -69,7 +69,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateAggressiveCombatDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateAggressiveCombatDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -101,7 +101,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateExpansionDecisions(Guid playerId, List<Fleet> aiFleets, List<Planet> enemyPlanets, World world)
+    private List<AiDecision> GenerateExpansionDecisions(Guid playerId, List<Fleet> aiFleets, List<Planet> enemyPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -129,7 +129,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateFleetBuildingDecisions(Guid playerId, List<Planet> aiPlanets, World world)
+    private List<AiDecision> GenerateFleetBuildingDecisions(Guid playerId, List<Planet> aiPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -151,7 +151,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
+    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, WorldState world)
     {
         // Aggressive AI moves more frequently and toward enemies
         if (_random.Next(100) < 50) // 50% chance (higher than base)
@@ -176,7 +176,7 @@ public class AggressiveAiStrategy : BaseAiStrategy
         return null;
     }
 
-    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, World world)
+    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, WorldState world)
     {
         // Aggressive AI attacks more frequently
         if (_random.Next(100) < 45) // 45% chance (higher than base)

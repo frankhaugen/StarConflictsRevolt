@@ -1,8 +1,8 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
@@ -12,16 +12,16 @@ public class DefensiveAiStrategy : BaseAiStrategy
     {
     }
 
-    public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
+    public override List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
-        if (!CanAct(playerId, TimeSpan.FromSeconds(3))) // Defensive AI acts moderately
-            return new List<IGameEvent>();
+        if (!CanAct(playerId, TimeSpan.FromSeconds(3)))
+            return new List<IGameCommand>();
 
         RecordAction(playerId);
-        return GenerateCommandsInternal(playerId, world, logger);
+        return GenerateCommandsInternal(playerId, world, clientTick, logger);
     }
 
-    protected override void UpdateGoals(Guid playerId, World world)
+    protected override void UpdateGoals(Guid playerId, WorldState world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
@@ -50,7 +50,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         }
     }
 
-    protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected override List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -67,7 +67,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateDefensiveBuildingDecisions(Guid playerId, List<Planet> aiPlanets, World world)
+    private List<AiDecision> GenerateDefensiveBuildingDecisions(Guid playerId, List<Planet> aiPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -89,7 +89,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateThreatEliminationDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateThreatEliminationDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -134,7 +134,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateDefensivePositioningDecisions(Guid playerId, List<Fleet> aiFleets, List<Planet> aiPlanets, World world)
+    private List<AiDecision> GenerateDefensivePositioningDecisions(Guid playerId, List<Fleet> aiFleets, List<Planet> aiPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -166,7 +166,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
+    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, WorldState world)
     {
         // Defensive AI moves to protect planets
         if (_random.Next(100) < 35) // 35% chance (moderate)
@@ -191,7 +191,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return null;
     }
 
-    protected override AiDecision? EvaluateBuilding(Guid playerId, Planet planet, World world)
+    protected override AiDecision? EvaluateBuilding(Guid playerId, Planet planet, WorldState world)
     {
         // Defensive AI builds defensive structures frequently
         if (_random.Next(100) < 60) // 60% chance (high for defensive)
@@ -210,7 +210,7 @@ public class DefensiveAiStrategy : BaseAiStrategy
         return null;
     }
 
-    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, World world)
+    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, WorldState world)
     {
         // Defensive AI attacks only when threatened
         if (_random.Next(100) < 20) // 20% chance (low for defensive)

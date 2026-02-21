@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
@@ -10,23 +10,27 @@ public class GameUpdateService
     private readonly IEventStore _eventStore;
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
+    private readonly WorldEngine _worldEngine;
 
     public GameUpdateService(
         IHubContext<WorldHub> hubContext,
         ILogger<GameUpdateService> logger,
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
-        CommandQueue commandQueue)
+        CommandQueue commandQueue,
+        WorldEngine worldEngine)
     {
         _hubContext = hubContext;
         _logger = logger;
         _eventStore = eventStore;
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
+        _worldEngine = worldEngine;
     }
 
     public async Task ProcessTickAsync(GameTickMessage tick, CancellationToken cancellationToken)
     {
+        await _worldEngine.TickAsync(tick, cancellationToken).AsTask();
         await ProcessAllSessionsAsync(cancellationToken);
     }
 

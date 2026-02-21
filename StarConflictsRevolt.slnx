@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/docs/">
+    <File Path="docs\README.md" />
+    <File Path="docs\architecture.md" />
+    <File Path="docs\domain.md" />
+    <File Path="docs\api-transport.md" />
+    <File Path="docs\encounters.md" />
+  </Folder>
   <Folder Name="/DesignDocs/">
     <File Path="DesignDocs\ApiRefactoring.md" />
     <File Path="DesignDocs\ARCHITECTURE.md" />

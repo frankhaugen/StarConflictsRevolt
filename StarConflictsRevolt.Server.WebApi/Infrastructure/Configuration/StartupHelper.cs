@@ -34,6 +34,10 @@ public static class StartupHelper
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
+        builder.Services.AddSingleton<ICommandQueue, CommandQueueChannel>();
+        builder.Services.AddSingleton<ICommandIngress, CommandIngress>();
+        builder.Services.AddSingleton<IGameSim, GameSim>();
+        builder.Services.AddSingleton<WorldEngine>();
         builder.Services.AddSingleton<GameUpdateService>();
         
         // Register AI memory bank
@@ -75,9 +79,8 @@ public static class StartupHelper
         // Register CommandQueue
         builder.Services.AddSingleton<CommandQueue>();
 
-        // Register hosted services
+        // Register hosted services (single event path: EventBroadcastService pushes to SignalR; ProjectionService removed)
         builder.Services.AddHostedService<GameTickService>();
-        builder.Services.AddHostedService<ProjectionService>();
         builder.Services.AddHostedService<EventBroadcastService>();
 
         // Add SignalR
@@ -195,6 +198,7 @@ public static class StartupHelper
         ApiEndpointHandler.MapAllEndpoints(app);
         app.MapOpenApi();
         app.MapHub<WorldHub>("/gamehub");
+        app.MapHub<GameHub>("/commandhub");
         app.UseCors();
     }
 

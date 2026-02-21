@@ -1,9 +1,9 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public interface IAiStrategy
 {
-    List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger);
+    List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger);
 }

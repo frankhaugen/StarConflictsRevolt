@@ -1,11 +1,14 @@
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
+public record MoveFleetCommandDto(Guid PlayerId, long ClientTick, Guid FleetId, Guid ToSystemId);
+
 /// <summary>
-///     Handles game action endpoints (move fleet, build structure, attack, diplomacy)
+///     Handles game action endpoints. Command endpoints submit via ICommandIngress (same pipeline as GameHub).
 /// </summary>
 public static class GameActionEndpointHandler
 {
@@ -13,9 +16,8 @@ public static class GameActionEndpointHandler
     {
         app.MapPost("/game/move-fleet", async context =>
         {
-            var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
+            var ingress = context.RequestServices.GetRequiredService<ICommandIngress>();
             var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
-            var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<MoveFleetEvent>(context.RequestAborted);
             if (dto == null)
             {
@@ -24,56 +26,31 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
-            if (!await sessionManagerService.SessionExistsAsync(worldId))
+            var worldId = context.Request.Query.TryGetValue("worldId", out var wv) && Guid.TryParse(wv, out var w) ? w : Guid.Empty;
+            if (worldId == Guid.Empty || !await sessionManagerService.SessionExistsAsync(worldId))
             {
                 context.Response.StatusCode = 404;
-                await context.Response.WriteAsync($"Session/world {worldId} does not exist");
+                await context.Response.WriteAsync("Session/world not found or missing worldId query");
                 return;
             }
 
-            var world = await worldService.GetWorldAsync(context.RequestAborted);
-            // Strict validation
-            var fleet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).SelectMany(p => p.Fleets).FirstOrDefault(f => f.Id == dto.FleetId);
-            var fromPlanet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.FromPlanetId);
-            var toPlanet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.ToPlanetId);
-            if (fleet == null)
+            var cmd = new MoveFleet(dto.PlayerId, 0L, dto.FleetId, dto.ToPlanetId);
+            await ingress.SubmitAsync(new GameSessionId(worldId), cmd, context.RequestAborted);
+            context.Response.StatusCode = 202;
+        }).RequireAuthorization();
+
+        app.MapPost("/game/session/{sessionId:guid}/commands/move-fleet", async context =>
+        {
+            var ingress = context.RequestServices.GetRequiredService<ICommandIngress>();
+            var sessionId = context.Request.RouteValues["sessionId"] is string sid ? Guid.Parse(sid) : Guid.Empty;
+            var dto = await context.Request.ReadFromJsonAsync<MoveFleetCommandDto>(context.RequestAborted);
+            if (dto == null)
             {
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"Fleet {dto.FleetId} does not exist");
                 return;
             }
-
-            if (fromPlanet == null)
-            {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"FromPlanet {dto.FromPlanetId} does not exist");
-                return;
-            }
-
-            if (toPlanet == null)
-            {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"ToPlanet {dto.ToPlanetId} does not exist");
-                return;
-            }
-
-            if (!fromPlanet.Fleets.Any(f => f.Id == dto.FleetId))
-            {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"Fleet {dto.FleetId} is not at FromPlanet {dto.FromPlanetId}");
-                return;
-            }
-
-            if (fleet.LocationPlanetId == dto.ToPlanetId)
-            {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"Fleet {dto.FleetId} is already at ToPlanet {dto.ToPlanetId}");
-                return;
-            }
-
-            // TODO: Check player ownership if available
-            commandQueue.Enqueue(worldId, dto);
+            var cmd = new MoveFleet(dto.PlayerId, dto.ClientTick, dto.FleetId, dto.ToSystemId);
+            await ingress.SubmitAsync(new GameSessionId(sessionId), cmd, context.RequestAborted);
             context.Response.StatusCode = 202;
         }).RequireAuthorization();
 

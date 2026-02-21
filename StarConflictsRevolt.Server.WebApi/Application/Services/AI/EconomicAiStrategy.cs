@@ -1,8 +1,8 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
@@ -12,16 +12,16 @@ public class EconomicAiStrategy : BaseAiStrategy
     {
     }
 
-    public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
+    public override List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
-        if (!CanAct(playerId, TimeSpan.FromSeconds(5))) // Economic AI acts more slowly
-            return new List<IGameEvent>();
+        if (!CanAct(playerId, TimeSpan.FromSeconds(5)))
+            return new List<IGameCommand>();
 
         RecordAction(playerId);
-        return GenerateCommandsInternal(playerId, world, logger);
+        return GenerateCommandsInternal(playerId, world, clientTick, logger);
     }
 
-    protected override void UpdateGoals(Guid playerId, World world)
+    protected override void UpdateGoals(Guid playerId, WorldState world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
@@ -49,7 +49,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         }
     }
 
-    protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected override List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -66,7 +66,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateEconomicBuildingDecisions(Guid playerId, List<Planet> aiPlanets, World world)
+    private List<AiDecision> GenerateEconomicBuildingDecisions(Guid playerId, List<Planet> aiPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -88,7 +88,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateDefensiveDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateDefensiveDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -133,7 +133,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateExpansionDecisions(Guid playerId, List<Fleet> aiFleets, World world)
+    private List<AiDecision> GenerateExpansionDecisions(Guid playerId, List<Fleet> aiFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -169,7 +169,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
+    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, WorldState world)
     {
         // Economic AI moves less frequently and toward unclaimed planets
         if (_random.Next(100) < 25) // 25% chance (lower than base)
@@ -198,7 +198,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return null;
     }
 
-    protected override AiDecision? EvaluateBuilding(Guid playerId, Planet planet, World world)
+    protected override AiDecision? EvaluateBuilding(Guid playerId, Planet planet, WorldState world)
     {
         // Economic AI builds more frequently and focuses on economic structures
         if (_random.Next(100) < 50) // 50% chance (higher than base)
@@ -217,7 +217,7 @@ public class EconomicAiStrategy : BaseAiStrategy
         return null;
     }
 
-    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, World world)
+    protected override AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, WorldState world)
     {
         // Economic AI rarely attacks
         if (_random.Next(100) < 10) // 10% chance (much lower than base)

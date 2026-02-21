@@ -1,10 +1,10 @@
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
@@ -20,29 +20,25 @@ public abstract class BaseAiStrategy : IAiStrategy
         _memoryBank = memoryBank;
     }
 
-    public abstract List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger);
+    public abstract List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger);
 
-    protected virtual List<IGameEvent> GenerateCommandsInternal(Guid playerId, World world, ILogger logger)
+    protected virtual List<IGameCommand> GenerateCommandsInternal(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
-        var commands = new List<IGameEvent>();
+        var commands = new List<IGameCommand>();
 
-        // Update goals and remove expired ones
         UpdateGoals(playerId, world);
         CleanupExpiredGoals();
 
-        // Generate decisions based on current goals
         var decisions = GenerateDecisions(playerId, world);
 
-        // Convert decisions to game events
-        foreach (var decision in decisions.OrderByDescending(d => d.Score).Take(5)) // Limit to top 5 decisions
+        foreach (var decision in decisions.OrderByDescending(d => d.Score).Take(5))
         {
-            var gameEvent = ConvertDecisionToGameEvent(decision, playerId, world);
-            if (gameEvent != null)
+            var cmd = ConvertDecisionToCommand(decision, playerId, clientTick, world);
+            if (cmd != null)
             {
-                commands.Add(gameEvent);
+                commands.Add(cmd);
                 decision.MarkExecuted();
 
-                // Remember this decision
                 var memory = new AiMemory(playerId, MemoryType.Decision, decision.Description, decision.Score / 100.0);
                 memory.AddData("DecisionType", decision.Type);
                 memory.AddData("Priority", decision.Priority);
@@ -54,7 +50,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return commands;
     }
 
-    protected virtual void UpdateGoals(Guid playerId, World world)
+    protected virtual void UpdateGoals(Guid playerId, WorldState world)
     {
         // Override in derived classes to implement specific goal logic
     }
@@ -64,7 +60,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         _goals.RemoveAll(g => g.IsExpired() || g.IsCompleted || g.IsAbandoned);
     }
 
-    protected virtual List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected virtual List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -82,7 +78,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return decisions;
     }
 
-    protected virtual List<AiDecision> GenerateFleetDecisions(Guid playerId, List<Fleet> aiFleets, World world)
+    protected virtual List<AiDecision> GenerateFleetDecisions(Guid playerId, List<Fleet> aiFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -96,7 +92,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return decisions;
     }
 
-    protected virtual List<AiDecision> GenerateBuildingDecisions(Guid playerId, List<Planet> aiPlanets, World world)
+    protected virtual List<AiDecision> GenerateBuildingDecisions(Guid playerId, List<Planet> aiPlanets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -110,7 +106,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return decisions;
     }
 
-    protected virtual List<AiDecision> GenerateCombatDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    protected virtual List<AiDecision> GenerateCombatDecisions(Guid playerId, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -127,7 +123,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return decisions;
     }
 
-    protected virtual AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
+    protected virtual AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, WorldState world)
     {
         // Base implementation - can be overridden by specific strategies
         if (_random.Next(100) < 30) // 30% chance to move
@@ -150,7 +146,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return null;
     }
 
-    protected virtual AiDecision? EvaluateBuilding(Guid playerId, Planet planet, World world)
+    protected virtual AiDecision? EvaluateBuilding(Guid playerId, Planet planet, WorldState world)
     {
         // Base implementation - can be overridden by specific strategies
         if (_random.Next(100) < 20) // 20% chance to build
@@ -169,7 +165,7 @@ public abstract class BaseAiStrategy : IAiStrategy
         return null;
     }
 
-    protected virtual AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, World world)
+    protected virtual AiDecision? EvaluateCombatOpportunity(Guid playerId, Fleet aiFleet, List<Fleet> enemyFleets, WorldState world)
     {
         // Base implementation - can be overridden by specific strategies
         if (_random.Next(100) < 15) // 15% chance to attack
@@ -194,32 +190,30 @@ public abstract class BaseAiStrategy : IAiStrategy
         return null;
     }
 
-    protected virtual IGameEvent? ConvertDecisionToGameEvent(AiDecision decision, Guid playerId, World world)
+    protected virtual IGameCommand? ConvertDecisionToCommand(AiDecision decision, Guid playerId, long clientTick, WorldState world)
     {
         return decision.Type switch
         {
-            AiDecisionType.MoveFleet => new MoveFleetEvent(
+            AiDecisionType.MoveFleet => new MoveFleet(
                 playerId,
+                clientTick,
                 decision.GetParameter<Guid>("FleetId"),
-                decision.GetParameter<Guid>("FromPlanetId"),
                 decision.GetParameter<Guid>("ToPlanetId")),
 
-            AiDecisionType.BuildStructure => new BuildStructureEvent(
+            AiDecisionType.BuildStructure => new QueueBuild(
                 playerId,
+                clientTick,
                 decision.GetParameter<Guid>("PlanetId"),
-                decision.GetParameter<string>("StructureType") ?? "Mine"),
+                decision.GetParameter<string>("StructureType") ?? "Mine",
+                1),
 
-            AiDecisionType.Attack => new AttackEvent(
-                playerId,
-                decision.GetParameter<Guid>("AttackerFleetId"),
-                decision.GetParameter<Guid>("DefenderFleetId"),
-                decision.GetParameter<Guid>("LocationPlanetId")),
+            AiDecisionType.Attack => null,
 
             _ => null
         };
     }
 
-    protected List<Fleet> GetPlayerFleets(Guid playerId, World world)
+    protected List<Fleet> GetPlayerFleets(Guid playerId, WorldState world)
     {
         return world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)
@@ -228,7 +222,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             .ToList();
     }
 
-    protected List<Planet> GetPlayerPlanets(Guid playerId, World world)
+    protected List<Planet> GetPlayerPlanets(Guid playerId, WorldState world)
     {
         return world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)
@@ -236,7 +230,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             .ToList();
     }
 
-    protected List<Fleet> GetEnemyFleets(Guid playerId, World world)
+    protected List<Fleet> GetEnemyFleets(Guid playerId, WorldState world)
     {
         return world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)
@@ -245,7 +239,7 @@ public abstract class BaseAiStrategy : IAiStrategy
             .ToList();
     }
 
-    protected List<Planet> GetEnemyPlanets(Guid playerId, World world)
+    protected List<Planet> GetEnemyPlanets(Guid playerId, WorldState world)
     {
         return world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)

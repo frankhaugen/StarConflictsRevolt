@@ -1,8 +1,8 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
@@ -14,16 +14,16 @@ public class BalancedAiStrategy : BaseAiStrategy
     {
     }
 
-    public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
+    public override List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
-        if (!CanAct(playerId, TimeSpan.FromSeconds(4))) // Balanced AI acts moderately
-            return new List<IGameEvent>();
+        if (!CanAct(playerId, TimeSpan.FromSeconds(4)))
+            return new List<IGameCommand>();
 
         RecordAction(playerId);
-        return GenerateCommandsInternal(playerId, world, logger);
+        return GenerateCommandsInternal(playerId, world, clientTick, logger);
     }
 
-    protected override void UpdateGoals(Guid playerId, World world)
+    protected override void UpdateGoals(Guid playerId, WorldState world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
@@ -58,7 +58,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    private AiStrategyPhase DetermineStrategyPhase(Guid playerId, World world)
+    private AiStrategyPhase DetermineStrategyPhase(Guid playerId, WorldState world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
         var aiFleets = GetPlayerFleets(playerId, world);
@@ -92,7 +92,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return AiStrategyPhase.MidGame;
     }
 
-    private void AddEarlyGameGoals(Guid playerId, World world)
+    private void AddEarlyGameGoals(Guid playerId, WorldState world)
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
@@ -109,7 +109,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    private void AddMidGameGoals(Guid playerId, World world)
+    private void AddMidGameGoals(Guid playerId, WorldState world)
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Build && !g.IsCompleted))
         {
@@ -126,7 +126,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    private void AddLateGameGoals(Guid playerId, World world)
+    private void AddLateGameGoals(Guid playerId, WorldState world)
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Dominate && !g.IsCompleted))
         {
@@ -136,7 +136,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    private void AddDefensiveGoals(Guid playerId, World world)
+    private void AddDefensiveGoals(Guid playerId, WorldState world)
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Defend && !g.IsCompleted))
         {
@@ -153,7 +153,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    private void AddAggressiveGoals(Guid playerId, World world)
+    private void AddAggressiveGoals(Guid playerId, WorldState world)
     {
         if (!_goals.Any(g => g.Type == AiGoalType.Attack && !g.IsCompleted))
         {
@@ -170,7 +170,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         }
     }
 
-    protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected override List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -202,7 +202,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateEarlyGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, World world)
+    private List<AiDecision> GenerateEarlyGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -250,7 +250,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateMidGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateMidGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -294,7 +294,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateLateGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateLateGameDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -323,7 +323,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateDefensiveDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateDefensiveDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -380,7 +380,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    private List<AiDecision> GenerateAggressiveDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, World world)
+    private List<AiDecision> GenerateAggressiveDecisions(Guid playerId, List<Planet> aiPlanets, List<Fleet> aiFleets, List<Fleet> enemyFleets, WorldState world)
     {
         var decisions = new List<AiDecision>();
 
@@ -424,7 +424,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return decisions;
     }
 
-    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, World world)
+    protected override AiDecision? EvaluateFleetMovement(Guid playerId, Fleet fleet, WorldState world)
     {
         var currentPhase = _playerPhases.GetValueOrDefault(playerId, AiStrategyPhase.MidGame);
 
@@ -464,7 +464,7 @@ public class BalancedAiStrategy : BaseAiStrategy
         return null;
     }
 
-    private Planet GetUnclaimedPlanet(World world)
+    private Planet GetUnclaimedPlanet(WorldState world)
     {
         var unclaimedPlanets = world.Galaxy.StarSystems
             .SelectMany(s => s.Planets)
@@ -476,7 +476,7 @@ public class BalancedAiStrategy : BaseAiStrategy
             : GetRandomPlanet(world);
     }
 
-    private Planet GetDefensivePlanet(Guid playerId, World world)
+    private Planet GetDefensivePlanet(Guid playerId, WorldState world)
     {
         var aiPlanets = GetPlayerPlanets(playerId, world);
         return aiPlanets.Any()
@@ -484,7 +484,7 @@ public class BalancedAiStrategy : BaseAiStrategy
             : GetRandomPlanet(world);
     }
 
-    private Planet GetEnemyPlanet(Guid playerId, World world)
+    private Planet GetEnemyPlanet(Guid playerId, WorldState world)
     {
         var enemyPlanets = GetEnemyPlanets(playerId, world);
         return enemyPlanets.Any()
@@ -492,7 +492,7 @@ public class BalancedAiStrategy : BaseAiStrategy
             : GetRandomPlanet(world);
     }
 
-    private Planet GetRandomPlanet(World world)
+    private Planet GetRandomPlanet(WorldState world)
     {
         var allPlanets = world.Galaxy.StarSystems.SelectMany(s => s.Planets).ToList();
         return allPlanets[_random.Next(allPlanets.Count)];

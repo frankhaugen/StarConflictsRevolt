@@ -1,28 +1,28 @@
-﻿using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
+using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class DefaultAiStrategy(AiMemoryBank memoryBank) : BaseAiStrategy(memoryBank)
 {
-    public override List<IGameEvent> GenerateCommands(Guid playerId, World world, ILogger logger)
+    public override List<IGameCommand> GenerateCommands(Guid playerId, WorldState world, long clientTick, ILogger logger)
     {
         if (!CanAct(playerId, TimeSpan.FromSeconds(3)))
-            return new List<IGameEvent>();
+            return new List<IGameCommand>();
 
         RecordAction(playerId);
-        return GenerateCommandsInternal(playerId, world, logger);
+        return GenerateCommandsInternal(playerId, world, clientTick, logger);
     }
 
-    protected override void UpdateGoals(Guid playerId, World world)
+    protected override void UpdateGoals(Guid playerId, WorldState world)
     {
         // Random AI doesn't set specific goals
     }
 
-    protected override List<AiDecision> GenerateDecisions(Guid playerId, World world)
+    protected override List<AiDecision> GenerateDecisions(Guid playerId, WorldState world)
     {
         var decisions = new List<AiDecision>();
 

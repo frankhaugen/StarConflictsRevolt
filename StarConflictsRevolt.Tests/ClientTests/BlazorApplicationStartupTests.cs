@@ -4,7 +4,6 @@ using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Models;
-using TUnit.Assertions.AssertConditions.Throws;
 using StarConflictsRevolt.Clients.Blazor.Components.Pages;
 
 namespace StarConflictsRevolt.Tests.ClientTests;

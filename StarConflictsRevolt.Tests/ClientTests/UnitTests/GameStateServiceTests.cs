@@ -1,12 +1,10 @@
 using Bunit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Communication;
-using TUnit;
 
 namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 
@@ -15,7 +13,7 @@ namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 /// </summary>
 public class GameStateServiceTests
 {
-    private Bunit.TestContext _testContext = null!;
+    private BunitContext _testContext = null!;
     private IHttpApiClient _mockHttpClient = null!;
     private ISignalRService _mockSignalRService = null!;
     private TelemetryService _telemetryService = null!;
@@ -23,7 +21,7 @@ public class GameStateServiceTests
 
     public GameStateServiceTests()
     {
-        _testContext = new Bunit.TestContext();
+        _testContext = new BunitContext();
         
         // Create mocks
         _mockHttpClient = Substitute.For<IHttpApiClient>();
