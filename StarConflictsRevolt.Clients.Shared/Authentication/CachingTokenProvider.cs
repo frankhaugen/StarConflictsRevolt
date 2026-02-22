@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,20 +12,23 @@ public class CachingTokenProvider(
     IOptions<TokenProviderOptions> options,
     ILogger<CachingTokenProvider> logger) : ITokenProvider
 {
-    private string? _cachedToken;
-    private DateTime _tokenExpiry = DateTime.MinValue;
+    // Cache per client id so token identity matches session identity when using AuthClientIdContext
+    private readonly ConcurrentDictionary<string, (string Token, DateTime Expiry)> _cache = new();
 
     public async Task<string> GetTokenAsync(CancellationToken ct = default)
     {
-        // Check if we have a valid cached token
-        if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
+        var clientId = AuthClientIdContext.Current ?? options.Value.ClientId;
+        if (string.IsNullOrWhiteSpace(clientId))
+            clientId = options.Value.ClientId;
+
+        if (_cache.TryGetValue(clientId, out var entry) && !string.IsNullOrEmpty(entry.Token) && DateTime.UtcNow < entry.Expiry)
         {
-            logger.LogDebug("Using cached token");
-            return _cachedToken;
+            logger.LogDebug("Using cached token for client {ClientId}", clientId.Length > 8 ? clientId[..8] + "…" : clientId);
+            return entry.Token;
         }
 
-        logger.LogInformation("Requesting new token from {TokenEndpoint}", options.Value.TokenEndpoint);
-        logger.LogInformation("Using ClientId: {ClientId}, Secret: {Secret}", options.Value.ClientId, options.Value.Secret);
+        logger.LogInformation("Requesting new token from {TokenEndpoint} for client {ClientId}",
+            options.Value.TokenEndpoint, clientId.Length > 8 ? clientId[..8] + "…" : clientId);
 
         try
         {
@@ -32,7 +36,7 @@ public class CachingTokenProvider(
 
             var request = new TokenRequest
             {
-                ClientId = options.Value.ClientId,
+                ClientId = clientId,
                 ClientSecret = options.Value.Secret
             };
 
@@ -42,11 +46,10 @@ public class CachingTokenProvider(
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
             if (tokenResponse?.AccessToken == null) throw new InvalidOperationException("Token response did not contain access_token");
 
-            _cachedToken = tokenResponse.AccessToken;
-            _tokenExpiry = tokenResponse.ExpiresAt;
+            _cache[clientId] = (tokenResponse.AccessToken, tokenResponse.ExpiresAt);
 
-            logger.LogInformation("Successfully obtained new token");
-            return _cachedToken;
+            logger.LogInformation("Successfully obtained new token for client {ClientId}", clientId.Length > 8 ? clientId[..8] + "…" : clientId);
+            return tokenResponse.AccessToken;
         }
         catch (HttpRequestException ex)
         {

@@ -1,0 +1,31 @@
+@* Floating messages panel for the game view. *@
+@if (Messages != null && Messages.Any())
+{
+    <div class="position-absolute bottom-0 start-0 m-3 shadow" style="max-width: 320px;" data-testid="game-messages-panel">
+        <div class="card">
+            <div class="card-header py-1 d-flex justify-content-between align-items-center bg-dark text-light small">
+                <span>Messages</span>
+                <button type="button" class="btn btn-sm btn-outline-light" @onclick="OnClear">Clear</button>
+            </div>
+            <div class="card-body py-1 small" style="max-height: 120px; overflow-y: auto;">
+                @foreach (var m in Messages.Take(MaxVisible))
+                {
+                    <div class="py-1 border-bottom">@m.Timestamp.ToString("HH:mm") @m.Text</div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<GameMessageItem>? Messages { get; set; }
+    [Parameter] public int MaxVisible { get; set; } = 8;
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    public sealed class GameMessageItem
+    {
+        public DateTime Timestamp { get; set; }
+        public string Type { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+}

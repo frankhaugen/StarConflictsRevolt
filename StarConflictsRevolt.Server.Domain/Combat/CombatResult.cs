@@ -12,6 +12,11 @@ public class CombatResult
     public List<CombatShip> AttackerLosses { get; set; } = new();
     public List<CombatShip> DefenderLosses { get; set; } = new();
 
+    /// <summary>Surviving attacker ship ids and their current hull (for applying result to world).</summary>
+    public Dictionary<Guid, int> AttackerSurvivorHealths { get; set; } = new();
+    /// <summary>Surviving defender ship ids and their current hull (for applying result to world).</summary>
+    public Dictionary<Guid, int> DefenderSurvivorHealths { get; set; } = new();
+
     // Rewards and consequences
     public List<CombatReward> Rewards { get; set; } = new();
     public List<CombatConsequence> Consequences { get; set; } = new();

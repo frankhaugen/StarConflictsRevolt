@@ -87,6 +87,9 @@ public class TestHostApplication : IDisposable
         builder.Services.AddSingleton<IGameSim, GameSim>();
         builder.Services.AddSingleton<WorldEngine>();
 
+        // Simulation manager (ticker speed)
+        builder.Services.AddSingleton<ISimulationManager, SimulationManager>();
+
         // Transport: tick fan-out to in-process listeners and SignalR
         builder.Services.AddSingleton<ITickListener, AiTurnTickListener>();
         builder.Services.AddSingleton<ITickListener, GameUpdateTickListener>();

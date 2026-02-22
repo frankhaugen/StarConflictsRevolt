@@ -154,17 +154,19 @@
                         <label class="form-label">Structure Type:</label>
                         <select class="form-select" @onchange="OnStructureTypeChanged">
                             <option value="">Select structure type...</option>
-                            <option value="factory">Factory</option>
-                            <option value="research">Research Lab</option>
-                            <option value="defense">Defense Station</option>
-                            <option value="shipyard">Shipyard</option>
+                            <option value="Mine">Mine</option>
+                            <option value="Refinery">Refinery</option>
+                            <option value="ConstructionYard">Construction Yard</option>
+                            <option value="TrainingFacility">Training Facility</option>
+                            <option value="ShieldGenerator">Shield Generator</option>
+                            <option value="Shipyard">Shipyard</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Cost:</label>
                         <div class="cost-display">
-                            <span class="badge bg-warning me-2">Credits: @GetStructureCost(selectedStructureType)</span>
-                            <span class="badge bg-info">Materials: @GetStructureMaterials(selectedStructureType)</span>
+                            <span class="badge bg-warning me-2">Minerals: @GetStructureMinerals(selectedStructureType)</span>
+                            <span class="badge bg-info">Energy: @GetStructureEnergy(selectedStructureType)</span>
                         </div>
                     </div>
                 </div>
@@ -334,26 +336,31 @@
         };
     }
 
-    private int GetStructureCost(string structureType)
+    /// <summary>Costs match server domain BuildStructureEvent.GetStructureCosts.</summary>
+    private int GetStructureMinerals(string structureType)
     {
         return structureType switch
         {
-            "factory" => 100,
-            "research" => 150,
-            "defense" => 200,
-            "shipyard" => 300,
+            "Mine" => 20,
+            "Refinery" => 40,
+            "ConstructionYard" => 50,
+            "TrainingFacility" => 30,
+            "ShieldGenerator" => 80,
+            "Shipyard" => 100,
             _ => 0
         };
     }
 
-    private int GetStructureMaterials(string structureType)
+    private int GetStructureEnergy(string structureType)
     {
         return structureType switch
         {
-            "factory" => 50,
-            "research" => 75,
-            "defense" => 100,
-            "shipyard" => 150,
+            "Mine" => 10,
+            "Refinery" => 30,
+            "ConstructionYard" => 25,
+            "TrainingFacility" => 40,
+            "ShieldGenerator" => 60,
+            "Shipyard" => 75,
             _ => 0
         };
     }

@@ -22,6 +22,9 @@ public static class ApiEndpointHandler
         // Game action endpoints
         GameActionEndpointHandler.MapEndpoints(app);
 
+        // Simulation speed (ticker) endpoints
+        SimulationEndpointHandler.MapEndpoints(app);
+
         // Leaderboard endpoints
         LeaderboardEndpointHandler.MapEndpoints(app);
 

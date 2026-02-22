@@ -14,58 +14,93 @@
         <div class="card-body">
             @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
             {
+                var allFleets = GetAllFleets().ToList();
+                var inTransit = allFleets.Where(f => f.Status == "Moving" || f.Status == "EnRoute").ToList();
+                var docked = allFleets.Where(f => f.LocationPlanetId.HasValue).ToList();
+
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Available Fleets</h6>
-                        <div class="fleet-list">
-                            @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
-                            {
-                                @foreach (var planet in starSystem.Planets)
+                        <h6>Fleets in transit</h6>
+                        @if (inTransit.Any())
+                        {
+                            <div class="fleet-list mb-3">
+                                @foreach (var f in inTransit)
                                 {
-                                    <div class="fleet-item mb-2">
+                                    var destName = GetPlanetName(f.DestinationPlanetId);
+                                    var eta = f.ArrivalTime.HasValue ? f.ArrivalTime.Value.ToString("HH:mm:ss") : "—";
+                                    <div class="fleet-item fleet-in-transit mb-2">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <strong>@planet.Name</strong>
-                                                <small class="text-muted d-block">@starSystem.Name</small>
+                                                <strong>@f.Name</strong>
+                                                <small class="text-muted d-block">→ @destName · ETA @eta</small>
+                                                <span class="badge bg-secondary">@f.ShipCount ship(s)</span>
                                             </div>
                                             <div class="fleet-actions">
-                                                <button class="btn btn-sm btn-primary" @onclick="() => SelectFleet(planet.Id)">
-                                                    <i class="fas fa-eye"></i> View
-                                                </button>
-                                                <button class="btn btn-sm btn-success" @onclick="() => MoveFleet(planet.Id)">
-                                                    <i class="fas fa-arrows-alt"></i> Move
-                                                </button>
+                                                <button class="btn btn-sm btn-outline-primary" @onclick="() => SelectFleet(f.Id)" disabled title="In-transit fleet cannot be moved until arrival">View</button>
                                             </div>
                                         </div>
                                     </div>
                                 }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">No fleets in transit.</p>
+                        }
+
+                        <h6 class="mt-3">Docked fleets</h6>
+                        <div class="fleet-list">
+                            @foreach (var f in docked)
+                            {
+                                var locName = GetPlanetName(f.LocationPlanetId);
+                                <div class="fleet-item mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@f.Name</strong>
+                                            <small class="text-muted d-block">@locName</small>
+                                            <span class="badge bg-info">@f.ShipCount ship(s)</span>
+                                        </div>
+                                        <div class="fleet-actions">
+                                            <button class="btn btn-sm btn-primary" @onclick="() => SelectFleet(f.Id)"><i class="fas fa-eye"></i> View</button>
+                                            <button class="btn btn-sm btn-success" @onclick="() => MoveFleet(f.Id)" disabled="@(f.Status != "Idle")"><i class="fas fa-arrows-alt"></i> Move</button>
+                                        </div>
+                                    </div>
+                                </div>
                             }
                         </div>
+                        @if (!allFleets.Any())
+                        {
+                            <p class="text-muted small">No fleets in this session. Create a session and start the game to get fleets.</p>
+                        }
                     </div>
                     <div class="col-md-6">
-                        <h6>Fleet Details</h6>
-                        @if (selectedFleetId != Guid.Empty)
+                        <h6>Fleet details</h6>
+                        @if (selectedFleetId != Guid.Empty && GetSelectedFleet() is { } sel)
                         {
                             <div class="fleet-details">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h6>Fleet Information</h6>
-                                        <p><strong>Location:</strong> @GetFleetLocation(selectedFleetId)</p>
-                                        <p><strong>Status:</strong> <span class="badge bg-success">Ready</span></p>
-                                        <p><strong>Ships:</strong> @GetFleetShipCount(selectedFleetId)</p>
-                                        
+                                        <h6>@sel.Name</h6>
+                                        <p class="mb-1"><strong>Location:</strong> @GetFleetLocation(selectedFleetId)</p>
+                                        <p class="mb-1"><strong>Status:</strong> <span class="badge @(sel.Status == "Idle" ? "bg-success" : "bg-warning")">@sel.Status</span></p>
+                                        <p class="mb-1"><strong>Ships:</strong> @sel.ShipCount</p>
+                                        @if (sel.ArrivalTime.HasValue)
+                                        {
+                                            <p class="mb-1"><strong>Arrival:</strong> @sel.ArrivalTime.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                                        }
                                         <div class="mt-3">
                                             <h6>Actions</h6>
                                             <div class="d-grid gap-2">
-                                                <button class="btn btn-primary btn-sm" @onclick="ShowMoveFleetModal">
-                                                    <i class="fas fa-arrows-alt"></i> Move Fleet
-                                                </button>
-                                                <button class="btn btn-warning btn-sm" @onclick="ShowAttackModal">
-                                                    <i class="fas fa-crosshairs"></i> Attack
-                                                </button>
-                                                <button class="btn btn-info btn-sm" @onclick="ShowFleetDetails">
-                                                    <i class="fas fa-info-circle"></i> Details
-                                                </button>
+                                                @if (sel.LocationPlanetId.HasValue && sel.Status == "Idle")
+                                                {
+                                                    <button class="btn btn-primary btn-sm" @onclick="ShowMoveFleetModal">
+                                                        <i class="fas fa-arrows-alt"></i> Move Fleet
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm" @onclick="ShowAttackModal">
+                                                        <i class="fas fa-crosshairs"></i> Attack
+                                                    </button>
+                                                }
+                                                <button class="btn btn-info btn-sm" @onclick="ShowFleetDetails"><i class="fas fa-info-circle"></i> Details</button>
                                             </div>
                                         </div>
                                     </div>
@@ -85,7 +120,7 @@
             {
                 <div class="text-center text-muted">
                     <i class="fas fa-ship fa-3x mb-3"></i>
-                    <p>No fleets available. Create a session to start playing.</p>
+                    <p>No world data. Create a session to start playing.</p>
                 </div>
             }
         </div>
@@ -146,21 +181,15 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Attacking Fleet:</label>
-                        <input type="text" class="form-control" value="@GetFleetLocation(selectedFleetId)" readonly />
+                        <input type="text" class="form-control" value="@(GetSelectedFleet()?.Name ?? GetFleetLocation(selectedFleetId))" readonly />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Target:</label>
+                        <label class="form-label">Target fleet:</label>
                         <select class="form-select" @onchange="OnTargetChanged">
-                            <option value="">Select target...</option>
-                            @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+                            <option value="">Select target fleet...</option>
+                            @foreach (var f in GetAllFleets().Where(f => f.Id != selectedFleetId && f.LocationPlanetId.HasValue && f.Status == "Idle"))
                             {
-                                @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
-                                {
-                                    @foreach (var planet in starSystem.Planets)
-                                    {
-                                        <option value="@planet.Id">@planet.Name (@starSystem.Name)</option>
-                                    }
-                                }
+                                <option value="@f.Id">@f.Name at @GetPlanetName(f.LocationPlanetId) (@f.ShipCount ships)</option>
                             }
                         </select>
                     </div>
@@ -183,6 +212,35 @@
     private bool showMoveFleetModal = false;
     private bool showAttackModal = false;
 
+    private IEnumerable<FleetDto> GetAllFleets()
+    {
+        if (GameState.CurrentWorld?.Galaxy?.StarSystems == null) yield break;
+        foreach (var sys in GameState.CurrentWorld.Galaxy.StarSystems)
+        {
+            foreach (var planet in sys.Planets)
+            {
+                foreach (var fleet in planet.FleetsOrEmpty)
+                    yield return fleet;
+            }
+        }
+    }
+
+    private FleetDto? GetSelectedFleet()
+    {
+        return GetAllFleets().FirstOrDefault(f => f.Id == selectedFleetId);
+    }
+
+    private string GetPlanetName(Guid? planetId)
+    {
+        if (!planetId.HasValue || GameState.CurrentWorld?.Galaxy?.StarSystems == null) return "—";
+        foreach (var sys in GameState.CurrentWorld.Galaxy.StarSystems)
+        {
+            var p = sys.Planets.FirstOrDefault(x => x.Id == planetId.Value);
+            if (p != null) return $"{p.Name} ({sys.Name})";
+        }
+        return "—";
+    }
+
     private void SelectFleet(Guid fleetId)
     {
         selectedFleetId = fleetId;
@@ -195,74 +253,39 @@
         showMoveFleetModal = true;
     }
 
-    private void ShowMoveFleetModal()
-    {
-        showMoveFleetModal = true;
-    }
-
-    private void CloseMoveFleetModal()
-    {
-        showMoveFleetModal = false;
-        selectedDestinationId = Guid.Empty;
-    }
-
-    private void ShowAttackModal()
-    {
-        showAttackModal = true;
-    }
-
-    private void CloseAttackModal()
-    {
-        showAttackModal = false;
-        selectedTargetId = Guid.Empty;
-    }
+    private void ShowMoveFleetModal() => showMoveFleetModal = true;
+    private void CloseMoveFleetModal() { showMoveFleetModal = false; selectedDestinationId = Guid.Empty; }
+    private void ShowAttackModal() => showAttackModal = true;
+    private void CloseAttackModal() { showAttackModal = false; selectedTargetId = Guid.Empty; }
 
     private void OnDestinationChanged(ChangeEventArgs e)
     {
-        if (Guid.TryParse(e.Value?.ToString(), out var destinationId))
-        {
-            selectedDestinationId = destinationId;
-        }
+        if (Guid.TryParse(e.Value?.ToString(), out var id)) selectedDestinationId = id;
     }
 
     private void OnTargetChanged(ChangeEventArgs e)
     {
-        if (Guid.TryParse(e.Value?.ToString(), out var targetId))
-        {
-            selectedTargetId = targetId;
-        }
+        if (Guid.TryParse(e.Value?.ToString(), out var id)) selectedTargetId = id;
     }
 
     private async Task ExecuteMoveFleet()
     {
-        if (selectedFleetId != Guid.Empty && selectedDestinationId != Guid.Empty)
-        {
-            var success = await GameState.MoveFleetAsync(selectedFleetId, selectedFleetId, selectedDestinationId);
-            if (success)
-            {
-                TelemetryService.RecordGameAction("move_fleet");
-                CloseMoveFleetModal();
-            }
-        }
+        var fleet = GetSelectedFleet();
+        if (fleet == null || !fleet.LocationPlanetId.HasValue || selectedDestinationId == Guid.Empty) return;
+        var success = await GameState.MoveFleetAsync(fleet.Id, fleet.LocationPlanetId.Value, selectedDestinationId);
+        if (success) { TelemetryService.RecordGameAction("move_fleet"); CloseMoveFleetModal(); }
     }
 
     private async Task ExecuteAttack()
     {
-        if (selectedFleetId != Guid.Empty && selectedTargetId != Guid.Empty)
-        {
-            var success = await GameState.AttackAsync(selectedFleetId, selectedTargetId);
-            if (success)
-            {
-                TelemetryService.RecordGameAction("attack");
-                CloseAttackModal();
-            }
-        }
+        if (selectedFleetId == Guid.Empty || selectedTargetId == Guid.Empty) return;
+        var defender = GetAllFleets().FirstOrDefault(f => f.Id == selectedTargetId);
+        if (defender?.LocationPlanetId == null) return;
+        var success = await GameState.AttackAsync(selectedFleetId, selectedTargetId, defender.LocationPlanetId.Value);
+        if (success) { TelemetryService.RecordGameAction("attack"); CloseAttackModal(); }
     }
 
-    private void ShowFleetDetails()
-    {
-        // TODO: Implement fleet details modal
-    }
+    private void ShowFleetDetails() { /* TODO */ }
 
     private async Task CloseFleetManager() => await OnClose.InvokeAsync();
 
@@ -270,53 +293,18 @@
 
     private string GetFleetLocation(Guid fleetId)
     {
-        if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
-        {
-            foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
-            {
-                foreach (var planet in starSystem.Planets)
-                {
-                    if (planet.Id == fleetId)
-                    {
-                        return $"{planet.Name} ({starSystem.Name})";
-                    }
-                }
-            }
-        }
+        var fleet = GetAllFleets().FirstOrDefault(f => f.Id == fleetId);
+        if (fleet == null) return "Unknown";
+        if (fleet.LocationPlanetId.HasValue) return GetPlanetName(fleet.LocationPlanetId);
+        if (fleet.Status == "Moving" || fleet.Status == "EnRoute") return "In transit to " + GetPlanetName(fleet.DestinationPlanetId);
         return "Unknown";
-    }
-
-    private int GetFleetShipCount(Guid fleetId)
-    {
-        // TODO: Implement actual ship count logic
-        return new Random().Next(1, 10);
     }
 }
 
 <style>
-    .fleet-manager {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 800px;
-        z-index: 1050;
-    }
-    
-    .fleet-item {
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        padding: 0.75rem;
-        background-color: #f8f9fa;
-    }
-    
-    .fleet-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
-    .fleet-details {
-        min-height: 200px;
-    }
+    .fleet-manager { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 800px; z-index: 1050; }
+    .fleet-item { border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.75rem; background-color: #f8f9fa; }
+    .fleet-in-transit { background-color: #fff3cd; border-color: #ffc107; }
+    .fleet-actions { display: flex; gap: 0.5rem; }
+    .fleet-details { min-height: 200px; }
 </style>

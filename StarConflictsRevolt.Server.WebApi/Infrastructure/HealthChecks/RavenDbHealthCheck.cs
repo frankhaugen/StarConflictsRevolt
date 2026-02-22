@@ -21,7 +21,7 @@ public sealed class RavenDbHealthCheck(IDocumentStore store) : IHealthCheck
             return HealthCheckResult.Unhealthy("RavenDB check failed.", ex, new Dictionary<string, object?>
             {
                 ["exception"] = ex.Message
-            });
+            }!);
         }
     }
 }

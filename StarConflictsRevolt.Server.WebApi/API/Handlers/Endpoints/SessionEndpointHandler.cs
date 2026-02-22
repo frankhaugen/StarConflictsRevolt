@@ -12,6 +12,8 @@ namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 /// </summary>
 public static class SessionEndpointHandler
 {
+    private static readonly Guid DefaultHumanPlayerId = new("10000000-0000-0000-0000-000000000001");
+
     public static void MapEndpoints(WebApplication app)
     {
         var requireAuth = !app.Environment.IsDevelopment();
@@ -95,7 +97,8 @@ public static class SessionEndpointHandler
                                 sessionManagerService.CreateSession(existing.Id, world);
                         }
                         context.Response.StatusCode = 200;
-                        await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = existing.Id, World = world.ToDto() }, context.RequestAborted);
+                        var humanPlayerId = world.Players.Count > 0 ? world.Players[0].PlayerId : DefaultHumanPlayerId;
+                        await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = existing.Id, World = world.ToDto(), PlayerId = humanPlayerId }, context.RequestAborted);
                         return;
                     }
                 }
@@ -104,8 +107,9 @@ public static class SessionEndpointHandler
                 var newWorld = worldFactory.CreateDefaultWorld();
                 newWorld.Id = sessionId;
                 sessionManagerService.CreateSession(sessionId, newWorld);
+                var creatingPlayerId = newWorld.Players.Count > 0 ? newWorld.Players[0].PlayerId : DefaultHumanPlayerId;
                 context.Response.StatusCode = 201;
-                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = newWorld.ToDto() }, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = newWorld.ToDto(), PlayerId = creatingPlayerId }, context.RequestAborted);
             })
             .WithName("CreateGameSession")
             .RequireAuthorizationIf(requireAuth);
@@ -140,8 +144,9 @@ public static class SessionEndpointHandler
                 // Ensure session aggregate exists
                 if (!sessionManagerService.HasAggregate(sessionId)) sessionManagerService.CreateSession(sessionId, world);
 
+                var joinPlayerId = world.Players.Count > 1 ? world.Players[1].PlayerId : (world.Players.Count > 0 ? world.Players[0].PlayerId : DefaultHumanPlayerId);
                 context.Response.StatusCode = 200;
-                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto(), PlayerId = joinPlayerId }, context.RequestAborted);
             })
             .WithName("JoinGameSession")
             .RequireAuthorizationIf(requireAuth);

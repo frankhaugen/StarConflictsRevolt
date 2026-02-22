@@ -1,0 +1,63 @@
+@using StarConflictsRevolt.Clients.Models
+@using StarConflictsRevolt.Clients.Shared.Http
+@inject IHttpApiClient HttpApi
+@inject ILogger<GameSpeedControl> Logger
+
+<div class="mb-3" data-testid="game-speed-control">
+    <h6 class="scr-panel-title small">Speed</h6>
+    @if (_state != null)
+    {
+        <div class="small">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <input type="range" class="form-range flex-grow-1" style="max-width: 120px;"
+                       min="@_state.MinTicksPerSecond" max="@_state.MaxTicksPerSecond" step="1"
+                       value="@_state.TicksPerSecond" @onchange="OnSpeedChanged" />
+                <span>@_state.TicksPerSecond t/s</span>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" class="form-check-input" id="sim-pause" checked="@_state.IsPaused" @onchange="OnPauseChanged" />
+                <label class="form-check-label" for="sim-pause">Pause</label>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p class="small text-muted mb-0"><i class="fas fa-spinner fa-spin me-1"></i> Loading…</p>
+    }
+</div>
+
+@code {
+    private SimulationStateDto? _state;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStateAsync();
+    }
+
+    private async Task LoadStateAsync()
+    {
+        try
+        {
+            _state = await HttpApi.GetSimulationStateAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load simulation state");
+        }
+    }
+
+    private async Task OnSpeedChanged(ChangeEventArgs e)
+    {
+        if (_state == null || !int.TryParse(e.Value?.ToString(), out var tps)) return;
+        var updated = await HttpApi.PatchSimulationAsync(ticksPerSecond: tps, cancellationToken: CancellationToken.None);
+        if (updated != null) _state = updated;
+    }
+
+    private async Task OnPauseChanged(ChangeEventArgs e)
+    {
+        if (_state == null) return;
+        var paused = e.Value is bool b ? b : string.Equals(e.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+        var updated = await HttpApi.PatchSimulationAsync(isPaused: paused, cancellationToken: CancellationToken.None);
+        if (updated != null) _state = updated;
+    }
+}

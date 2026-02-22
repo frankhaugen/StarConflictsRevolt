@@ -12,9 +12,16 @@ namespace StarConflictsRevolt.Server.Application.Services.Gameplay;
 
 public class WorldFactory
 {
+    private readonly IAiStrategy? _aiStrategy;
+
+    public WorldFactory(IAiStrategy? aiStrategy = null)
+    {
+        _aiStrategy = aiStrategy;
+    }
+
     public World CreateDefaultWorld()
     {
-        // Create a playable default galaxy with several star systems
+        // Create a playable default galaxy: more systems spread across a larger coordinate range (~±800)
         var systems = new List<StarSystem>();
 
         var solPlanets = new List<Planet>
@@ -29,23 +36,70 @@ public class WorldFactory
             new("Proxima b", 5000, 1.3e24, 900, 22, 7.5e6, new List<Fleet>(), new List<Structure>()),
             new("Proxima c", 4000, 0.8e24, 600, 18, 15e6, new List<Fleet>(), new List<Structure>())
         };
-        systems.Add(new StarSystem(Guid.NewGuid(), "Proxima Centauri", proximaPlanets, new Vector2(120, 80)));
+        systems.Add(new StarSystem(Guid.NewGuid(), "Proxima Centauri", proximaPlanets, new Vector2(280, -220)));
 
         var alphaPlanets = new List<Planet>
         {
             new("Alpha Prime", 6000, 2e24, 1200, 25, 100e6, new List<Fleet>(), new List<Structure>()),
             new("Alpha Secundus", 3500, 0.6e24, 700, 20, 180e6, new List<Fleet>(), new List<Structure>())
         };
-        systems.Add(new StarSystem(Guid.NewGuid(), "Alpha Centauri", alphaPlanets, new Vector2(200, 150)));
+        systems.Add(new StarSystem(Guid.NewGuid(), "Alpha Centauri", alphaPlanets, new Vector2(520, 120)));
 
         var siriusPlanets = new List<Planet>
         {
             new("Sirius I", 5500, 1.5e24, 1000, 28, 50e6, new List<Fleet>(), new List<Structure>())
         };
-        systems.Add(new StarSystem(Guid.NewGuid(), "Sirius", siriusPlanets, new Vector2(280, 50)));
+        systems.Add(new StarSystem(Guid.NewGuid(), "Sirius", siriusPlanets, new Vector2(-320, 180)));
+
+        var tauCetiPlanets = new List<Planet>
+        {
+            new("Tau Ceti e", 5500, 1.4e24, 950, 23, 55e6, new List<Fleet>(), new List<Structure>()),
+            new("Tau Ceti f", 4200, 0.9e24, 720, 19, 90e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Tau Ceti", tauCetiPlanets, new Vector2(-580, -260)));
+
+        var epsilonPlanets = new List<Planet>
+        {
+            new("Epsilon I", 6000, 1.8e24, 1100, 26, 80e6, new List<Fleet>(), new List<Structure>()),
+            new("Epsilon II", 3800, 0.7e24, 750, 21, 140e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Epsilon Eridani", epsilonPlanets, new Vector2(380, -480)));
+
+        var wolfPlanets = new List<Planet>
+        {
+            new("Wolf 1061c", 4800, 1.2e24, 880, 22, 25e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Wolf 1061", wolfPlanets, new Vector2(-680, 320)));
+
+        var trappistPlanets = new List<Planet>
+        {
+            new("TRAPPIST-1d", 3900, 0.3e24, 650, 15, 2e6, new List<Fleet>(), new List<Structure>()),
+            new("TRAPPIST-1e", 3700, 0.25e24, 600, 14, 2.8e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "TRAPPIST-1", trappistPlanets, new Vector2(620, 400)));
+
+        var barnardPlanets = new List<Planet>
+        {
+            new("Barnard b", 4500, 1.1e24, 820, 20, 12e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Barnard's Star", barnardPlanets, new Vector2(-420, -520)));
+
+        var luytenPlanets = new List<Planet>
+        {
+            new("Luyten b", 5000, 1.35e24, 910, 23, 18e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Luyten's Star", luytenPlanets, new Vector2(180, 580)));
 
         var galaxy = new Galaxy(systems);
-        return new World(Guid.NewGuid(), galaxy);
+        var world = new World(Guid.NewGuid(), galaxy);
+
+        // Add human and AI players so the game has an AI opponent (AI is part of the game)
+        var humanId = new Guid("10000000-0000-0000-0000-000000000001");
+        var aiId = new Guid("20000000-0000-0000-0000-000000000002");
+        world.Players.Add(new PlayerController { PlayerId = humanId, Name = "Human", AiStrategy = null });
+        world.Players.Add(new PlayerController { PlayerId = aiId, Name = "AI Commander", AiStrategy = _aiStrategy });
+
+        return world;
     }
 
     public World CreateStartingWorld(GameSetup setup)

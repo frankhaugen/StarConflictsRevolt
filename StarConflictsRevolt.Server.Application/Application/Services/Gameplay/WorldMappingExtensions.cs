@@ -1,4 +1,6 @@
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Fleets;
 using StarConflictsRevolt.Server.Domain.Galaxies;
 using StarConflictsRevolt.Server.Domain.Planets;
 using StarConflictsRevolt.Server.Domain.Stars;
@@ -37,6 +39,22 @@ public static class WorldMappingExtensions
 
     public static PlanetDto ToDto(this Planet planet)
     {
-        return new PlanetDto(planet.Id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun);
+        var fleets = (planet.Fleets ?? new List<Fleet>()).Select(f => f.ToDto()).ToList();
+        return new PlanetDto(planet.Id, planet.Name, planet.Radius, planet.Mass, planet.RotationSpeed, planet.OrbitSpeed, planet.DistanceFromSun, fleets);
+    }
+
+    public static FleetDto ToDto(this Fleet fleet)
+    {
+        var shipCount = fleet.Ships?.Count ?? 0;
+        return new FleetDto(
+            fleet.Id,
+            fleet.Name,
+            shipCount,
+            fleet.LocationPlanetId,
+            fleet.OwnerId,
+            fleet.Status.ToString(),
+            fleet.DestinationPlanetId,
+            fleet.ArrivalTime
+        );
     }
 }

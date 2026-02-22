@@ -1,0 +1,20 @@
+@* List of star system names for the game sidebar. *@
+@using StarConflictsRevolt.Clients.Models
+<div class="mb-3">
+    <h6>Systems</h6>
+    @if (Systems != null && Systems.Any())
+    {
+        @foreach (var s in Systems)
+        {
+            <div class="small py-1">@s.Name</div>
+        }
+    }
+    else
+    {
+        <EmptyState Title="No systems" IconClass="fas fa-star" Compact="true" />
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<StarSystemDto>? Systems { get; set; }
+}

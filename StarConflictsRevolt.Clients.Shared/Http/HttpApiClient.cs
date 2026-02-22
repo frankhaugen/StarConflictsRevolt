@@ -48,6 +48,13 @@ public class HttpApiClient : IHttpApiClient
         return await Client.PutAsJsonAsync(uri, body, ct);
     }
 
+    public async Task<HttpResponseMessage> PatchAsync<T>(string uri, T body, CancellationToken ct = default)
+    {
+        await EnsureHealthAsync(ct);
+        var request = new HttpRequestMessage(HttpMethod.Patch, uri) { Content = JsonContent.Create(body) };
+        return await Client.SendAsync(request, ct);
+    }
+
     public async Task<HttpResponseMessage> DeleteAsync(string uri, CancellationToken ct = default)
     {
         await EnsureHealthAsync(ct);

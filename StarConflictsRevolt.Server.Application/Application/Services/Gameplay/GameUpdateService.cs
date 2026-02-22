@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.Domain.Events;
@@ -13,6 +14,7 @@ public class GameUpdateService
     private readonly IEventStore _eventStore;
     private readonly IHubContext<WorldHub> _hubContext;
     private readonly ILogger<GameUpdateService> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly WorldEngine _worldEngine;
 
     public GameUpdateService(
@@ -21,7 +23,8 @@ public class GameUpdateService
         IEventStore eventStore,
         SessionAggregateManager aggregateManager,
         CommandQueue commandQueue,
-        WorldEngine worldEngine)
+        WorldEngine worldEngine,
+        IServiceScopeFactory scopeFactory)
     {
         _hubContext = hubContext;
         _logger = logger;
@@ -29,6 +32,7 @@ public class GameUpdateService
         _aggregateManager = aggregateManager;
         _commandQueue = commandQueue;
         _worldEngine = worldEngine;
+        _scopeFactory = scopeFactory;
     }
 
     /// <summary>
@@ -88,11 +92,24 @@ public class GameUpdateService
         _logger.LogInformation("Processing command {CommandType} for session {SessionId}", command.GetType().Name, sessionId);
         try
         {
-            var oldWorld = sessionAggregate.World;
-            sessionAggregate.Apply(command);
-            await _eventStore.PublishAsync(sessionId, command);
+            IGameEvent eventToApply = command;
+
+            // Combat resolution: run the Combat module and apply the result instead of the raw AttackEvent
+            if (command is AttackEvent attackEvent)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var combatResolution = scope.ServiceProvider.GetRequiredService<CombatResolutionService>();
+                var resolvedEvent = await combatResolution.ResolveAndCreateEventAsync(sessionAggregate.World, attackEvent, cancellationToken);
+                if (resolvedEvent != null)
+                    eventToApply = resolvedEvent;
+                else
+                    _logger.LogWarning("Combat resolution returned null; skipping attack");
+            }
+
+            sessionAggregate.Apply(eventToApply);
+            await _eventStore.PublishAsync(sessionId, eventToApply);
             _aggregateManager.IncrementEventCount(sessionId);
-            _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}", command.GetType().Name, sessionId, _aggregateManager.GetEventCount(sessionId));
+            _logger.LogInformation("Applied command {CommandType} to session {SessionId}, event count: {EventCount}", eventToApply.GetType().Name, sessionId, _aggregateManager.GetEventCount(sessionId));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

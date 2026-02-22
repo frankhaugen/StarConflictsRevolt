@@ -14,6 +14,7 @@ public class GameTickServiceUnitTest
         var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
+        services.AddSingleton<ISimulationManager, SimulationManager>();
         services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
 
@@ -32,6 +33,7 @@ public class GameTickServiceUnitTest
         var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
+        services.AddSingleton<ISimulationManager, SimulationManager>();
         services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
 
@@ -52,6 +54,7 @@ public class GameTickServiceUnitTest
         var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
+        services.AddSingleton<ISimulationManager, SimulationManager>();
         services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
 

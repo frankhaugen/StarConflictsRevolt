@@ -2,25 +2,30 @@ using Microsoft.Extensions.Hosting;
 
 namespace StarConflictsRevolt.Server.Simulation.Engine;
 
-public class GameTickService(ILogger<GameTickService> logger, ITickPublisher publisher) : BackgroundService
+public class GameTickService(
+    ILogger<GameTickService> logger,
+    ITickPublisher publisher,
+    ISimulationManager simulationManager) : BackgroundService
 {
-    private const int TICKS_PER_SECOND = 10; // 10 ticks per second = 100ms per tick
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("GameTickService starting with {TicksPerSecond} ticks per second", TICKS_PER_SECOND);
+        logger.LogInformation("GameTickService starting; speed controlled by ISimulationManager (initial {TicksPerSecond} t/s)",
+            simulationManager.TicksPerSecond);
 
-        var tickInterval = TimeSpan.FromMilliseconds(1000.0 / TICKS_PER_SECOND);
         var tickNumber = 0L;
 
         try
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                var tickInterval = simulationManager.GetTickInterval();
                 var tickStart = DateTime.UtcNow;
-                tickNumber++;
 
-                await PublishTickAsync(tickNumber, stoppingToken);
+                if (!simulationManager.IsPaused)
+                {
+                    tickNumber++;
+                    await PublishTickAsync(tickNumber, stoppingToken);
+                }
 
                 var tickDuration = DateTime.UtcNow - tickStart;
                 var waitTime = tickInterval - tickDuration;
@@ -29,7 +34,7 @@ public class GameTickService(ILogger<GameTickService> logger, ITickPublisher pub
                 {
                     await Task.Delay(waitTime, stoppingToken);
                 }
-                else
+                else if (!simulationManager.IsPaused)
                 {
                     logger.LogWarning("Tick {TickNumber} took {TickDuration}ms, exceeding target interval of {TargetInterval}ms",
                         tickNumber, tickDuration.TotalMilliseconds, tickInterval.TotalMilliseconds);

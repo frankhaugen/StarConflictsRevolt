@@ -17,7 +17,8 @@
   <Project Path="StarConflictsRevolt.Server.Combat\StarConflictsRevolt.Server.Combat.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
-  <Folder Name="/Solution Items/">
+  
+  <Folder Name="/Github/" /><Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="AGENTS.md" />
     <File Path="bootstrap.ps1" />
@@ -67,6 +68,7 @@
   <Folder Name="/Docs/reference/">
     <File Path="docs/reference/api-transport.md" />
     <File Path="docs/reference/architecture.md" />
+    <File Path="docs/reference/craft-svgs.md" />
     <File Path="docs/reference/domain.md" />
     <File Path="docs/reference/encounters.md" />
     <File Path="docs/reference/glossary.md" />

@@ -1,0 +1,15 @@
+@* Floating card showing the selected star system (name + planet count). *@
+@using StarConflictsRevolt.Clients.Models
+@if (Selected != null)
+{
+    <div class="position-absolute top-0 end-0 m-3" style="max-width: 280px;" data-testid="selected-system-card">
+        <div class="card">
+            <div class="card-header py-2"><h6 class="mb-0">@Selected.Name</h6></div>
+            <div class="card-body py-2 small">Planets: @Selected.Planets.Count()</div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public StarSystemDto? Selected { get; set; }
+}

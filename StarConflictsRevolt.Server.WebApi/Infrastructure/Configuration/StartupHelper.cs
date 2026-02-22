@@ -26,6 +26,9 @@ public static class StartupHelper
         // Set minimum log level to Debug for all loggers
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
+        // Simulation manager: controls ticker speed in real time (game speed)
+        builder.Services.AddSingleton<ISimulationManager, SimulationManager>();
+
         // Transport: tick fan-out to in-process listeners and SignalR (see docs/reference/transport-layer-spec.md)
         builder.Services.AddSingleton<ITickListener, AiTurnTickListener>();
         builder.Services.AddSingleton<ITickListener, GameUpdateTickListener>();
@@ -72,6 +75,7 @@ public static class StartupHelper
         builder.Services.AddScoped<IAttackResolver, AttackResolver>();
         builder.Services.AddScoped<ICombatEndChecker, CombatEndChecker>();
         builder.Services.AddScoped<ICombatResultCalculator, CombatResultCalculator>();
+        builder.Services.AddScoped<CombatResolutionService>();
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();

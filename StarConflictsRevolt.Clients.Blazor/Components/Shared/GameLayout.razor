@@ -1,4 +1,4 @@
-@* Shared game view: sidebar (back, session, quick actions) + main content. *@
+@* Shared game view: sidebar (back, session, quick actions) + main content. Each section is wrapped in an error boundary so failures are localized. *@
 <div class="container-fluid h-100">
     <div class="row h-100">
         <div data-testid="game-sidebar" class="col-md-3 scr-game-sidebar p-3">
@@ -8,22 +8,30 @@
             </div>
             @if (SessionInfo != null)
             {
-                @SessionInfo
+                <GameViewSection Title="Session" SectionId="session">
+                    @SessionInfo
+                </GameViewSection>
             }
             @if (SidebarContent != null)
             {
-                @SidebarContent
+                <GameViewSection Title="Sidebar" SectionId="sidebar">
+                    @SidebarContent
+                </GameViewSection>
             }
             @if (QuickActions != null)
             {
-                <div class="mb-3">
-                    <h6 data-testid="quick-actions-header" class="scr-panel-title small">[ ACTIONS ]</h6>
-                    <div data-testid="quick-actions" class="d-grid gap-2">@QuickActions</div>
-                </div>
+                <GameViewSection Title="Actions" SectionId="quick-actions">
+                    <div class="mb-3">
+                        <h6 data-testid="quick-actions-header" class="scr-panel-title small">[ ACTIONS ]</h6>
+                        <div data-testid="quick-actions" class="d-grid gap-2">@QuickActions</div>
+                    </div>
+                </GameViewSection>
             }
         </div>
         <div class="col-md-9 p-0">
-            @ChildContent
+            <GameViewSection Title="Map" SectionId="main">
+                @ChildContent
+            </GameViewSection>
         </div>
     </div>
 </div>

@@ -156,12 +156,14 @@ public class MockGameStateService : IGameStateService
 {
     public WorldDto? CurrentWorld { get; private set; }
     public SessionDto? CurrentSession { get; private set; }
+    public Guid? CurrentPlayerId { get; private set; }
     public bool IsConnected => true;
     
     public event Action? StateChanged;
     
     public Task<bool> CreateSessionAsync(string sessionName)
     {
+        CurrentPlayerId = new Guid("10000000-0000-0000-0000-000000000001");
         CurrentSession = new SessionDto
         {
             Id = Guid.NewGuid(),
@@ -242,6 +244,11 @@ public class MockGameStateService : IGameStateService
     }
     
     public Task<bool> AttackAsync(Guid attackerFleetId, Guid targetFleetId)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> AttackAsync(Guid attackerFleetId, Guid defenderFleetId, Guid locationPlanetId)
     {
         return Task.FromResult(true);
     }

@@ -59,6 +59,7 @@ public static class GameActionEndpointHandler
         app.MapPost("/game/build-structure", async context =>
         {
             var commandQueue = context.RequestServices.GetRequiredService<CommandQueue>();
+            var sessionManager = context.RequestServices.GetRequiredService<SessionAggregateManager>();
             var worldService = context.RequestServices.GetRequiredService<WorldService>();
             var dto = await context.Request.ReadFromJsonAsync<BuildStructureEvent>(context.RequestAborted);
             if (dto == null)
@@ -68,7 +69,14 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            var worldId = Guid.TryParse(context.Request.Query["worldId"].ToString(), out var wid) ? wid : Guid.Empty;
+            var worldId = context.Request.Query.TryGetValue("worldId", out var wv) && Guid.TryParse(wv, out var wid) ? wid : Guid.Empty;
+            if (worldId == Guid.Empty || !await sessionManager.SessionExistsAsync(worldId))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("worldId query is required and must be a valid session id");
+                return;
+            }
+
             var world = await worldService.GetWorldAsync(worldId, context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.PlanetId);
             if (planet == null)
@@ -78,15 +86,13 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            // Validate structure type
-            if (!Enum.TryParse<StructureVariant>(dto.StructureType, out _))
+            if (!Enum.TryParse<StructureVariant>(dto.StructureType, true, out _))
             {
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsync($"StructureType {dto.StructureType} is not valid");
+                await context.Response.WriteAsync($"StructureType {dto.StructureType} is not valid. Use: Mine, Refinery, Shipyard, ConstructionYard, TrainingFacility, ShieldGenerator");
                 return;
             }
 
-            // TODO: Check player permissions/ownership if available
             commandQueue.Enqueue(worldId, dto);
             context.Response.StatusCode = 202;
         }).RequireAuthorization();

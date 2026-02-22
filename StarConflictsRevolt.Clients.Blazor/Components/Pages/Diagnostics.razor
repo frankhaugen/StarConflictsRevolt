@@ -244,10 +244,24 @@
                         </div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-12">
+                        <div class="col-6">
                             <div class="metric-item">
                                 <div class="metric-value">@lastSignalRMessage.ToString("HH:mm:ss")</div>
                                 <div class="metric-label">Last Message</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-item">
+                                <div class="metric-value">@(lastTickNumber >= 0 ? lastTickNumber.ToString() : "—")</div>
+                                <div class="metric-label">Last Tick</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <div class="metric-item">
+                                <div class="metric-value small">@totalTicksReceived tick(s) received</div>
+                                <div class="metric-label">Tick log (join a session to receive ticks)</div>
                             </div>
                         </div>
                     </div>
@@ -300,8 +314,8 @@
                     </button>
                 </div>
                 <div class="card-body">
-                    <div data-testid="activity-log" class="activity-log" style="height: 300px; overflow-y: auto;">
-                        @foreach (var logEntry in activityLog.Take(50))
+                    <div data-testid="activity-log" class="activity-log" style="height: 360px; overflow-y: auto;">
+                        @foreach (var logEntry in activityLog.Take(150))
                         {
                             <div class="log-entry @logEntry.Type.ToLower()">
                                 <span class="log-time">[@logEntry.Timestamp.ToString("HH:mm:ss")]</span>
@@ -325,9 +339,13 @@
                     </button>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-3">Simulation ticks (core) and update batches from the server. Join a session to see every tick and ReceiveUpdates when something changed.</p>
-                    <div data-testid="server-events-log" class="server-events-log" style="height: 320px; overflow-y: auto; font-family: var(--bs-font-monospace); font-size: 0.8rem;">
-                        @foreach (var batch in serverEventBatches.AsEnumerable().Reverse().Take(50))
+                    <p class="text-muted small mb-3">All simulation ticks and ReceiveUpdates batches from the server. Join a session to see every tick and world update.</p>
+                    @if (serverEventBatches.Count > 0)
+                    {
+                        <div class="small mb-2">Showing last @Math.Min(MaxServerEventsDisplay, serverEventBatches.Count) of @serverEventBatches.Count event batch(es)</div>
+                    }
+                    <div data-testid="server-events-log" class="server-events-log" style="height: 400px; overflow-y: auto; font-family: var(--bs-font-monospace); font-size: 0.8rem;">
+                        @foreach (var batch in serverEventBatches.AsEnumerable().Reverse().Take(MaxServerEventsDisplay))
                         {
                             <div class="server-event-batch border-bottom mb-2 pb-2">
                                 <div class="d-flex justify-content-between align-items-center text-nowrap flex-wrap gap-1">
@@ -468,20 +486,24 @@
 
     // Server events: simulation ticks (ReceiveTick) and update batches (ReceiveUpdates)
     private readonly List<ServerEventBatch> serverEventBatches = new();
-    private const int MaxServerEventBatches = 100;
+    private const int MaxServerEventBatches = 500;
+    private const int MaxServerEventsDisplay = 200;
+    private long lastTickNumber = -1;
+    private long totalTicksReceived = 0;
+    private bool? lastAuthLoggedState = null; // only add auth log when this changes
 
     private bool isFirstRender = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // Subscribe to SignalR events
+        // Subscribe to all SignalR and app events so diagnostics shows everything
+        SignalRService.FullWorldReceived += OnFullWorldReceived;
         SignalRService.TickReceived += OnTickReceived;
         SignalRService.UpdatesReceived += OnSignalRMessage;
         SignalRService.ConnectionClosed += OnSignalRConnectionClosed;
         SignalRService.Reconnecting += OnSignalRReconnecting;
         SignalRService.Reconnected += OnSignalRReconnected;
         
-        // Subscribe to game state changes
         GameState.StateChanged += OnGameStateChanged;
         
         // Start refresh timer
@@ -505,6 +527,7 @@
     {
         isLoading = true;
         await RefreshDataAsync();
+        AddLogEntry("info", "Diagnostics data refreshed");
         isLoading = false;
     }
 
@@ -525,7 +548,7 @@
             await UpdateRawState();
             
             lastUpdate = DateTime.Now;
-            AddLogEntry("info", "Diagnostics data refreshed");
+            // Only add refresh log on manual refresh to reduce noise (timer still updates metrics)
         }
         catch (Exception ex)
         {
@@ -550,40 +573,36 @@
                     currentToken = await TokenProvider.GetTokenAsync();
                     hasValidToken = !string.IsNullOrEmpty(currentToken);
                     
-                    if (!isFirstRender)
-                    {
-                        await JsInterop.LogInfoAsync($"Token retrieved: {hasValidToken}, Length: {currentToken?.Length ?? 0}");
-                    }
-                    
                     if (hasValidToken)
                     {
-                        // Try to decode token to get expiry (simplified - in production use proper JWT library)
                         var timeRemaining = TimeSpan.FromHours(1); // Default assumption
                         tokenExpiry = DateTime.UtcNow.Add(timeRemaining);
                         tokenTimeRemaining = timeRemaining.ToString(@"hh\:mm\:ss");
-                        
                         isAuthenticated = true;
-                        AddLogEntry("success", "Authentication successful - valid token available");
-                        if (!isFirstRender)
-                        {
-                            await JsInterop.LogInfoAsync("Authentication successful");
-                        }
                     }
                     else
                     {
                         isAuthenticated = false;
-                        AddLogEntry("warning", "No valid token available");
-                        if (!isFirstRender)
-                        {
-                            await JsInterop.LogWarningAsync("No valid token available");
-                        }
+                    }
+                    // Only add activity log when auth status changes to avoid spam every 5s
+                    if (lastAuthLoggedState != hasValidToken)
+                    {
+                        lastAuthLoggedState = hasValidToken;
+                        if (hasValidToken)
+                            AddLogEntry("success", "Authentication successful - valid token available");
+                        else
+                            AddLogEntry("warning", "No valid token available");
                     }
                 }
                 catch (Exception ex)
                 {
                     isAuthenticated = false;
                     hasValidToken = false;
-                    AddLogEntry("error", $"Authentication failed: {ex.Message}");
+                    if (lastAuthLoggedState != false)
+                    {
+                        lastAuthLoggedState = false;
+                        AddLogEntry("error", $"Authentication failed: {ex.Message}");
+                    }
                     if (!isFirstRender)
                     {
                         await JsInterop.LogErrorAsync($"Authentication failed: {ex.Message}");
@@ -595,10 +614,10 @@
             {
                 isAuthenticated = false;
                 hasValidToken = false;
-                AddLogEntry("warning", "Token provider not available");
-                if (!isFirstRender)
+                if (lastAuthLoggedState != null)
                 {
-                    await JsInterop.LogWarningAsync("Token provider not available");
+                    lastAuthLoggedState = null;
+                    AddLogEntry("warning", "Token provider not available");
                 }
             }
         }
@@ -650,11 +669,22 @@
         }
     }
 
+    private void OnFullWorldReceived(WorldDto world)
+    {
+        var idStr = world?.Id.ToString("N") ?? "";
+        var idPreview = idStr.Length > 8 ? idStr[..8] + "…" : idStr;
+        AddLogEntry("info", $"FullWorld received (WorldId: {idPreview}, Systems: {world?.Galaxy?.StarSystems?.Count() ?? 0})");
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     private void OnTickReceived(long tickNumber)
     {
+        lastTickNumber = tickNumber;
+        totalTicksReceived++;
         serverEventBatches.Add(new ServerEventBatch(DateTime.Now, tickNumber, new List<GameObjectUpdate>()));
         while (serverEventBatches.Count > MaxServerEventBatches)
             serverEventBatches.RemoveAt(0);
+        AddLogEntry("info", $"Tick {tickNumber} received");
         _ = InvokeAsync(StateHasChanged);
     }
 
@@ -711,10 +741,10 @@
         
         activityLog.Insert(0, logEntry);
         
-        // Keep only last 100 entries
-        if (activityLog.Count > 100)
+        // Keep only last 300 entries so all events are visible without unbounded growth
+        if (activityLog.Count > 300)
         {
-            activityLog = activityLog.Take(100).ToList();
+            activityLog = activityLog.Take(300).ToList();
         }
         
         // Also log to JavaScript console (only if component is rendered)
@@ -1007,7 +1037,9 @@
     {
         refreshTimer?.Dispose();
         
-        // Unsubscribe from events
+        // Unsubscribe from all events
+        SignalRService.FullWorldReceived -= OnFullWorldReceived;
+        SignalRService.TickReceived -= OnTickReceived;
         SignalRService.UpdatesReceived -= OnSignalRMessage;
         SignalRService.ConnectionClosed -= OnSignalRConnectionClosed;
         SignalRService.Reconnecting -= OnSignalRReconnecting;

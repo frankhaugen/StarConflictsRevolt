@@ -31,8 +31,8 @@ public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string Structure
             return;
         }
 
-        // Validate ownership
-        if (planet.OwnerId != PlayerId)
+        // Validate ownership: must own the planet or planet is unowned (builder claims it)
+        if (planet.OwnerId != null && planet.OwnerId != PlayerId)
         {
             logger.LogWarning("Player {PlayerId} does not own planet {PlanetId}", PlayerId, PlanetId);
             return;
@@ -53,9 +53,10 @@ public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string Structure
             return;
         }
 
-        // Deduct resources and add structure
+        // Deduct resources, add structure, and claim planet if unowned
         var updatedPlanet = planet with
         {
+            OwnerId = planet.OwnerId ?? PlayerId,
             Minerals = planet.Minerals - mineralsCost,
             Energy = planet.Energy - energyCost,
             Structures = planet.Structures.Append(new Structure(

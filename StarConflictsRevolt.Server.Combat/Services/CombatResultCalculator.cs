@@ -50,6 +50,14 @@ public class CombatResultCalculator : ICombatResultCalculator
         result.AttackerLosses = state.AttackerShips.Where(s => s.Stats.IsDestroyed).ToList();
         result.DefenderLosses = state.DefenderShips.Where(s => s.Stats.IsDestroyed).ToList();
 
+        // Survivor healths for applying result to domain world
+        result.AttackerSurvivorHealths = state.AttackerShips
+            .Where(s => !s.Stats.IsDestroyed)
+            .ToDictionary(s => s.Id, s => s.Stats.CurrentHull);
+        result.DefenderSurvivorHealths = state.DefenderShips
+            .Where(s => !s.Stats.IsDestroyed)
+            .ToDictionary(s => s.Id, s => s.Stats.CurrentHull);
+
         // Calculate rewards and consequences
         result.Rewards = CalculateRewards(state);
         result.Consequences = CalculateConsequences(state);

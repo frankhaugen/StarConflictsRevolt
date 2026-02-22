@@ -1,5 +1,6 @@
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Shared;
+using StarConflictsRevolt.Clients.Shared.Authentication;
 using StarConflictsRevolt.Clients.Shared.Http;
 using StarConflictsRevolt.Clients.Shared.Communication;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ public class GameStateService : IGameStateService
     private readonly ILogger<GameStateService> _logger;
     private WorldDto? _currentWorld;
     private SessionDto? _currentSession;
+    private Guid? _currentPlayerId;
     private bool _isConnected = false;
     private DateTime _lastConnectionCheck = DateTime.MinValue;
     private readonly TimeSpan _connectionCheckInterval = TimeSpan.FromSeconds(30);
@@ -46,6 +48,7 @@ public class GameStateService : IGameStateService
 
     public WorldDto? CurrentWorld => _currentWorld;
     public SessionDto? CurrentSession => _currentSession;
+    public Guid? CurrentPlayerId => _currentPlayerId;
     public bool IsConnected => _isConnected;
 
     public event Action? StateChanged;
@@ -60,6 +63,7 @@ public class GameStateService : IGameStateService
         
         try
         {
+            await EnsureAuthContextAsync();
             // Check connection status before making request
             await CheckConnectionStatusAsync();
             
@@ -86,6 +90,7 @@ public class GameStateService : IGameStateService
                     Created = DateTime.UtcNow,
                     IsActive = true
                 };
+                _currentPlayerId = sessionResponse.PlayerId;
                 _currentWorld = sessionResponse.World;
                 if (_currentWorld == null)
                     _logger.LogWarning("Session created but server returned no world data for {SessionId}", sessionResponse.SessionId);
@@ -120,6 +125,7 @@ public class GameStateService : IGameStateService
         
         try
         {
+            await EnsureAuthContextAsync();
             await CheckConnectionStatusAsync();
             
             var sessionResponse = await _httpClient.JoinSessionAsync(sessionId, "Player");
@@ -135,6 +141,7 @@ public class GameStateService : IGameStateService
                     Created = DateTime.UtcNow,
                     IsActive = true
                 };
+                _currentPlayerId = sessionResponse.PlayerId;
                 _currentWorld = sessionResponse.World;
                 if (_currentWorld == null)
                     _logger.LogWarning("Joined session but server returned no world data for {SessionId}", sessionId);
@@ -165,6 +172,7 @@ public class GameStateService : IGameStateService
             await _signalRService.StopAsync();
             _currentSession = null;
             _currentWorld = null;
+            _currentPlayerId = null;
             NotifyStateChanged();
             return true;
         }
@@ -180,6 +188,7 @@ public class GameStateService : IGameStateService
     {
         try
         {
+            await EnsureAuthContextAsync();
             var sessionInfos = await _httpClient.GetSessionsAsync();
             if (sessionInfos != null)
             {
@@ -206,6 +215,7 @@ public class GameStateService : IGameStateService
     {
         try
         {
+            await EnsureAuthContextAsync();
             var deleted = await _httpClient.DeleteSessionAsync(sessionId);
             if (deleted && _currentSession?.Id == sessionId)
             {
@@ -226,6 +236,7 @@ public class GameStateService : IGameStateService
     {
         try
         {
+            await EnsureAuthContextAsync();
             var worldId = _currentSession?.Id;
             if (!worldId.HasValue)
             {
@@ -248,29 +259,38 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var result = await _httpClient.BuildStructureAsync(planetId, structureType);
+            if (_currentSession?.Id == null || !_currentPlayerId.HasValue)
+            {
+                _logger.LogWarning("BuildStructure requires an active session and player id");
+                return false;
+            }
+            await EnsureAuthContextAsync();
+            var result = await _httpClient.BuildStructureAsync(planetId, structureType, _currentSession.Id, _currentPlayerId.Value, CancellationToken.None);
             return result;
         }
         catch (Exception ex)
         {
-            // Log error
-            Console.WriteLine($"Error building structure: {ex.Message}");
+            _logger.LogError(ex, "Error building structure: {Message}", ex.Message);
             return false;
         }
     }
 
     public async Task<bool> AttackAsync(Guid attackerFleetId, Guid targetFleetId)
     {
+        return await AttackAsync(attackerFleetId, targetFleetId, Guid.Empty);
+    }
+
+    public async Task<bool> AttackAsync(Guid attackerFleetId, Guid defenderFleetId, Guid locationPlanetId)
+    {
         try
         {
-            // TODO: Need location planet ID for attack
-            var result = await _httpClient.AttackAsync(attackerFleetId, targetFleetId, Guid.Empty);
+            await EnsureAuthContextAsync();
+            var result = await _httpClient.AttackAsync(attackerFleetId, defenderFleetId, locationPlanetId);
             return result;
         }
         catch (Exception ex)
         {
-            // Log error
-            Console.WriteLine($"Error attacking: {ex.Message}");
+            _logger.LogError(ex, "Error attacking");
             return false;
         }
     }
@@ -287,6 +307,12 @@ public class GameStateService : IGameStateService
         // Process updates as needed
     }
 
+    private async Task EnsureAuthContextAsync()
+    {
+        var clientId = await _clientIdProvider.GetClientIdAsync(CancellationToken.None);
+        AuthClientIdContext.Current = string.IsNullOrWhiteSpace(clientId) ? null : clientId;
+    }
+
     private async Task CheckConnectionStatusAsync()
     {
         // Only check if enough time has passed since last check
@@ -297,6 +323,7 @@ public class GameStateService : IGameStateService
 
         try
         {
+            await EnsureAuthContextAsync();
             _logger.LogDebug("Checking connection status with server");
             var isHealthy = await _httpClient.IsHealthyAsync();
             

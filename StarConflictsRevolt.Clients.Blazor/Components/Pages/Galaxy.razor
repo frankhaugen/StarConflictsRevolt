@@ -1,6 +1,5 @@
 @page "/galaxy"
 @rendermode InteractiveServer
-@using System.Numerics
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
 @inject IGameStateService GameState
@@ -10,31 +9,10 @@
 
 <GameLayout SidebarTitle="Galaxy">
     <SessionInfo>
-        @if (GameState.CurrentSession != null)
-        {
-            <div class="card bg-secondary mb-3">
-                <div class="card-body py-2">
-                    <h6 class="mb-0">@GameState.CurrentSession.SessionName</h6>
-                    <p class="small mb-0">@GameState.CurrentSession.SessionType · @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")</p>
-                </div>
-            </div>
-        }
+        <GameSessionInfo Session="GameState.CurrentSession" />
     </SessionInfo>
     <SidebarContent>
-        <div class="mb-3">
-            <h6>Systems</h6>
-            @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
-            {
-                @foreach (var s in GameState.CurrentWorld.Galaxy.StarSystems.Take(5))
-                {
-                    <div class="small py-1">@s.Name</div>
-                }
-            }
-            else
-            {
-                <EmptyState Title="No systems" IconClass="fas fa-star" Compact="true" />
-            }
-        </div>
+        <GameSidebarSystems Systems="GameState.CurrentWorld?.Galaxy?.StarSystems" />
     </SidebarContent>
     <QuickActions>
         <button type="button" class="btn btn-outline-primary btn-sm"><i class="fas fa-ship"></i> Fleet</button>
@@ -43,32 +21,12 @@
     </QuickActions>
     <ChildContent>
         <div data-testid="galaxy-container" class="position-relative min-vh-100" style="background: linear-gradient(45deg, var(--scr-map-bg-start), var(--scr-map-bg-end));">
-            <div class="galaxy-map position-absolute w-100 h-100">
-                @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
-                {
-                    @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
-                    {
-                        var (left, top) = Coords(starSystem.Coordinates);
-                        <div class="planet position-absolute" style="left: @(left)%; top: @(top)%;" @onclick="() => _selected = starSystem">
-                            <div class="planet-icon planet-neutral"><i class="fas fa-circle"></i></div>
-                            <div class="planet-name">@starSystem.Name</div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="position-absolute top-50 start-50 translate-middle"><LoadingState Message="Loading…" Size="LoadingState.LoadingSize.Medium" Inverse="true" /></div>
-                }
-            </div>
-            @if (_selected != null)
-            {
-                <div class="position-absolute top-0 end-0 m-3" style="max-width: 280px;">
-                    <div class="card">
-                        <div class="card-header py-2"><h6 class="mb-0">@_selected.Name</h6></div>
-                        <div class="card-body py-2 small">Planets: @_selected.Planets.Count()</div>
-                    </div>
-                </div>
-            }
+            <GalaxyMap Systems="GameState.CurrentWorld?.Galaxy?.StarSystems"
+                       OnSelect="OnSystemSelected"
+                       ShowEmptyMessage="true"
+                       ShowLoading="GameState.CurrentWorld?.Galaxy?.StarSystems == null"
+                       LoadingMessage="Loading…" />
+            <SelectedSystemCard Selected="_selected" />
         </div>
     </ChildContent>
 </GameLayout>
@@ -76,20 +34,5 @@
 @code {
     private StarSystemDto? _selected;
 
-    /// <summary>Map world coordinates to CSS left/top %. Y is flipped so world +Y is up on screen.</summary>
-    private static (double, double) Coords(Vector2 v)
-    {
-        var left = 10.0 + (v.X + 1000) / 2000.0 * 80;
-        var top = 90.0 - (v.Y + 1000) / 2000.0 * 80; // flip Y so +Y = up
-        return (Math.Clamp(left, 2, 98), Math.Clamp(top, 2, 98));
-    }
+    private void OnSystemSelected(StarSystemDto s) => _selected = s;
 }
-
-<style>
-    .galaxy-map { overflow: hidden; }
-    .planet { cursor: pointer; transition: transform 0.2s; }
-    .planet:hover { transform: scale(1.2); }
-    .planet-icon { font-size: 1.5rem; text-align: center; }
-    .planet-name { font-size: 0.8rem; text-align: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-    .planet-neutral { color: var(--scr-map-node-neutral, #888); }
-</style>

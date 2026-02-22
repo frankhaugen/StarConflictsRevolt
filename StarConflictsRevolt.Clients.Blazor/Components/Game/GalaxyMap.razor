@@ -1,0 +1,51 @@
+@* Galaxy map: plots star systems by coordinates and supports selection. *@
+@using System.Numerics
+@using StarConflictsRevolt.Clients.Models
+<div class="galaxy-map position-absolute w-100 h-100" data-testid="galaxy-map">
+    @if (Systems != null && Systems.Any())
+    {
+        @foreach (var starSystem in Systems)
+        {
+            var (left, top) = Coords(starSystem.Coordinates);
+            <div class="galaxy-map-node position-absolute" style="left: @(left)%; top: @(top)%;" @onclick="() => OnSelect.InvokeAsync(starSystem)">
+                <div class="galaxy-map-node-icon"><i class="fas fa-star"></i></div>
+                <div class="galaxy-map-node-name">@starSystem.Name</div>
+            </div>
+        }
+    }
+    else if (ShowEmptyMessage && (Systems == null || !Systems.Any()))
+    {
+        <div class="position-absolute top-50 start-50 translate-middle text-light small">@EmptyMessage</div>
+    }
+    else if (ShowLoading)
+    {
+        <div class="position-absolute top-50 start-50 translate-middle text-light">
+            <LoadingState Message="@LoadingMessage" Size="LoadingState.LoadingSize.Medium" Inverse="true" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<StarSystemDto>? Systems { get; set; }
+    [Parameter] public EventCallback<StarSystemDto> OnSelect { get; set; }
+    [Parameter] public bool ShowEmptyMessage { get; set; } = true;
+    [Parameter] public string EmptyMessage { get; set; } = "No star systems.";
+    [Parameter] public bool ShowLoading { get; set; }
+    [Parameter] public string LoadingMessage { get; set; } = "Loading…";
+
+    /// <summary>Map world coordinates to CSS left/top %. +X right, +Y down (top-down map).</summary>
+    private static (double, double) Coords(Vector2 v)
+    {
+        var left = 10.0 + (v.X + 1000) / 2000.0 * 80;
+        var top = 10.0 + (v.Y + 1000) / 2000.0 * 80;
+        return (Math.Clamp(left, 2, 98), Math.Clamp(top, 2, 98));
+    }
+}
+
+<style>
+    .galaxy-map { overflow: hidden; }
+    .galaxy-map-node { cursor: pointer; transition: transform 0.2s; }
+    .galaxy-map-node:hover { transform: scale(1.2); }
+    .galaxy-map-node-icon { font-size: 1.5rem; text-align: center; color: #ffd700; }
+    .galaxy-map-node-name { font-size: 0.8rem; text-align: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+</style>

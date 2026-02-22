@@ -1,0 +1,35 @@
+@* Wraps game view content in an error boundary so failures are localized to this section. *@
+@using Microsoft.AspNetCore.Components.Web
+<Microsoft.AspNetCore.Components.Web.ErrorBoundary @key="_sectionKey">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <div class="scr-game-section-error alert alert-warning py-2 px-3 mb-2" role="alert" data-testid="@($"game-section-error-{SectionId}")">
+            <div class="d-flex align-items-start gap-2">
+                <i class="fas fa-exclamation-triangle mt-1"></i>
+                <div class="flex-grow-1 small">
+                    <strong>@Title</strong>
+                    <p class="mb-1 text-muted">@exception.Message</p>
+                    <button type="button" class="btn btn-outline-dark btn-sm" @onclick="Recover">
+                        <i class="fas fa-redo"></i> Retry
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ErrorContent>
+</Microsoft.AspNetCore.Components.Web.ErrorBoundary>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Section";
+    [Parameter] public string? SectionId { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private int _sectionKey;
+
+    private void Recover()
+    {
+        _sectionKey++;
+        StateHasChanged();
+    }
+}

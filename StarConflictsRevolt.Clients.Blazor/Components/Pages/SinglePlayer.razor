@@ -1,9 +1,7 @@
 @page "/singleplayer"
 @rendermode InteractiveServer
-@using System.Numerics
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
-@using StarConflictsRevolt.Clients.Blazor.Components.Game
 @inject IGameStateService GameState
 @inject TelemetryService TelemetryService
 @inject NavigationManager Navigation
@@ -13,27 +11,14 @@
 
 <GameLayout SidebarTitle="Game">
     <SessionInfo>
-        @if (GameState.CurrentSession != null)
-        {
-            <div class="card bg-secondary mb-3">
-                <div class="card-body py-2">
-                    <h6 class="mb-0">@GameState.CurrentSession.SessionName</h6>
-                    <p class="small mb-0">@GameState.CurrentSession.SessionType · @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")</p>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="card bg-secondary mb-3 opacity-75">
-                <div class="card-body py-2"><p class="small mb-0 text-muted"><i class="fas fa-spinner fa-spin me-1"></i> Creating game…</p></div>
-            </div>
-        }
-        <div class="mb-3 small">
-            <div><i class="fas fa-coins text-warning me-1"></i> @_resources.GetValueOrDefault("credits", 0)</div>
-            <div><i class="fas fa-cube text-info me-1"></i> @_resources.GetValueOrDefault("materials", 0)</div>
-            <div><i class="fas fa-fire text-danger me-1"></i> @_resources.GetValueOrDefault("fuel", 0)</div>
-        </div>
-        <div class="small text-muted">Turn @_turn · @_phase</div>
+        <GameSessionInfo Session="GameState.CurrentSession"
+                         CreatingMessage="Creating game…"
+                         ShowResources="true"
+                         Resources="_resources"
+                         ShowTurn="true"
+                         Turn="_turn"
+                         Phase="_phase" />
+        <GameSpeedControl />
     </SessionInfo>
     <QuickActions>
         <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => _showFleet = true" data-testid="fleet-manager-btn"><i class="fas fa-ship"></i> Fleet</button>
@@ -42,53 +27,13 @@
     </QuickActions>
     <ChildContent>
         <div data-testid="game-container" class="position-relative min-vh-100" style="background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
-            <div class="galaxy-map position-absolute w-100 h-100">
-                @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null && GameState.CurrentWorld.Galaxy.StarSystems.Any())
-                {
-                    @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
-                    {
-                        var (left, top) = Coords(starSystem.Coordinates);
-                        <div class="star-system position-absolute" style="left: @(left)%; top: @(top)%;" @onclick="() => Select(starSystem)">
-                            <div class="star-system-icon"><i class="fas fa-star"></i></div>
-                            <div class="star-system-name">@starSystem.Name</div>
-                        </div>
-                    }
-                }
-                else if (GameState.CurrentWorld != null && (GameState.CurrentWorld.Galaxy?.StarSystems == null || !GameState.CurrentWorld.Galaxy.StarSystems.Any()))
-                {
-                    <div class="position-absolute top-50 start-50 translate-middle text-light small">No star systems. Create from Home.</div>
-                }
-                else
-                {
-                    <div class="position-absolute top-50 start-50 translate-middle text-light"><i class="fas fa-spinner fa-spin me-2"></i>@(GameState.CurrentSession == null ? "Creating galaxy…" : "Loading…")</div>
-                }
-            </div>
-            @if (_selected != null)
-            {
-                <div class="position-absolute top-0 end-0 m-3" style="max-width: 280px;">
-                    <div class="card">
-                        <div class="card-header py-2"><h6 class="mb-0">@_selected.Name</h6></div>
-                        <div class="card-body py-2 small">Planets: @_selected.Planets.Count()</div>
-                    </div>
-                </div>
-            }
-            @if (_messages.Any())
-            {
-                <div class="position-absolute bottom-0 start-0 m-3 shadow" style="max-width: 320px;">
-                    <div class="card">
-                        <div class="card-header py-1 d-flex justify-content-between align-items-center bg-dark text-light small">
-                            <span>Messages</span>
-                            <button type="button" class="btn btn-sm btn-outline-light" @onclick="ClearMessages">Clear</button>
-                        </div>
-                        <div class="card-body py-1 small" style="max-height: 120px; overflow-y: auto;">
-                            @foreach (var m in _messages.Take(8))
-                            {
-                                <div class="py-1 border-bottom">@m.Timestamp.ToString("HH:mm") @m.Text</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
+            <GalaxyMap Systems="GameState.CurrentWorld?.Galaxy?.StarSystems"
+                       OnSelect="OnSystemSelected"
+                       EmptyMessage="No star systems. Create from Home."
+                       ShowLoading="GameState.CurrentWorld?.Galaxy?.StarSystems == null"
+                       LoadingMessage="@(GameState.CurrentSession == null ? "Creating galaxy…" : "Loading…")" />
+            <SelectedSystemCard Selected="_selected" />
+            <GameMessagesPanel Messages="_messages" OnClear="ClearMessages" />
         </div>
     </ChildContent>
 </GameLayout>
@@ -101,7 +46,7 @@
     private bool _showFleet, _showPlanet;
     private int _turn = 1;
     private string _phase = "Planning";
-    private List<GameMessage> _messages = new();
+    private List<GameMessagesPanel.GameMessageItem> _messages = new();
     private Dictionary<string, int> _resources = new() { ["credits"] = 1000, ["materials"] = 500, ["fuel"] = 200 };
 
     protected override void OnInitialized()
@@ -122,37 +67,21 @@
         OnStateChanged();
     }
 
-    private void Select(StarSystemDto s) { _selected = s; AddMessage("info", $"Selected {s.Name}"); TelemetryService.RecordGameAction("select_star_system"); }
+    private void OnSystemSelected(StarSystemDto s)
+    {
+        _selected = s;
+        AddMessage("info", $"Selected {s.Name}");
+        TelemetryService.RecordGameAction("select_star_system");
+    }
+
     private void AddMessage() => AddMessage("info", "Diplomacy coming soon.");
     private void AddMessage(string type, string text)
     {
-        _messages.Insert(0, new GameMessage { Timestamp = DateTime.Now, Type = type, Text = text });
+        _messages.Insert(0, new GameMessagesPanel.GameMessageItem { Timestamp = DateTime.Now, Type = type, Text = text });
         if (_messages.Count > 50) _messages = _messages.Take(50).ToList();
     }
     private void ClearMessages() => _messages.Clear();
 
-    /// <summary>Map world coordinates to CSS left/top %. Y is flipped so world +Y is up on screen.</summary>
-    private static (double, double) Coords(Vector2 v)
-    {
-        var left = 10.0 + (v.X + 1000) / 2000.0 * 80;
-        var top = 90.0 - (v.Y + 1000) / 2000.0 * 80; // flip Y so +Y = up
-        return (Math.Clamp(left, 2, 98), Math.Clamp(top, 2, 98));
-    }
-
     public void Dispose() => GameState.StateChanged -= OnStateChanged;
-
-    private sealed class GameMessage
-    {
-        public DateTime Timestamp { get; set; }
-        public string Type { get; set; } = "";
-        public string Text { get; set; } = "";
-    }
 }
 
-<style>
-    .galaxy-map { overflow: hidden; }
-    .star-system { cursor: pointer; transition: transform 0.2s; }
-    .star-system:hover { transform: scale(1.2); }
-    .star-system-icon { font-size: 1.5rem; text-align: center; color: #ffd700; }
-    .star-system-name { font-size: 0.8rem; text-align: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-</style>

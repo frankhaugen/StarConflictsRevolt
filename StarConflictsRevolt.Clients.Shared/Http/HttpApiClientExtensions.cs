@@ -208,16 +208,18 @@ public static class HttpApiClientExtensions
         this IHttpApiClient client,
         Guid planetId,
         string structureType,
-        Guid? worldId = null,
+        Guid worldId,
+        Guid playerId,
         CancellationToken cancellationToken = default)
     {
         var payload = new
         {
+            PlayerId = playerId,
             PlanetId = planetId,
             StructureType = structureType
         };
 
-        var uri = worldId.HasValue ? $"/game/build-structure?worldId={worldId}" : "/game/build-structure";
+        var uri = $"/game/build-structure?worldId={worldId}";
         var response = await client.PostAsync(uri, payload, cancellationToken);
         return response.IsSuccessStatusCode;
     }
@@ -327,5 +329,28 @@ public static class HttpApiClientExtensions
         CancellationToken cancellationToken = default)
     {
         return await client.GetAsync<TopPlayersDto>($"/leaderboard/top?count={count}", cancellationToken);
+    }
+
+    /// <summary>Gets current simulation (game) speed and pause state.</summary>
+    public static async Task<SimulationStateDto?> GetSimulationStateAsync(
+        this IHttpApiClient client,
+        CancellationToken cancellationToken = default)
+    {
+        return await client.GetAsync<SimulationStateDto>("/game/simulation", cancellationToken);
+    }
+
+    /// <summary>Updates simulation speed and/or pause state in real time.</summary>
+    public static async Task<SimulationStateDto?> PatchSimulationAsync(
+        this IHttpApiClient client,
+        int? ticksPerSecond = null,
+        bool? isPaused = null,
+        CancellationToken cancellationToken = default)
+    {
+        var body = new { TicksPerSecond = ticksPerSecond, IsPaused = isPaused };
+        var response = await client.PatchAsync("/game/simulation", body, cancellationToken);
+        if (!response.IsSuccessStatusCode) return null;
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
+        return JsonSerializer.Deserialize<SimulationStateDto>(json, options);
     }
 }
