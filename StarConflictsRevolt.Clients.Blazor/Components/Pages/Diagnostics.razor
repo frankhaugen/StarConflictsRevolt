@@ -538,8 +538,8 @@
             // Update performance metrics
             await UpdatePerformanceMetrics();
             
-            // Update connection status
-            signalRConnected = GameState.IsConnected;
+            // Update connection status: Game Server = have session; SignalR = actual hub connection state
+            signalRConnected = SignalRService.IsConnected;
             
             // Update authentication status
             await UpdateAuthenticationStatus();

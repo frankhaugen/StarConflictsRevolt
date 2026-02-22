@@ -34,6 +34,7 @@ builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", c
 
 // Add Blazor-specific services
 builder.Services.AddScoped<IClientIdProvider, ClientIdProvider>();
+builder.Services.AddScoped<IClientSessionStorage, ClientSessionStorage>();
 builder.Services.AddScoped<IGameStateService, GameStateService>();
 builder.Services.AddScoped<BlazorSignalRService>();
 builder.Services.AddSingleton<TelemetryService>();

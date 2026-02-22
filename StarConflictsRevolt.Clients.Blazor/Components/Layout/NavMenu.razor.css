@@ -84,3 +84,7 @@
     color: var(--scr-sidebar-text);
 }
 .scr-session-strip .text-success { color: var(--scr-success) !important; }
+.scr-session-strip-none {
+    color: var(--scr-sidebar-text);
+    opacity: 0.85;
+}

@@ -36,6 +36,17 @@ To avoid generating a new world every time a player opens Single Player, the app
 
 So the same browser/device gets the same single-player world on subsequent “Single Player” visits until that session is ended (or the server restarts and the in-memory world is lost; persistence of world state is separate).
 
+### Session and player name storage (client)
+
+Session-joining is **view-independent**: the current session id and player name are stored in the browser so that any view (Single Player, Galaxy, Sessions) can restore or rejoin without creating a new game for an existing user.
+
+| Storage | Key | Purpose |
+|--------|-----|--------|
+| **sessionStorage** | `StarConflictsRevolt.SessionId` | Current game session id (tab-scoped). Cleared on leave/delete. |
+| **localStorage** | `StarConflictsRevolt.PlayerName` | Player display name (persists across tabs/sessions). Used when joining or creating a session. |
+
+On create/join success, `GameStateService` writes session id and player name via `IClientSessionStorage`. On Single Player or Galaxy load, if there is no in-memory session, the client first calls `TryRestoreSessionAsync()` (read session id and player name from storage, then join); only if that fails does it create a new session, so we never create a new game for an existing user when a session is already stored. On leave or delete current session, session id is cleared from sessionStorage. The Options page loads and saves player name to localStorage.
+
 ## Command vs event
 
 | | Command | Event |

@@ -29,10 +29,13 @@ public class GameStateServiceTests : IDisposable
         _telemetryService = new TelemetryService();
         var mockClientIdProvider = Substitute.For<IClientIdProvider>();
         mockClientIdProvider.GetClientIdAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult("test-client-id"));
+        var mockSessionStorage = Substitute.For<IClientSessionStorage>();
+        mockSessionStorage.GetPlayerNameAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<string?>("TestPlayer"));
+        mockSessionStorage.GetSessionIdAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Guid?>(null));
         
         // Create service under test
         var logger = Substitute.For<ILogger<GameStateService>>();
-        _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService, mockClientIdProvider, logger);
+        _gameStateService = new GameStateService(_mockHttpClient, _mockSignalRService, _telemetryService, mockClientIdProvider, mockSessionStorage, logger);
     }
     
     private static StringContent CreateJsonContent<T>(T obj)

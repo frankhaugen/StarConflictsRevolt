@@ -12,6 +12,8 @@ public interface IGameStateService
     event Action? StateChanged;
     
     Task<bool> CreateSessionAsync(string sessionName);
+    /// <summary>Restores and joins the session stored in sessionStorage using stored player name; returns false if no session stored or join fails.</summary>
+    Task<bool> TryRestoreSessionAsync();
     Task<bool> JoinSessionAsync(Guid sessionId);
     Task<bool> LeaveSessionAsync();
     Task<List<SessionDto>> GetAvailableSessionsAsync();

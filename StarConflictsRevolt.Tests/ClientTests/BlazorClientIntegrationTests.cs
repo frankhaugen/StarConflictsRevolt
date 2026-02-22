@@ -47,6 +47,7 @@ public class BlazorClientIntegrationTests
         // Add Blazor-specific services
         services.AddSingleton<TelemetryService>();
         services.AddScoped<IClientIdProvider, FakeClientIdProvider>();
+        services.AddScoped<IClientSessionStorage, FakeClientSessionStorage>();
         services.AddScoped<IGameStateService, GameStateService>();
         services.AddScoped<BlazorSignalRService>();
 
@@ -131,6 +132,7 @@ public class BlazorClientIntegrationTests
             return new HttpApiClient(factory, "GameApi");
         });
         services.AddScoped<IClientIdProvider, FakeClientIdProvider>();
+        services.AddScoped<IClientSessionStorage, FakeClientSessionStorage>();
         services.AddScoped<IGameStateService, GameStateService>();
 
         var serviceProvider = services.BuildServiceProvider();
@@ -173,6 +175,7 @@ public class BlazorClientIntegrationTests
             return new HttpApiClient(factory, "GameApi");
         });
         services.AddScoped<IClientIdProvider, FakeClientIdProvider>();
+        services.AddScoped<IClientSessionStorage, FakeClientSessionStorage>();
         services.AddScoped<IGameStateService, GameStateService>();
 
         var serviceProvider = services.BuildServiceProvider();
@@ -213,6 +216,7 @@ public class BlazorClientIntegrationTests
             return new HttpApiClient(factory, "GameApi");
         });
         services.AddScoped<IClientIdProvider, FakeClientIdProvider>();
+        services.AddScoped<IClientSessionStorage, FakeClientSessionStorage>();
         services.AddScoped<IGameStateService, GameStateService>();
 
         // Act & Assert

@@ -194,6 +194,8 @@ public class MockGameStateService : IGameStateService
         return Task.FromResult(true);
     }
     
+    public Task<bool> TryRestoreSessionAsync() => Task.FromResult(false);
+
     public Task<bool> JoinSessionAsync(Guid sessionId)
     {
         CurrentSession = new SessionDto

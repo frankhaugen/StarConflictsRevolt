@@ -5,7 +5,8 @@ namespace StarConflictsRevolt.Server.Simulation.Engine;
 public class GameTickService(
     ILogger<GameTickService> logger,
     ITickPublisher publisher,
-    ISimulationManager simulationManager) : BackgroundService
+    ISimulationManager simulationManager,
+    ITickerLiveness? tickerLiveness = null) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -18,6 +19,7 @@ public class GameTickService(
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                tickerLiveness?.SetLastTick(DateTime.UtcNow);
                 var tickInterval = simulationManager.GetTickInterval();
                 var tickStart = DateTime.UtcNow;
 

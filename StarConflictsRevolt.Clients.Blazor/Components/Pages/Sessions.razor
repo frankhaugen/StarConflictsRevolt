@@ -19,12 +19,17 @@
             }
             <ErrorBanner Message="@errorMessage" Dismissible="true" OnDismiss="ClearError" />
 
-            <PageCard Title="Sessions" TestId="sessions-title">
+            <PageCard Title="Game sessions" TestId="sessions-title">
                 <Toolbar>
                     <button type="button" class="btn btn-outline-primary btn-sm me-1" data-testid="refresh-btn" @onclick="RefreshSessions" disabled="@isLoading">
                         @if (isLoading) { <span class="spinner-border spinner-border-sm" role="status"></span> }
                         else { <i class="fas fa-sync-alt"></i> }
                         Refresh
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm me-1" data-testid="new-game-btn" @onclick="NewGame" disabled="@isCreating">
+                        @if (isCreating) { <span class="spinner-border spinner-border-sm" role="status"></span> }
+                        else { <i class="fas fa-plus me-1"></i> }
+                        New game
                     </button>
                     <a href="/" class="btn btn-outline-secondary btn-sm" data-testid="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
                 </Toolbar>
@@ -75,8 +80,12 @@
                     }
                     else
                     {
-                        <EmptyState Title="No sessions" Description="Create a game from Home (Single Player) or join via link." IconClass="fas fa-globe" Compact="true">
-                            <a href="/singleplayer" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> New game</a>
+                        <EmptyState Title="No game sessions" Description="Create a new game or wait for one to appear." IconClass="fas fa-globe" Compact="true">
+                            <button type="button" class="btn btn-primary btn-sm" @onclick="NewGame" disabled="@isCreating">
+                                @if (isCreating) { <span class="spinner-border spinner-border-sm" role="status"></span> }
+                                else { <i class="fas fa-plus me-1"></i> }
+                                New game
+                            </button>
                         </EmptyState>
                     }
                 </ChildContent>
@@ -89,6 +98,7 @@
     private List<SessionDto> sessions = new();
     private bool isLoading;
     private bool isJoining;
+    private bool isCreating;
     private Guid? joiningSessionId;
     private Guid? deletingSessionId;
     private string? errorMessage;
@@ -116,12 +126,37 @@
         try
         {
             if (await GameState.JoinSessionAsync(sessionId))
-                Navigation.NavigateTo("/singleplayer");
+            {
+                successMessage = "Joined. The sidebar shows which session you are receiving from.";
+                Navigation.NavigateTo("/galaxy");
+            }
             else
                 errorMessage = "Could not join.";
         }
         catch (Exception ex) { errorMessage = ex.Message; }
         finally { isJoining = false; joiningSessionId = null; }
+    }
+
+    private async Task NewGame()
+    {
+        isCreating = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            if (await GameState.TryRestoreSessionAsync())
+                Navigation.NavigateTo("/galaxy");
+            else if (await GameState.CreateSessionAsync("New Game"))
+            {
+                successMessage = "Game created. The sidebar shows your session.";
+                await RefreshSessions();
+                Navigation.NavigateTo("/galaxy");
+            }
+            else
+                errorMessage = "Could not create game.";
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isCreating = false; }
     }
 
     private async Task DeleteSession(Guid sessionId)

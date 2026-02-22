@@ -16,11 +16,11 @@
             @if (!SignalR.IsConnected)
             {
                 <p class="text-muted mb-3"><i class="fas fa-spinner fa-spin me-2"></i>Connecting to server…</p>
-                <p class="small text-muted">Single Player and Join Session are available from the menu once connected.</p>
+                <p class="small text-muted">Sessions and Galaxy are available from the menu once connected.</p>
             }
             else if (GameState.CurrentSession != null)
             {
-                <p class="scr-text-bright mb-2">Session active</p>
+                <p class="scr-text-bright mb-2">Game session active</p>
                 <p class="text-muted small mb-3">@GameState.CurrentSession.SessionName</p>
                 <a href="/galaxy" class="btn scr-hud-btn primary btn-lg" data-testid="continue-btn">
                     <i class="fas fa-play me-2"></i>Continue
@@ -28,9 +28,9 @@
             }
             else
             {
-                <p class="scr-text-bright mb-3">Ready</p>
-                <a href="/singleplayer" class="btn scr-hud-btn primary btn-lg" data-testid="single-player-btn">
-                    <i class="fas fa-play me-2"></i>New game
+                <p class="scr-text-bright mb-3">Select a game session</p>
+                <a href="/sessions" class="btn scr-hud-btn primary btn-lg" data-testid="sessions-btn">
+                    <i class="fas fa-list me-2"></i>Sessions
                 </a>
             }
         </div>

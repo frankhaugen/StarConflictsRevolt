@@ -1,9 +1,0 @@
-@page "/multiplayer"
-@rendermode InteractiveServer
-@inject NavigationManager Navigation
-
-<PageTitle>Multiplayer</PageTitle>
-
-@code {
-    protected override void OnInitialized() => Navigation.NavigateTo("/sessions", replace: true);
-}

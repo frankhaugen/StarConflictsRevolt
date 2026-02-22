@@ -29,6 +29,9 @@ public static class StartupHelper
         // Simulation manager: controls ticker speed in real time (game speed)
         builder.Services.AddSingleton<ISimulationManager, SimulationManager>();
 
+        // Ticker liveness: recorded each loop by GameTickService for /health/ticker
+        builder.Services.AddSingleton<ITickerLiveness, TickerLivenessService>();
+
         // Transport: tick fan-out to in-process listeners and SignalR (see docs/reference/transport-layer-spec.md)
         builder.Services.AddSingleton<ITickListener, AiTurnTickListener>();
         builder.Services.AddSingleton<ITickListener, GameUpdateTickListener>();

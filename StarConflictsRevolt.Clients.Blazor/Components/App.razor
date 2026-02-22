@@ -71,6 +71,20 @@
             }
         };
 
+        // Session storage: current game session id (view-independent, tab-scoped)
+        window._scrSessionStorage = {
+            sessionKey: 'StarConflictsRevolt.SessionId',
+            playerNameKey: 'StarConflictsRevolt.PlayerName',
+            getSessionId: function() { try { return sessionStorage.getItem(this.sessionKey) || null; } catch (e) { return null; } },
+            setSessionId: function(id) { try { if (id) sessionStorage.setItem(this.sessionKey, id); else sessionStorage.removeItem(this.sessionKey); } catch (e) {} },
+            getPlayerName: function() { try { return localStorage.getItem(this.playerNameKey) || null; } catch (e) { return null; } },
+            setPlayerName: function(name) { try { if (name) localStorage.setItem(this.playerNameKey, name); else localStorage.removeItem(this.playerNameKey); } catch (e) {} }
+        };
+        window.getScrSessionId = function() { return window._scrSessionStorage.getSessionId(); };
+        window.setScrSessionId = function(id) { window._scrSessionStorage.setSessionId(id); };
+        window.getScrPlayerName = function() { return window._scrSessionStorage.getPlayerName(); };
+        window.setScrPlayerName = function(name) { window._scrSessionStorage.setPlayerName(name); };
+
         // Debug function for navigation
         window.debugNavigation = function(url) {
             console.log('Navigating to:', url, new Date().toISOString());

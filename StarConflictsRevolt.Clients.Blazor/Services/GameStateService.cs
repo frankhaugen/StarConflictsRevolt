@@ -10,10 +10,13 @@ namespace StarConflictsRevolt.Clients.Blazor.Services;
 
 public class GameStateService : IGameStateService
 {
+    private const string DefaultPlayerName = "Player";
+
     private readonly IHttpApiClient _httpClient;
     private readonly ISignalRService _signalRService;
     private readonly TelemetryService _telemetryService;
     private readonly IClientIdProvider _clientIdProvider;
+    private readonly IClientSessionStorage _sessionStorage;
     private readonly ActivitySource _activitySource;
     private readonly ILogger<GameStateService> _logger;
     private WorldDto? _currentWorld;
@@ -25,12 +28,13 @@ public class GameStateService : IGameStateService
 
     private readonly SynchronizationContext? _uiContext;
 
-    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, IClientIdProvider clientIdProvider, ILogger<GameStateService> logger)
+    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, IClientIdProvider clientIdProvider, IClientSessionStorage sessionStorage, ILogger<GameStateService> logger)
     {
         _httpClient = httpClient;
         _signalRService = signalRService;
         _telemetryService = telemetryService;
         _clientIdProvider = clientIdProvider;
+        _sessionStorage = sessionStorage;
         _logger = logger;
         _activitySource = new ActivitySource("StarConflictsRevolt.Blazor");
         
@@ -98,6 +102,10 @@ public class GameStateService : IGameStateService
                 _logger.LogDebug("Joining SignalR session {SessionId}", sessionResponse.SessionId);
                 await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
 
+                await _sessionStorage.SetSessionIdAsync(sessionResponse.SessionId);
+                var playerName = await _sessionStorage.GetPlayerNameAsync() ?? DefaultPlayerName;
+                await _sessionStorage.SetPlayerNameAsync(playerName);
+
                 _isConnected = true;
                 NotifyStateChanged();
 
@@ -119,20 +127,30 @@ public class GameStateService : IGameStateService
         return false;
     }
 
+    public async Task<bool> TryRestoreSessionAsync()
+    {
+        var sessionId = await _sessionStorage.GetSessionIdAsync();
+        if (!sessionId.HasValue)
+            return false;
+        _logger.LogInformation("Restoring session from storage: {SessionId}", sessionId);
+        return await JoinSessionAsync(sessionId.Value);
+    }
+
     public async Task<bool> JoinSessionAsync(Guid sessionId)
     {
         _logger.LogInformation("Joining session: {SessionId}", sessionId);
-        
+        var playerName = await _sessionStorage.GetPlayerNameAsync() ?? DefaultPlayerName;
+
         try
         {
             await EnsureAuthContextAsync();
             await CheckConnectionStatusAsync();
-            
-            var sessionResponse = await _httpClient.JoinSessionAsync(sessionId, "Player");
+
+            var sessionResponse = await _httpClient.JoinSessionAsync(sessionId, playerName);
             if (sessionResponse != null)
             {
-                _logger.LogInformation("Successfully joined session {SessionId}", sessionId);
-                
+                _logger.LogInformation("Successfully joined session {SessionId} as {PlayerName}", sessionId, playerName);
+
                 _currentSession = new SessionDto
                 {
                     Id = sessionResponse.SessionId,
@@ -148,7 +166,10 @@ public class GameStateService : IGameStateService
 
                 _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
                 await _signalRService.JoinSessionAsync(sessionId);
-                
+
+                await _sessionStorage.SetSessionIdAsync(sessionId);
+                await _sessionStorage.SetPlayerNameAsync(playerName);
+
                 _isConnected = true;
                 NotifyStateChanged();
                 return true;
@@ -169,6 +190,7 @@ public class GameStateService : IGameStateService
     {
         try
         {
+            await _sessionStorage.SetSessionIdAsync(null);
             await _signalRService.StopAsync();
             _currentSession = null;
             _currentWorld = null;
@@ -178,8 +200,7 @@ public class GameStateService : IGameStateService
         }
         catch (Exception ex)
         {
-            // Log error
-            Console.WriteLine($"Error leaving session: {ex.Message}");
+            _logger.LogWarning(ex, "Error leaving session: {Message}", ex.Message);
         }
         return false;
     }
@@ -219,6 +240,7 @@ public class GameStateService : IGameStateService
             var deleted = await _httpClient.DeleteSessionAsync(sessionId);
             if (deleted && _currentSession?.Id == sessionId)
             {
+                await _sessionStorage.SetSessionIdAsync(null);
                 _currentSession = null;
                 _currentWorld = null;
                 NotifyStateChanged();

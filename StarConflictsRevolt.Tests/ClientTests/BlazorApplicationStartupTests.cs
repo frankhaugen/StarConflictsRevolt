@@ -42,6 +42,7 @@ public class BlazorApplicationStartupTests
         // Add Blazor-specific services
         builder.Services.AddSingleton<TelemetryService>();
         builder.Services.AddScoped<StarConflictsRevolt.Clients.Blazor.Services.IClientIdProvider, StarConflictsRevolt.Tests.TestingInfrastructure.FakeClientIdProvider>();
+        builder.Services.AddScoped<StarConflictsRevolt.Clients.Blazor.Services.IClientSessionStorage, StarConflictsRevolt.Tests.TestingInfrastructure.FakeClientSessionStorage>();
         builder.Services.AddScoped<IGameStateService, GameStateService>();
         builder.Services.AddScoped<BlazorSignalRService>();
 
@@ -138,6 +139,8 @@ public class BlazorApplicationStartupTests
             var factory = provider.GetRequiredService<IHttpClientFactory>();
             return new HttpApiClient(factory, "GameApi");
         });
+        builder.Services.AddScoped<StarConflictsRevolt.Clients.Blazor.Services.IClientIdProvider, StarConflictsRevolt.Tests.TestingInfrastructure.FakeClientIdProvider>();
+        builder.Services.AddScoped<StarConflictsRevolt.Clients.Blazor.Services.IClientSessionStorage, StarConflictsRevolt.Tests.TestingInfrastructure.FakeClientSessionStorage>();
         builder.Services.AddScoped<IGameStateService, GameStateService>();
 
         var app = builder.Build();

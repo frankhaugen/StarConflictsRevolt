@@ -158,6 +158,9 @@ public class SignalRService : ISignalRService
         {
             _logger.LogInformation("SignalR reconnected with connection ID: {ConnectionId}", connectionId);
             Reconnected?.Invoke(connectionId ?? string.Empty);
+            // Re-join the current session group so we receive ticks and updates again (server groups are per-connection).
+            if (_currentSessionId.HasValue)
+                _ = RejoinSessionAfterReconnectAsync(_currentSessionId.Value);
             return Task.CompletedTask;
         };
 
@@ -224,6 +227,19 @@ public class SignalRService : ISignalRService
 
         // Don't join any world group here - wait for explicit session join
         _logger.LogInformation("SignalR connection ready - waiting for session join");
+    }
+
+    private async Task RejoinSessionAfterReconnectAsync(Guid sessionId)
+    {
+        try
+        {
+            await JoinSessionAsync(sessionId);
+            _logger.LogInformation("Re-joined session {SessionId} after reconnect; events should resume", sessionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to re-join session {SessionId} after reconnect", sessionId);
+        }
     }
 
     public virtual async Task StopAsync()

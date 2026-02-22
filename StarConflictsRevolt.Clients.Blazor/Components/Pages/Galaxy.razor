@@ -34,5 +34,10 @@
 @code {
     private StarSystemDto? _selected;
 
+    protected override void OnInitialized()
+    {
+        if (GameState.CurrentSession == null) _ = GameState.TryRestoreSessionAsync();
+    }
+
     private void OnSystemSelected(StarSystemDto s) => _selected = s;
 }
