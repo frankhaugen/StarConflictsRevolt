@@ -27,5 +27,8 @@ public static class ApiEndpointHandler
 
         // Event and snapshot endpoints
         EventEndpointHandler.MapEndpoints(app);
+
+        // Button/action reporting (click sent to backend and executed/logged)
+        ActionEndpointHandler.MapEndpoints(app);
     }
 }

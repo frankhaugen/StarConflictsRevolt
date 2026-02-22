@@ -98,6 +98,33 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
+    ///     Sends a button/action event to the backend so the action is executed (logged) on the server.
+    /// </summary>
+    public static async Task ReportButtonActionAsync(
+        this IHttpApiClient client,
+        string label,
+        string? buttonId = null,
+        string? page = null,
+        Guid? sessionId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var body = new
+        {
+            Label = label,
+            ButtonId = buttonId,
+            Page = page,
+            SessionId = sessionId,
+            Timestamp = DateTime.UtcNow
+        };
+        var response = await client.PostAsync("/game/action", body, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException($"ReportButtonAction failed ({(int)response.StatusCode}): {err}");
+        }
+    }
+
+    /// <summary>
     ///     Gets a list of available sessions
     /// </summary>
     /// <param name="client">The HTTP API client</param>
@@ -116,14 +143,20 @@ public static class HttpApiClientExtensions
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionId">Session ID to delete</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>True if the session was deleted (204), false otherwise</returns>
+    /// <returns>True if the session was deleted (204); false or throw with server error otherwise</returns>
     public static async Task<bool> DeleteSessionAsync(
         this IHttpApiClient client,
         Guid sessionId,
         CancellationToken cancellationToken = default)
     {
         var response = await client.DeleteAsync($"/game/session/{sessionId}", cancellationToken);
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+            return true;
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+        var message = string.IsNullOrWhiteSpace(body)
+            ? $"Delete session failed ({(int)response.StatusCode} {response.ReasonPhrase})"
+            : $"Delete session failed ({(int)response.StatusCode}): {body.Trim()}";
+        throw new HttpRequestException(message);
     }
 
     /// <summary>

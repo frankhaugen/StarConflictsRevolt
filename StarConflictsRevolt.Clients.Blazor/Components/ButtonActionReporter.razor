@@ -1,0 +1,51 @@
+@using StarConflictsRevolt.Clients.Blazor.Services
+@using StarConflictsRevolt.Clients.Shared.Http
+@inject IHttpApiClient HttpApiClient
+@inject IGameStateService GameState
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@* Renders nothing; registers with JS so button clicks are sent to the backend. *@
+
+@code {
+    private DotNetObjectReference<ButtonActionReporter>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("registerButtonActionReporter", _dotNetRef);
+            }
+            catch
+            {
+                _dotNetRef?.Dispose();
+                _dotNetRef = null;
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task ReportButtonAction(string label, string? buttonId)
+    {
+        try
+        {
+            var page = new Uri(Navigation.Uri).PathAndQuery.TrimStart('/') ?? "";
+            var sessionId = GameState.CurrentSession?.Id;
+            await HttpApiClient.ReportButtonActionAsync(label, buttonId, page, sessionId);
+        }
+        catch
+        {
+            // Fire-and-forget; do not break UI
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+    }
+}

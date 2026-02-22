@@ -12,23 +12,6 @@
     <File Path="docs\work-items\current.md" />
     <File Path="docs\work-items\done.md" />
   </Folder>
-  <Folder Name="/DesignDocs/">
-    <File Path="DesignDocs\ApiRefactoring.md" />
-    <File Path="DesignDocs\ARCHITECTURE.md" />
-    <File Path="DesignDocs\BasicUiDescription.md" />
-    <File Path="DesignDocs\BlissClient.md" />
-    <File Path="DesignDocs\CombatSystem.md" />
-    <File Path="DesignDocs\DESIGN.md" />
-    <File Path="DesignDocs\EventingAndDatastoreSystemArchitecture.md" />
-    <File Path="DesignDocs\GameActionsFlow.md" />
-    <File Path="DesignDocs\MissionSystem.md" />
-    <File Path="DesignDocs\RebellionGameMechanics.md" />
-    <File Path="DesignDocs\RebellionGameViews.md" />
-    <File Path="DesignDocs\SessionAggregate.md" />
-    <File Path="DesignDocs\SimpleAuth.md" />
-    <File Path="DesignDocs\SimpleAuthAndSelfRegistration.md" />
-    <File Path="DesignDocs\TODOs.md" />
-  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="LICENSE" />
@@ -38,7 +21,7 @@
   <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
   <Project Path="StarConflictsRevolt.Clients.Blazor/StarConflictsRevolt.Clients.Blazor.csproj" />
   <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
-  <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" Type="C#" />
+  <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
 </Solution>

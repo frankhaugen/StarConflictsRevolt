@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="@Assets["StarConflictsRevolt.Clients.Blazor.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <HeadOutlet />
     
     <!-- Add debugging scripts -->
@@ -27,10 +28,33 @@
             console.error('Unhandled Promise Rejection:', e.reason);
         });
         
-        // Debug function for button clicks
+        // Debug function for button clicks (call from Blazor if needed)
         window.debugButtonClick = function(buttonName) {
             console.log('Button clicked:', buttonName, new Date().toISOString());
         };
+
+        // Register Blazor callback so button clicks are sent to the backend
+        window._buttonActionDotNetRef = null;
+        window.registerButtonActionReporter = function(dotNetRef) {
+            window._buttonActionDotNetRef = dotNetRef;
+        };
+
+        // Global button-click: log and send to backend in *bubble* phase so Blazor's @@onclick runs first
+        document.addEventListener('click', function(e) {
+            var el = e.target;
+            while (el && el !== document.body) {
+                if (el.tagName === 'BUTTON' || (el.getAttribute && el.getAttribute('role') === 'button')) {
+                    var label = (el.textContent || '').trim().slice(0, 80) || el.getAttribute('data-testid') || el.className || 'button';
+                    var buttonId = (el.getAttribute && el.getAttribute('data-testid')) || null;
+                    console.log('Button clicked:', label, new Date().toISOString());
+                    if (window._buttonActionDotNetRef) {
+                        window._buttonActionDotNetRef.invokeMethodAsync('ReportButtonAction', label, buttonId || '').catch(function() {});
+                    }
+                    break;
+                }
+                el = el.parentElement;
+            }
+        }, false);
         
         // Debug function for navigation
         window.debugNavigation = function(url) {
@@ -70,18 +94,8 @@
             childList: true,
             subtree: true
         });
-        
-        // Debug Blazor startup (after Blazor script has loaded)
-        if (window.Blazor) {
-            window.Blazor.start().then(function() {
-                console.log('Blazor started successfully');
-            }).catch(function(error) {
-                console.error('Blazor failed to start:', error);
-            });
-        } else {
-            console.warn('Blazor object not available yet');
-        }
-        
+
+        // Do not call Blazor.start() - blazor.web.js auto-starts Blazor. Calling it again causes "Blazor has already started".
         console.log('Star Conflicts Revolt - App initialized');
     </script>
 </body>

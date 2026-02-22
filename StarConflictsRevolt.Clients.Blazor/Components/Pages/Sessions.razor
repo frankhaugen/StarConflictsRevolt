@@ -1,109 +1,70 @@
 @page "/sessions"
+@rendermode InteractiveServer
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
 @inject IGameStateService GameState
 @inject NavigationManager Navigation
 
-<PageTitle>Join Session</PageTitle>
+<PageTitle>Sessions</PageTitle>
 
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 data-testid="sessions-title">Available Sessions</h3>
-                    <div>
-                        <button data-testid="refresh-btn" class="btn btn-outline-primary me-2" @onclick="RefreshSessions" disabled="@isLoading">
-                            @if (isLoading)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-sync-alt"></i>
-                            }
-                            Refresh
-                        </button>
-                        <button data-testid="back-btn" class="btn btn-outline-secondary" @onclick="NavigateToHome">
-                            <i class="fas fa-arrow-left"></i> Back to Menu
-                        </button>
-                    </div>
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success py-2 mb-2 d-flex align-items-center justify-content-between">
+                    <span><i class="fas fa-check-circle me-1"></i>@successMessage</span>
+                    <button type="button" class="btn-close btn-close-sm" aria-label="Dismiss" @onclick="ClearSuccess"></button>
                 </div>
-                <div class="card-body">
+            }
+            <ErrorBanner Message="@errorMessage" Dismissible="true" OnDismiss="ClearError" />
+
+            <PageCard Title="Sessions" TestId="sessions-title">
+                <Toolbar>
+                    <button type="button" class="btn btn-outline-primary btn-sm me-1" data-testid="refresh-btn" @onclick="RefreshSessions" disabled="@isLoading">
+                        @if (isLoading) { <span class="spinner-border spinner-border-sm" role="status"></span> }
+                        else { <i class="fas fa-sync-alt"></i> }
+                        Refresh
+                    </button>
+                    <a href="/" class="btn btn-outline-secondary btn-sm" data-testid="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+                </Toolbar>
+                <ChildContent>
                     @if (isLoading)
                     {
-                        <LoadingState Message="Loading sessions…" Size="LoadingState.LoadingSize.Medium" />
+                        <LoadingState Message="Loading…" Size="LoadingState.LoadingSize.Medium" />
                     }
                     else if (sessions.Any())
                     {
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Session Name</th>
-                                        <th>Players</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
+                            <table class="table table-sm table-hover">
+                                <thead><tr><th>Session</th><th>Type</th><th>Status</th><th>Created</th><th></th></tr></thead>
                                 <tbody>
                                     @foreach (var session in sessions)
                                     {
                                         <tr>
                                             <td>
                                                 <strong>@session.SessionName</strong>
-                                                @if (session.Id == GameState.CurrentSession?.Id)
-                                                {
-                                                    <span class="badge bg-success ms-2">Current</span>
-                                                }
+                                                @if (session.Id == GameState.CurrentSession?.Id) { <span class="badge bg-success ms-1">Current</span> }
                                             </td>
-                                            <td>
-                                                <span class="badge bg-info">@session.SessionType</span>
-                                            </td>
-                                            <td>
-                                                @if (session.IsActive)
-                                                {
-                                                    <span class="badge bg-success">Active</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-warning">Waiting</span>
-                                                }
-                                            </td>
-                                            <td>@session.Created.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td><span class="badge bg-info">@session.SessionType</span></td>
+                                            <td><span class="badge @(session.IsActive ? "bg-success" : "bg-warning")">@(session.IsActive ? "Active" : "Waiting")</span></td>
+                                            <td class="small">@session.Created.ToString("MMM dd HH:mm")</td>
                                             <td>
                                                 @if (session.Id == GameState.CurrentSession?.Id)
                                                 {
-                                                    <button class="btn btn-success btn-sm me-1" @onclick="NavigateToGalaxy">
-                                                        <i class="fas fa-play"></i> <text>Continue</text>
-                                                    </button>
+                                                    <a href="/galaxy" class="btn btn-success btn-sm me-1"><i class="fas fa-play"></i> Continue</a>
                                                 }
                                                 else
                                                 {
-                                                    <button class="btn btn-primary btn-sm me-1" @onclick="() => JoinSession(session.Id)"
-                                                            disabled="@isJoining" title="Join this session">
-                                                        @if (joiningSessionId == session.Id)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                            <text>Joining…</text>
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="fas fa-sign-in-alt"></i> <text>Join</text>
-                                                        }
+                                                    <button type="button" class="btn btn-primary btn-sm me-1" @onclick="() => JoinSession(session.Id)" disabled="@isJoining">
+                                                        @if (joiningSessionId == session.Id) { <span class="spinner-border spinner-border-sm"></span> }
+                                                        else { <i class="fas fa-sign-in-alt"></i> }
+                                                        Join
                                                     </button>
                                                 }
-                                                <button data-testid="delete-session-btn" class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSession(session.Id)"
-                                                        disabled="@(deletingSessionId == session.Id)" title="Delete this session">
-                                                    @if (deletingSessionId == session.Id)
-                                                    {
-                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    }
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-testid="delete-session-btn" @onclick="() => DeleteSession(session.Id)" disabled="@(deletingSessionId == session.Id)">
+                                                    @if (deletingSessionId == session.Id) { <span class="spinner-border spinner-border-sm"></span> }
+                                                    else { <i class="fas fa-trash-alt"></i> }
                                                 </button>
                                             </td>
                                         </tr>
@@ -114,69 +75,37 @@
                     }
                     else
                     {
-                        <EmptyState Title="No sessions yet"
-                                   Description="Create your first game to see it here, or ask a friend for their session link."
-                                   IconClass="fas fa-globe">
-                            <button class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer">
-                                <i class="fas fa-plus me-2"></i> Create new game
-                            </button>
+                        <EmptyState Title="No sessions" Description="Create a game from Home (Single Player) or join via link." IconClass="fas fa-globe" Compact="true">
+                            <a href="/singleplayer" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> New game</a>
                         </EmptyState>
                     }
-                </div>
-            </div>
-
-            <ErrorBanner Message="@errorMessage" Dismissible="true" OnDismiss="ClearError" />
+                </ChildContent>
+            </PageCard>
         </div>
     </div>
 </div>
 
 @code {
     private List<SessionDto> sessions = new();
-    private bool isLoading = false;
-    private bool isJoining = false;
-    private Guid? joiningSessionId = null;
-    private Guid? deletingSessionId = null;
+    private bool isLoading;
+    private bool isJoining;
+    private Guid? joiningSessionId;
+    private Guid? deletingSessionId;
     private string? errorMessage;
+    private string? successMessage;
 
-    private void ClearError() { errorMessage = null; }
+    void ClearError() => errorMessage = null;
+    void ClearSuccess() => successMessage = null;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshSessions();
-    }
+    protected override async Task OnInitializedAsync() => await RefreshSessions();
 
     private async Task RefreshSessions()
     {
         isLoading = true;
         errorMessage = null;
-
-        try
-        {
-            sessions = await GameState.GetAvailableSessionsAsync();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading sessions: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private void NavigateToHome()
-    {
-        Navigation.NavigateTo("/");
-    }
-
-    private void NavigateToGalaxy()
-    {
-        Navigation.NavigateTo("/galaxy");
-    }
-
-    private void NavigateToSinglePlayer()
-    {
-        Navigation.NavigateTo("/singleplayer");
+        try { sessions = await GameState.GetAvailableSessionsAsync(); }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isLoading = false; }
     }
 
     private async Task JoinSession(Guid sessionId)
@@ -184,54 +113,32 @@
         isJoining = true;
         joiningSessionId = sessionId;
         errorMessage = null;
-
         try
         {
-            var success = await GameState.JoinSessionAsync(sessionId);
-            if (success)
-            {
+            if (await GameState.JoinSessionAsync(sessionId))
                 Navigation.NavigateTo("/singleplayer");
-            }
             else
-            {
-                errorMessage = "Could not join this session. Please try again.";
-            }
+                errorMessage = "Could not join.";
         }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error: {ex.Message}";
-        }
-        finally
-        {
-            isJoining = false;
-            joiningSessionId = null;
-        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isJoining = false; joiningSessionId = null; }
     }
 
     private async Task DeleteSession(Guid sessionId)
     {
         deletingSessionId = sessionId;
-        errorMessage = null;
-
+        errorMessage = successMessage = null;
         try
         {
-            var success = await GameState.DeleteSessionAsync(sessionId);
-            if (success)
+            if (await GameState.DeleteSessionAsync(sessionId))
             {
+                successMessage = "Deleted.";
                 await RefreshSessions();
             }
             else
-            {
-                errorMessage = "Could not delete this session. Please try again.";
-            }
+                errorMessage = "Could not delete.";
         }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error: {ex.Message}";
-        }
-        finally
-        {
-            deletingSessionId = null;
-        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { deletingSessionId = null; }
     }
 }

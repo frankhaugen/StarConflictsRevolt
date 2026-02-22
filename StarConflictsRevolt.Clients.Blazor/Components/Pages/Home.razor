@@ -1,445 +1,61 @@
 @page "/"
+@rendermode InteractiveServer
 @using StarConflictsRevolt.Clients.Blazor.Services
-@using StarConflictsRevolt.Clients.Shared.Authentication
 @using StarConflictsRevolt.Clients.Shared.Communication
 @inject IGameStateService GameState
 @inject ISignalRService SignalR
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
-@inject ITokenProvider TokenProvider
-@inject ILogger<Home> Logger
 
 <PageTitle>Star Conflicts Revolt</PageTitle>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="text-center mb-4">
-                <h1 data-testid="home-title" class="display-4 text-primary">Star Conflicts Revolt</h1>
-                <p class="lead text-muted">A modern reimagining of Star Wars: Rebellion</p>
-                <p class="small text-muted">Start a solo game or join an existing session.</p>
+            <div class="text-center mb-3">
+                <h1 data-testid="home-title" class="display-5 text-primary">Star Conflicts Revolt</h1>
+                <p class="text-muted small mb-0">Start a solo game or join a session.</p>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Main Menu</h3>
-                </div>
-                <div class="card-body">
-                    <div data-testid="main-menu-buttons" class="d-grid gap-3">
-                        <button data-testid="single-player-btn" class="btn btn-primary btn-lg" @onclick="NavigateToSinglePlayer" disabled="@(isLoading || !SignalR.IsConnected)" title="@(SignalR.IsConnected ? "Start a new solo game" : "Waiting for server connection...")">
-                            @if (isLoading && currentAction == "single-player")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-play"></i>
-                            }
-                            Single Player
-                        </button>
-                        <button data-testid="multiplayer-btn" class="btn btn-secondary btn-lg" @onclick="NavigateToMultiplayer" disabled="@isLoading">
-                            @if (isLoading && currentAction == "multiplayer")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-users"></i>
-                            }
-                            Multiplayer
-                        </button>
-                        <button data-testid="join-session-btn" class="btn btn-info btn-lg" @onclick="NavigateToSessions" disabled="@(isLoading || !SignalR.IsConnected)" title="@(SignalR.IsConnected ? "Browse and join existing games" : "Waiting for server connection...")">
-                            @if (isLoading && currentAction == "join-session")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-list"></i>
-                            }
-                            Join Session
-                        </button>
-                        <button data-testid="options-btn" class="btn btn-warning btn-lg" @onclick="NavigateToOptions" disabled="@isLoading">
-                            @if (isLoading && currentAction == "options")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-cog"></i>
-                            }
-                            Options
-                        </button>
-                        <button data-testid="diagnostics-btn" class="btn btn-info btn-lg" @onclick="NavigateToDiagnostics" disabled="@isLoading">
-                            @if (isLoading && currentAction == "diagnostics")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-heartbeat"></i>
-                            }
-                            Diagnostics
-                        </button>
-                        <button data-testid="test-btn" class="btn btn-dark btn-lg" @onclick="NavigateToTest" disabled="@isLoading">
-                            @if (isLoading && currentAction == "test")
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-vial"></i>
-                            }
-                            Test Page
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            @if (!SignalR.IsConnected)
-            {
-                <div data-testid="connection-status" class="alert alert-info mt-3 d-flex align-items-center" role="status">
-                    <i class="fas fa-spinner fa-spin me-2" aria-hidden="true"></i>
-                    <div>
-                        <strong>Connecting to game server…</strong>
-                        <p class="mb-0 small">Single Player and Join Session will be available in a moment.</p>
-                    </div>
-                </div>
-            }
-            else if (GameState.IsConnected)
-            {
-                <div data-testid="connection-status" class="alert alert-success mt-3 d-flex align-items-center">
-                    <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
-                    <div>
-                        <strong>Connected.</strong>
-                        <span class="ms-1">Session: @(GameState.CurrentSession?.SessionName ?? "—")</span>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div data-testid="connection-status" class="alert alert-secondary mt-3 d-flex align-items-center">
-                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
-                    <span>Choose <strong>Single Player</strong> to start a new game or <strong>Join Session</strong> to join an existing one.</span>
-                </div>
-            }
-
-            <!-- Debug Information (collapsible) -->
-            <div class="mt-3">
-                <div class="card">
-                    <div class="card-header py-2 d-flex justify-content-between align-items-center" style="cursor: pointer;" @onclick="() => showDebug = !showDebug" role="button" tabindex="0" @onkeydown='(e) => { if (e.Key == "Enter") { showDebug = !showDebug; } }'>
-                        <h6 class="mb-0 text-muted"><i class="fas fa-bug me-1"></i> Debug</h6>
-                        <i class="fas @(showDebug ? "fa-chevron-up" : "fa-chevron-down") small"></i>
-                    </div>
-                    @if (showDebug)
+            <PageCard Title="Menu">
+                <Toolbar>
+                    @if (!SignalR.IsConnected)
                     {
-                        <div class="card-body small">
-                            <div class="row text-muted">
-                                <div class="col-md-6">
-                                    <strong>Auth:</strong> @(hasValidToken ? "Valid" : "No token") &nbsp;|&nbsp;
-                                    <strong>SignalR:</strong> @(SignalR.IsConnected ? "OK" : "…") &nbsp;|&nbsp;
-                                    <strong>Session:</strong> @(GameState.IsConnected ? "In game" : "None")
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Current:</strong> @(GameState.CurrentSession?.SessionName ?? "—") &nbsp;|&nbsp;
-                                    <strong>Update:</strong> @lastUpdate.ToString("HH:mm:ss")
-                                </div>
-                            </div>
-                        </div>
+                        <span class="badge bg-secondary">Connecting…</span>
                     }
+                </Toolbar>
+                <ChildContent>
+                    <div data-testid="main-menu-buttons" class="d-grid gap-2">
+                        @foreach (var item in _menuItems)
+                        {
+                            var disabled = item.RequiresSignalR && !SignalR.IsConnected;
+                            <a href="@item.Route" class="btn @item.CssClass btn-lg @(disabled ? "disabled" : "")" data-testid="@item.TestId" title="@(disabled ? "Waiting for server…" : item.Label)">
+                                <i class="fas @item.Icon me-1"></i>@item.Label
+                            </a>
+                        }
+                    </div>
+                </ChildContent>
+            </PageCard>
+
+            @if (GameState.IsConnected && GameState.CurrentSession != null)
+            {
+                <div class="alert alert-success py-2 mt-2 mb-0 small">
+                    <i class="fas fa-check-circle me-1"></i> In session: @GameState.CurrentSession.SessionName
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
 
 @code {
-    private bool isLoading = false;
-    private bool showDebug = false;
-    private string? currentAction = null;
-    private bool hasValidToken = false;
-    private DateTime tokenExpiry = DateTime.MinValue;
-    private DateTime lastUpdate = DateTime.Now;
+    private readonly List<MenuEntry> _menuItems =
+    [
+        new MenuEntry("Single Player", "fa-play", "/singleplayer", "btn-primary", "single-player-btn", true),
+        new MenuEntry("Join Session", "fa-list", "/sessions", "btn-info", "join-session-btn", true),
+        new MenuEntry("Multiplayer", "fa-users", "/multiplayer", "btn-outline-secondary", "multiplayer-btn", false),
+        new MenuEntry("Galaxy", "fa-globe", "/galaxy", "btn-outline-primary", "galaxy-btn", false),
+        new MenuEntry("Options", "fa-cog", "/options", "btn-outline-secondary", "options-btn", false),
+        new MenuEntry("Diagnostics", "fa-heartbeat", "/diagnostics", "btn-outline-info", "diagnostics-btn", false),
+    ];
 
-    private bool isFirstRender = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        Logger.LogInformation("Home component initialized");
-        
-        // Check authentication status (without JS interop)
-        await UpdateAuthenticationStatus();
-        
-        // Subscribe to game state changes
-        GameState.StateChanged += OnGameStateChanged;
-        
-        // Update debug info periodically
-        _ = Task.Run(UpdateDebugInfoPeriodically);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            isFirstRender = false;
-            await JSRuntime.InvokeVoidAsync("console.log", "Home component initialized successfully");
-        }
-    }
-
-    private async Task UpdateAuthenticationStatus()
-    {
-        try
-        {
-            if (TokenProvider != null)
-            {
-                var token = await TokenProvider.GetTokenAsync();
-                hasValidToken = !string.IsNullOrEmpty(token);
-                
-                if (hasValidToken)
-                {
-                    // Simple token expiry assumption (1 hour)
-                    tokenExpiry = DateTime.UtcNow.AddHours(1);
-                }
-                
-                // Only log to JS console if component is already rendered
-                if (!isFirstRender)
-                {
-                    await JSRuntime.InvokeVoidAsync("console.log", $"Authentication status: {hasValidToken}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error checking authentication status");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Authentication error: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task UpdateDebugInfoPeriodically()
-    {
-        while (true)
-        {
-            await Task.Delay(5000); // Update every 5 seconds
-            lastUpdate = DateTime.Now;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void OnGameStateChanged()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    private async Task NavigateToSinglePlayer()
-    {
-        try
-        {
-            isLoading = true;
-            currentAction = "single-player";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "single-player");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/singleplayer");
-            }
-            
-            Logger.LogInformation("Navigating to single player");
-            Navigation.NavigateTo("/singleplayer");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to single player");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task NavigateToMultiplayer()
-    {
-        // Log navigation attempt
-        await JSRuntime.InvokeVoidAsync("console.log", "Attempting to navigate to multiplayer");
-        
-        try
-        {
-            isLoading = true;
-            currentAction = "multiplayer";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "multiplayer");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/multiplayer");
-            }
-            
-            Logger.LogInformation("Navigating to multiplayer");
-            Navigation.NavigateTo("/multiplayer");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to multiplayer");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task NavigateToSessions()
-    {
-        try
-        {
-            isLoading = true;
-            currentAction = "join-session";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "join-session");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/sessions");
-            }
-            
-            Logger.LogInformation("Navigating to sessions");
-            Navigation.NavigateTo("/sessions");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to sessions");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task NavigateToOptions()
-    {
-        try
-        {
-            isLoading = true;
-            currentAction = "options";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "options");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/options");
-            }
-            
-            Logger.LogInformation("Navigating to options");
-            Navigation.NavigateTo("/options");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to options");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task NavigateToDiagnostics()
-    {
-        try
-        {
-            isLoading = true;
-            currentAction = "diagnostics";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "diagnostics");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/diagnostics");
-            }
-            
-            Logger.LogInformation("Navigating to diagnostics");
-            Navigation.NavigateTo("/diagnostics");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to diagnostics");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task NavigateToTest()
-    {
-        try
-        {
-            isLoading = true;
-            currentAction = "test";
-            StateHasChanged();
-            
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("debugButtonClick", "test");
-                await JSRuntime.InvokeVoidAsync("debugNavigation", "/test");
-            }
-            
-            Logger.LogInformation("Navigating to test page");
-            Navigation.NavigateTo("/test");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error navigating to test page");
-            if (!isFirstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Navigation error: {ex.Message}");
-            }
-        }
-        finally
-        {
-            isLoading = false;
-            currentAction = null;
-            StateHasChanged();
-        }
-    }
-
-    public void Dispose()
-    {
-        GameState.StateChanged -= OnGameStateChanged;
-    }
+    private sealed record MenuEntry(string Label, string Icon, string Route, string CssClass, string TestId, bool RequiresSignalR);
 }
-
-@implements IDisposable

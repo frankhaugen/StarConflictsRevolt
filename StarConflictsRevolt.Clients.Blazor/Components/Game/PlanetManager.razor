@@ -230,10 +230,9 @@
         // TODO: Implement planet details modal
     }
 
-    private void ClosePlanetManager()
-    {
-        // This would be handled by the parent component
-    }
+    private async Task ClosePlanetManager() => await OnClose.InvokeAsync();
+
+    [Parameter] public EventCallback OnClose { get; set; }
 
     private string GetPlanetName(Guid planetId)
     {
