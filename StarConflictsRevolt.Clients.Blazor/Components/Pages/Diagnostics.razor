@@ -1,8 +1,10 @@
 @page "/diagnostics"
+@rendermode InteractiveServer
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
 @using StarConflictsRevolt.Clients.Blazor.Models
 @using StarConflictsRevolt.Clients.Shared.Authentication
+@using StarConflictsRevolt.Clients.Shared.Http
 @inject IGameStateService GameState
 @inject BlazorSignalRService SignalRService
 @inject TelemetryService TelemetryService
@@ -11,6 +13,7 @@
 @inject ITokenProvider TokenProvider
 @inject IJSRuntime JSRuntime
 @inject IJavaScriptInteropService JsInterop
+@inject IHttpApiClient HttpApiClient
 
 <PageTitle>System Diagnostics</PageTitle>
 
@@ -19,21 +22,83 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 data-testid="diagnostics-title"><i class="fas fa-heartbeat text-danger"></i> System Diagnostics</h1>
-                <div>
-                    <button data-testid="refresh-btn" class="btn btn-outline-primary me-2" @onclick="RefreshData" disabled="@isLoading">
-                        @if (isLoading)
+                <button data-testid="refresh-btn" class="btn btn-outline-primary" @onclick="RefreshData" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="fas fa-sync-alt"></i>
+                    }
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Health Checks -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card scr-panel">
+                <div class="card-header">
+                    <h5 data-testid="health-checks-header"><i class="fas fa-stethoscope"></i> API Health Checks</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Ping API endpoints (raw GET, no pre-check). Results show status code, duration, and response body.</p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="btn scr-hud-btn primary" data-testid="health-check-root" @onclick='() => RunHealthCheck("/")' disabled="@healthCheckRunning">
+                            Check GET /
+                        </button>
+                        <button type="button" class="btn scr-hud-btn primary" data-testid="health-check-health" @onclick='() => RunHealthCheck("/health")' disabled="@healthCheckRunning">
+                            Check GET /health
+                        </button>
+                        <button type="button" class="btn scr-hud-btn primary" data-testid="health-check-game" @onclick='() => RunHealthCheck("/health/game")' disabled="@healthCheckRunning">
+                            Check GET /health/game
+                        </button>
+                        <button type="button" class="btn scr-hud-btn" data-testid="health-check-all" @onclick="RunAllHealthChecks" disabled="@healthCheckRunning">
+                            Check all
+                        </button>
+                    </div>
+                    @if (healthCheckResult != null)
+                    {
+                        <div class="health-result border rounded p-3 mb-2" data-testid="health-check-result">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span><strong>@healthCheckResult.Path</strong></span>
+                                <span class="badge @(healthCheckResult.StatusCode >= 200 && healthCheckResult.StatusCode < 300 ? "bg-success" : "bg-danger")">@healthCheckResult.StatusCode</span>
+                            </div>
+                            <div class="small text-muted mt-1">@healthCheckResult.DurationMs ms</div>
+                            @if (!string.IsNullOrEmpty(healthCheckResult.Error))
+                            {
+                                <pre class="small text-danger mt-2 mb-0">@healthCheckResult.Error</pre>
+                            }
+                            else if (!string.IsNullOrEmpty(healthCheckResult.Body))
+                            {
+                                <pre class="small mt-2 mb-0 text-break">@healthCheckResult.Body</pre>
+                            }
+                        </div>
+                    }
+                    @if (healthCheckResults?.Count > 0)
+                    {
+                        @foreach (var r in healthCheckResults)
                         {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <div class="health-result border rounded p-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <span><strong>@r.Path</strong></span>
+                                    <span class="badge @(r.StatusCode >= 200 && r.StatusCode < 300 ? "bg-success" : "bg-danger")">@r.StatusCode</span>
+                                </div>
+                                <div class="small text-muted mt-1">@r.DurationMs ms</div>
+                                @if (!string.IsNullOrEmpty(r.Error))
+                                {
+                                    <pre class="small text-danger mt-2 mb-0">@r.Error</pre>
+                                }
+                                else if (!string.IsNullOrEmpty(r.Body))
+                                {
+                                    <pre class="small mt-2 mb-0 text-break">@r.Body</pre>
+                                }
+                            </div>
                         }
-                        else
-                        {
-                            <i class="fas fa-sync-alt"></i>
-                        }
-                        Refresh
-                    </button>
-                    <button data-testid="back-btn" class="btn btn-outline-secondary" @onclick="NavigateToHome">
-                        <i class="fas fa-arrow-left"></i> Back to Menu
-                    </button>
+                    }
                 </div>
             </div>
         </div>
@@ -250,6 +315,56 @@
     </div>
 
     <div class="row">
+        <!-- See server events (tick / ReceiveUpdates batches) -->
+        <div class="col-12 mb-4">
+            <div class="card scr-panel">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 data-testid="server-events-header"><i class="fas fa-broadcast-tower"></i> See server events</h5>
+                    <button data-testid="clear-server-events-btn" class="btn btn-sm btn-outline-secondary" @onclick="ClearServerEvents">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Each row is a batch of updates received from the server (per tick when something changed). Join a session and play to see events.</p>
+                    <div data-testid="server-events-log" class="server-events-log" style="height: 320px; overflow-y: auto; font-family: var(--bs-font-monospace); font-size: 0.8rem;">
+                        @foreach (var batch in serverEventBatches.AsEnumerable().Reverse().Take(30))
+                        {
+                            <div class="server-event-batch border-bottom mb-2 pb-2">
+                                <div class="d-flex justify-content-between align-items-center text-nowrap">
+                                    <span class="text-info">[@batch.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                    <span class="badge bg-secondary">@batch.Updates.Count update@(batch.Updates.Count == 1 ? "" : "s")</span>
+                                </div>
+                                <ul class="list-unstyled mb-0 mt-1 small">
+                                    @foreach (var u in batch.Updates.Take(20))
+                                    {
+                                        <li class="text-break">
+                                            <span class="text-warning">@u.Type</span> <span class="text-muted">@u.Id.ToString("N")[..8]…</span>
+                                            @if (u.Data != null)
+                                            {
+                                                var raw = u.Data.Value.GetRawText();
+                                                var preview = raw.Length > 120 ? raw.Substring(0, 120) + "…" : raw;
+                                                <span class="d-block text-muted ms-2">@preview</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                                @if (batch.Updates.Count > 20)
+                                {
+                                    <div class="small text-muted mt-1">+ @(batch.Updates.Count - 20) more</div>
+                                }
+                            </div>
+                        }
+                        @if (!serverEventBatches.Any())
+                        {
+                            <div class="text-muted small">No server events yet. Join a session to see ReceiveUpdates batches (each tick with changes).</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
         <!-- Performance Metrics -->
         <div class="col-12 mb-4">
             <div class="card">
@@ -313,6 +428,9 @@
 
 @code {
     private bool isLoading = false;
+    private bool healthCheckRunning = false;
+    private HealthCheckResult? healthCheckResult = null;
+    private List<HealthCheckResult>? healthCheckResults = null;
     private bool signalRConnected = false;
     private int signalRMessageCount = 0;
     private int signalRReconnectCount = 0;
@@ -337,6 +455,10 @@
     
     // Raw state variables
     private string rawStateJson = "Loading...";
+
+    // Server events (ReceiveUpdates batches per tick)
+    private readonly List<ServerEventBatch> serverEventBatches = new();
+    private const int MaxServerEventBatches = 50;
 
     private bool isFirstRender = true;
 
@@ -522,6 +644,17 @@
         signalRMessageCount += updates.Count;
         lastSignalRMessage = DateTime.Now;
         AddLogEntry("info", $"Received {updates.Count} SignalR updates");
+        // Append to server events view (each batch = one tick’s worth of updates)
+        serverEventBatches.Add(new ServerEventBatch(DateTime.Now, new List<GameObjectUpdate>(updates)));
+        while (serverEventBatches.Count > MaxServerEventBatches)
+            serverEventBatches.RemoveAt(0);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ClearServerEvents()
+    {
+        serverEventBatches.Clear();
+        StateHasChanged();
     }
 
     private void OnSignalRConnectionClosed(Exception? exception)
@@ -702,10 +835,95 @@
         }
     }
 
-    private void NavigateToHome()
+    private async Task RunHealthCheck(string path)
     {
-        Navigation.NavigateTo("/");
+        healthCheckRunning = true;
+        healthCheckResults = null;
+        healthCheckResult = null;
+        StateHasChanged();
+        try
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var response = await HttpApiClient.GetResponseAsync(path, default);
+            sw.Stop();
+            var body = await response.Content.ReadAsStringAsync();
+            if (body.Length > 500) body = body.Substring(0, 500) + "...";
+            healthCheckResult = new HealthCheckResult
+            {
+                Path = path,
+                StatusCode = (int)response.StatusCode,
+                DurationMs = sw.ElapsedMilliseconds,
+                Body = body,
+                Error = null
+            };
+            AddLogEntry("info", $"Health check {path}: {(int)response.StatusCode} ({sw.ElapsedMilliseconds} ms)");
+        }
+        catch (Exception ex)
+        {
+            healthCheckResult = new HealthCheckResult
+            {
+                Path = path,
+                StatusCode = -1,
+                DurationMs = 0,
+                Body = null,
+                Error = ex.Message
+            };
+            AddLogEntry("error", $"Health check {path}: {ex.Message}");
+        }
+        healthCheckRunning = false;
+        StateHasChanged();
     }
+
+    private async Task RunAllHealthChecks()
+    {
+        healthCheckRunning = true;
+        healthCheckResult = null;
+        healthCheckResults = new List<HealthCheckResult>();
+        StateHasChanged();
+        foreach (var path in new[] { "/", "/health", "/health/game" })
+        {
+            try
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var response = await HttpApiClient.GetResponseAsync(path, default);
+                sw.Stop();
+                var body = await response.Content.ReadAsStringAsync();
+                if (body.Length > 400) body = body.Substring(0, 400) + "...";
+                healthCheckResults.Add(new HealthCheckResult
+                {
+                    Path = path,
+                    StatusCode = (int)response.StatusCode,
+                    DurationMs = sw.ElapsedMilliseconds,
+                    Body = body,
+                    Error = null
+                });
+            }
+            catch (Exception ex)
+            {
+                healthCheckResults.Add(new HealthCheckResult
+                {
+                    Path = path,
+                    StatusCode = -1,
+                    DurationMs = 0,
+                    Body = null,
+                    Error = ex.Message
+                });
+            }
+        }
+        healthCheckRunning = false;
+        StateHasChanged();
+    }
+
+    private sealed class HealthCheckResult
+    {
+        public string Path { get; set; } = "";
+        public int StatusCode { get; set; }
+        public long DurationMs { get; set; }
+        public string? Body { get; set; }
+        public string? Error { get; set; }
+    }
+
+    private sealed record ServerEventBatch(DateTime Timestamp, List<GameObjectUpdate> Updates);
 
     private async Task RequestNewToken()
     {

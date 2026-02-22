@@ -41,6 +41,7 @@ public class BlazorApplicationStartupTests
 
         // Add Blazor-specific services
         builder.Services.AddSingleton<TelemetryService>();
+        builder.Services.AddScoped<StarConflictsRevolt.Clients.Blazor.Services.IClientIdProvider, StarConflictsRevolt.Tests.TestingInfrastructure.FakeClientIdProvider>();
         builder.Services.AddScoped<IGameStateService, GameStateService>();
         builder.Services.AddScoped<BlazorSignalRService>();
 

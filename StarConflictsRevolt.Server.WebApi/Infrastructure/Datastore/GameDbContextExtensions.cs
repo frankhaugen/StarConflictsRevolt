@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
@@ -53,15 +53,18 @@ public static class GameDbContextExtensions
                ?? throw new KeyNotFoundException($"Client with ID {clientId} not found.");
     }
 
-    public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, SessionType sessionType, CancellationToken cancellationToken = default)
+    public static async Task<Guid> CreateSessionAsync(this GameDbContext context, string sessionName, SessionType sessionType, string? clientId = null, CancellationToken cancellationToken = default)
     {
+        // Store player-tracking id in PlayerId (no FK). Leave ClientId null to avoid FK_Sessions_Clients_ClientId violation.
         var session = new Session
         {
             Id = IGameObject.CreateId(),
             SessionName = sessionName,
             Created = DateTime.UtcNow,
             IsActive = true,
-            SessionType = sessionType
+            SessionType = sessionType,
+            ClientId = null,
+            PlayerId = clientId
         };
 
         var entityEntry = context.Sessions.Add(session);
@@ -93,11 +96,12 @@ public static class GameDbContextExtensions
             .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
     }
 
-    public static async Task<List<Session>> GetActiveSessionsAsync(this GameDbContext context, string clientId, CancellationToken cancellationToken = default)
+    /// <summary>Gets active sessions for a player (by PlayerId). Used for single-player resume.</summary>
+    public static async Task<List<Session>> GetActiveSessionsAsync(this GameDbContext context, string playerId, CancellationToken cancellationToken = default)
     {
         return await context.Sessions
             .Where(s => s.IsActive)
-            .Where(s => s.ClientId == clientId)
+            .Where(s => s.PlayerId == playerId)
             .ToListAsync(cancellationToken);
     }
 }

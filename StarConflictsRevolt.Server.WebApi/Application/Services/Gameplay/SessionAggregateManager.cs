@@ -17,15 +17,17 @@ public class SessionAggregateManager
     private readonly ConcurrentDictionary<Guid, SessionAggregate> _aggregates = new();
     private readonly ConcurrentDictionary<Guid, int> _eventCounts = new();
     private readonly IEventStore _eventStore;
+    private readonly IGamePersistence? _persistence;
     private readonly ILogger<SessionAggregateManager> _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ConcurrentDictionary<Guid, World> _previousWorldStates = new();
 
-    public SessionAggregateManager(IEventStore eventStore, ILogger<SessionAggregateManager> logger, ILoggerFactory loggerFactory)
+    public SessionAggregateManager(IEventStore eventStore, ILogger<SessionAggregateManager> logger, ILoggerFactory loggerFactory, IGamePersistence? persistence = null)
     {
         _eventStore = eventStore;
         _logger = logger;
         _loggerFactory = loggerFactory;
+        _persistence = persistence;
     }
 
     /// <summary>
@@ -137,10 +139,14 @@ public class SessionAggregateManager
 
     public async Task<bool> SessionExistsAsync(Guid worldId)
     {
-        // In-memory aggregate (e.g. newly created session with no events yet)
         if (_aggregates.ContainsKey(worldId))
             return true;
-        // Event store has history for this world
+        if (_persistence != null)
+        {
+            var session = await _persistence.GetSessionAsync(worldId, CancellationToken.None);
+            if (session != null && session.IsActive)
+                return true;
+        }
         if (_eventStore is RavenEventStore ravenStore)
         {
             var events = ravenStore.GetEventsForWorld(worldId);

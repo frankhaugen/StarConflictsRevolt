@@ -2,100 +2,40 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    background: var(--scr-bg);
 }
 
-main {
+main.scr-main {
     flex: 1;
+    background: var(--scr-bg);
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, var(--scr-sidebar-start) 0%, var(--scr-sidebar-end) 70%);
+.scr-sidebar {
+    background: var(--scr-sidebar-bg);
+    border-right: 1px solid var(--scr-sidebar-border);
+    box-shadow: 2px 0 12px rgba(0, 212, 255, 0.06);
 }
 
-.top-row {
-    background-color: var(--scr-surface-elevated, #1e293b);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-}
-
-.top-row ::deep a, .top-row ::deep .btn-link {
-    white-space: nowrap;
-    margin-left: 1.5rem;
-    text-decoration: none;
-    color: var(--scr-sidebar-text, #e2e8f0);
-}
-
-.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-    text-decoration: underline;
-    color: var(--scr-sidebar-text-active, #fff);
-}
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
+.content {
+    padding-top: 0.75rem;
 }
 
 @media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
+    .page { flex-direction: row; }
+    .scr-sidebar {
+        width: 200px;
+        min-height: 100vh;
         position: sticky;
         top: 0;
     }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
+    .content { padding-left: 1rem; padding-right: 1rem; }
 }
 
 #blazor-error-ui {
-    color-scheme: light only;
     background: var(--scr-warning);
-    color: var(--scr-surface);
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
+    color: var(--scr-bg);
+    border-top: 1px solid var(--scr-warning);
+    padding: 0.5rem 1rem;
 }
-
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+#blazor-error-ui .dismiss { cursor: pointer; }

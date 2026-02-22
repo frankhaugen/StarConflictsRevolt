@@ -1,10 +1,10 @@
 @* Shared game view: sidebar (back, session, quick actions) + main content. *@
 <div class="container-fluid h-100">
     <div class="row h-100">
-        <div data-testid="game-sidebar" class="col-md-3 bg-dark text-light p-3">
+        <div data-testid="game-sidebar" class="col-md-3 scr-game-sidebar p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 data-testid="game-controls-header" class="mb-0">@SidebarTitle</h5>
-                <a href="/" class="btn btn-outline-light btn-sm" data-testid="home-btn"><i class="fas fa-home"></i></a>
+                <h5 data-testid="game-controls-header" class="mb-0 scr-panel-title">@SidebarTitle</h5>
+                <a href="/" class="btn scr-hud-btn btn-sm" data-testid="home-btn"><i class="fas fa-home"></i></a>
             </div>
             @if (SessionInfo != null)
             {
@@ -17,7 +17,7 @@
             @if (QuickActions != null)
             {
                 <div class="mb-3">
-                    <h6 data-testid="quick-actions-header">Quick Actions</h6>
+                    <h6 data-testid="quick-actions-header" class="scr-panel-title small">[ ACTIONS ]</h6>
                     <div data-testid="quick-actions" class="d-grid gap-2">@QuickActions</div>
                 </div>
             }

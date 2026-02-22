@@ -1,8 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
@@ -48,6 +46,7 @@ public static class SessionEndpointHandler
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
                 var worldFactory = context.RequestServices.GetRequiredService<WorldFactory>();
+                var persistence = context.RequestServices.GetRequiredService<IGamePersistence>();
                 var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
                 if (request == null || string.IsNullOrWhiteSpace(request.SessionName))
                 {
@@ -63,13 +62,46 @@ public static class SessionEndpointHandler
                     _ => SessionType.Multiplayer // Default to multiplayer
                 };
 
-                var sessionId = await sessionService.CreateSessionAsync(request.SessionName, sessionType, context.RequestAborted);
-                // Generate default galaxy (star systems and planets) and create session with that world
-                var world = worldFactory.CreateDefaultWorld();
-                world.Id = sessionId; // Tie world to session so lookups by sessionId find it
-                sessionManagerService.CreateSession(sessionId, world);
+                // Player tracking: prefer request body, then auth "sub" or "nameidentifier"
+                var clientId = request.ClientId;
+                if (string.IsNullOrWhiteSpace(clientId) && context.User.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = context.User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "nameidentifier" || c.Type == "userid");
+                    if (!string.IsNullOrWhiteSpace(idClaim?.Value))
+                        clientId = idClaim.Value;
+                }
+
+                // Single-player resume: return existing session for this player instead of creating a new world
+                if (sessionType == SessionType.SinglePlayer && !string.IsNullOrWhiteSpace(clientId))
+                {
+                    var existingSessions = await persistence.GetActiveSessionsByPlayerAsync(clientId, context.RequestAborted);
+                    var existing = existingSessions
+                        .Where(s => s.SessionType == SessionType.SinglePlayer)
+                        .OrderByDescending(s => s.Created)
+                        .FirstOrDefault();
+                    if (existing != null)
+                    {
+                        var world = sessionManagerService.HasAggregate(existing.Id)
+                            ? sessionManagerService.GetAggregate(existing.Id)!.World
+                            : worldFactory.CreateDefaultWorld();
+                        if (world.Id != existing.Id)
+                        {
+                            world.Id = existing.Id;
+                            if (!sessionManagerService.HasAggregate(existing.Id))
+                                sessionManagerService.CreateSession(existing.Id, world);
+                        }
+                        context.Response.StatusCode = 200;
+                        await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = existing.Id, World = world.ToDto() }, context.RequestAborted);
+                        return;
+                    }
+                }
+
+                var sessionId = await sessionService.CreateSessionAsync(request.SessionName, sessionType, string.IsNullOrWhiteSpace(clientId) ? null : clientId, context.RequestAborted);
+                var newWorld = worldFactory.CreateDefaultWorld();
+                newWorld.Id = sessionId;
+                sessionManagerService.CreateSession(sessionId, newWorld);
                 context.Response.StatusCode = 201;
-                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = newWorld.ToDto() }, context.RequestAborted);
             })
             .WithName("CreateGameSession")
             .RequireAuthorization();
@@ -84,12 +116,12 @@ public static class SessionEndpointHandler
                     return;
                 }
 
-                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var persistence = context.RequestServices.GetRequiredService<IGamePersistence>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
                 var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
 
                 // Check if session exists
-                var session = await dbContext.GetSessionAsync(sessionId, context.RequestAborted);
+                var session = await persistence.GetSessionAsync(sessionId, context.RequestAborted);
                 if (session == null)
                 {
                     context.Response.StatusCode = 404;
@@ -112,22 +144,18 @@ public static class SessionEndpointHandler
 
         app.MapGet("/game/sessions", async context =>
             {
-                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
-                var sessions = await dbContext.Sessions
-                    .Where(s => s.IsActive)
-                    .OrderByDescending(s => s.Created)
-                    .Select(s => new SessionDto()
-                    {
-                        Id = s.Id,
-                        SessionName = s.SessionName,
-                        Created = s.Created,
-                        SessionType = s.SessionType.ToString(),
-                        Ended = s.Ended,
-                        IsActive = s.IsActive
-                    })
-                    .ToListAsync(context.RequestAborted);
-
-                await context.Response.WriteAsJsonAsync(sessions, context.RequestAborted);
+                var persistence = context.RequestServices.GetRequiredService<IGamePersistence>();
+                var sessions = await persistence.ListActiveSessionsAsync(context.RequestAborted);
+                var dtos = sessions.Select(s => new SessionDto
+                {
+                    Id = s.Id,
+                    SessionName = s.SessionName,
+                    Created = s.Created,
+                    SessionType = s.SessionType.ToString(),
+                    Ended = s.Ended,
+                    IsActive = s.IsActive
+                }).ToList();
+                await context.Response.WriteAsJsonAsync(dtos, context.RequestAborted);
             })
             .WithName("ListGameSessions")
             .RequireAuthorization();
@@ -142,19 +170,11 @@ public static class SessionEndpointHandler
                     return;
                 }
 
-                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
-                var session = await dbContext.Sessions
-                    .Where(s => s.Id == sessionId && s.IsActive)
-                    .Select(s => new SessionDto()
-                    {
-                        Id = s.Id,
-                        SessionName = s.SessionName,
-                        Created = s.Created,
-                        SessionType = s.SessionType.ToString(),
-                        Ended = s.Ended,
-                        IsActive = s.IsActive
-                    })
-                    .FirstOrDefaultAsync(context.RequestAborted);
+                var persistence = context.RequestServices.GetRequiredService<IGamePersistence>();
+                var s = await persistence.GetSessionAsync(sessionId, context.RequestAborted);
+                var session = s != null && s.IsActive
+                    ? new SessionDto { Id = s.Id, SessionName = s.SessionName, Created = s.Created, SessionType = s.SessionType.ToString(), Ended = s.Ended, IsActive = s.IsActive }
+                    : null;
 
                 if (session == null)
                 {
@@ -178,10 +198,10 @@ public static class SessionEndpointHandler
                     return;
                 }
 
-                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var persistence = context.RequestServices.GetRequiredService<IGamePersistence>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
 
-                var session = await dbContext.GetSessionAsync(sessionId, context.RequestAborted);
+                var session = await persistence.GetSessionAsync(sessionId, context.RequestAborted);
                 if (session == null)
                 {
                     context.Response.StatusCode = 404;
@@ -189,7 +209,7 @@ public static class SessionEndpointHandler
                     return;
                 }
 
-                await dbContext.EndSessionAsync(sessionId, context.RequestAborted);
+                await persistence.EndSessionAsync(sessionId, context.RequestAborted);
                 sessionManagerService.RemoveAggregate(sessionId);
 
                 context.Response.StatusCode = 204;

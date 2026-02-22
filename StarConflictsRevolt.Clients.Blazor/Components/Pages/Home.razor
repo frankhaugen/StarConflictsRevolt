@@ -10,52 +10,32 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="text-center mb-3">
-                <h1 data-testid="home-title" class="display-5 text-primary">Star Conflicts Revolt</h1>
-                <p class="text-muted small mb-0">Start a solo game or join a session.</p>
-            </div>
+        <div class="col-md-8 col-lg-6 text-center">
+            <h1 data-testid="home-title" class="scr-title mb-4">STAR CONFLICTS REVOLT</h1>
 
-            <PageCard Title="Menu">
-                <Toolbar>
-                    @if (!SignalR.IsConnected)
-                    {
-                        <span class="badge bg-secondary">Connecting…</span>
-                    }
-                </Toolbar>
-                <ChildContent>
-                    <div data-testid="main-menu-buttons" class="d-grid gap-2">
-                        @foreach (var item in _menuItems)
-                        {
-                            var disabled = item.RequiresSignalR && !SignalR.IsConnected;
-                            <a href="@item.Route" class="btn @item.CssClass btn-lg @(disabled ? "disabled" : "")" data-testid="@item.TestId" title="@(disabled ? "Waiting for server…" : item.Label)">
-                                <i class="fas @item.Icon me-1"></i>@item.Label
-                            </a>
-                        }
-                    </div>
-                </ChildContent>
-            </PageCard>
-
-            @if (GameState.IsConnected && GameState.CurrentSession != null)
+            @if (!SignalR.IsConnected)
             {
-                <div class="alert alert-success py-2 mt-2 mb-0 small">
-                    <i class="fas fa-check-circle me-1"></i> In session: @GameState.CurrentSession.SessionName
-                </div>
+                <p class="text-muted mb-3"><i class="fas fa-spinner fa-spin me-2"></i>Connecting to server…</p>
+                <p class="small text-muted">Single Player and Join Session are available from the menu once connected.</p>
+            }
+            else if (GameState.CurrentSession != null)
+            {
+                <p class="scr-text-bright mb-2">Session active</p>
+                <p class="text-muted small mb-3">@GameState.CurrentSession.SessionName</p>
+                <a href="/galaxy" class="btn scr-hud-btn primary btn-lg" data-testid="continue-btn">
+                    <i class="fas fa-play me-2"></i>Continue
+                </a>
+            }
+            else
+            {
+                <p class="scr-text-bright mb-3">Ready</p>
+                <a href="/singleplayer" class="btn scr-hud-btn primary btn-lg" data-testid="single-player-btn">
+                    <i class="fas fa-play me-2"></i>New game
+                </a>
             }
         </div>
     </div>
 </div>
 
 @code {
-    private readonly List<MenuEntry> _menuItems =
-    [
-        new MenuEntry("Single Player", "fa-play", "/singleplayer", "btn-primary", "single-player-btn", true),
-        new MenuEntry("Join Session", "fa-list", "/sessions", "btn-info", "join-session-btn", true),
-        new MenuEntry("Multiplayer", "fa-users", "/multiplayer", "btn-outline-secondary", "multiplayer-btn", false),
-        new MenuEntry("Galaxy", "fa-globe", "/galaxy", "btn-outline-primary", "galaxy-btn", false),
-        new MenuEntry("Options", "fa-cog", "/options", "btn-outline-secondary", "options-btn", false),
-        new MenuEntry("Diagnostics", "fa-heartbeat", "/diagnostics", "btn-outline-info", "diagnostics-btn", false),
-    ];
-
-    private sealed record MenuEntry(string Label, string Icon, string Route, string CssClass, string TestId, bool RequiresSignalR);
 }

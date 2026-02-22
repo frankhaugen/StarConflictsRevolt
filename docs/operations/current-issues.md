@@ -45,3 +45,6 @@ Paste Aspire dashboard logs, browser console errors, or terminal output here.
 - **Galaxy not generating**: Fixed create-session flow so the galaxy is generated and returned.
   - Create session now builds the default world (with star systems and planets) via `WorldFactory.CreateDefaultWorld()`, assigns `world.Id = sessionId`, registers it with `SessionAggregateManager`, and returns that world in the response so the client gets the full galaxy.
   - Galaxy view no longer uses random positions: star systems are placed using `StarSystemDto.Coordinates` mapped to percentage (10–90%) so positions are stable and match server data.
+- **Player tracking (no new world every time)**:
+  - Client: persistent `PlayerId` in `localStorage`; `IClientIdProvider` / `ClientIdProvider` supply it; sent as `ClientId` in create-session request.
+  - Server: `CreateSessionRequest.ClientId`; `Session.ClientId` stored in DB; for SinglePlayer + clientId, server returns existing active single-player session for that client (and its world) instead of creating a new one. See [reference/architecture.md](../reference/architecture.md#player-tracking-single-player-resume).

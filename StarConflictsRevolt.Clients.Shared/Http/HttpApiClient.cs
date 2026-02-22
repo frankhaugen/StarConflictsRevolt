@@ -21,6 +21,11 @@ public class HttpApiClient : IHttpApiClient
         return await Client.GetAsync("/health/game", ct);
     }
 
+    public async Task<HttpResponseMessage> GetResponseAsync(string uri, CancellationToken ct = default)
+    {
+        return await Client.GetAsync(uri, ct);
+    }
+
     public async Task<T?> GetAsync<T>(string uri, CancellationToken ct = default)
     {
         await EnsureHealthAsync(ct);

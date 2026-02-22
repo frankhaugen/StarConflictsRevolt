@@ -12,6 +12,7 @@ public class GameStateService : IGameStateService
     private readonly IHttpApiClient _httpClient;
     private readonly ISignalRService _signalRService;
     private readonly TelemetryService _telemetryService;
+    private readonly IClientIdProvider _clientIdProvider;
     private readonly ActivitySource _activitySource;
     private readonly ILogger<GameStateService> _logger;
     private WorldDto? _currentWorld;
@@ -22,11 +23,12 @@ public class GameStateService : IGameStateService
 
     private readonly SynchronizationContext? _uiContext;
 
-    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, ILogger<GameStateService> logger)
+    public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, IClientIdProvider clientIdProvider, ILogger<GameStateService> logger)
     {
         _httpClient = httpClient;
         _signalRService = signalRService;
         _telemetryService = telemetryService;
+        _clientIdProvider = clientIdProvider;
         _logger = logger;
         _activitySource = new ActivitySource("StarConflictsRevolt.Blazor");
         
@@ -64,8 +66,9 @@ public class GameStateService : IGameStateService
             _telemetryService.RecordHttpRequest();
             var stopwatch = Stopwatch.StartNew();
             
-            _logger.LogDebug("Sending create session request to server");
-            var sessionResponse = await _httpClient.CreateNewSessionAsync(sessionName, "SinglePlayer");
+            var clientId = await _clientIdProvider.GetClientIdAsync(CancellationToken.None);
+            _logger.LogDebug("Sending create session request to server (ClientId: {ClientId})", clientId?.Length > 0 ? clientId[..Math.Min(8, clientId.Length)] + "…" : "none");
+            var sessionResponse = await _httpClient.CreateNewSessionAsync(sessionName, "SinglePlayer", clientId);
             
             stopwatch.Stop();
             _telemetryService.RecordHttpResponseTime(stopwatch.Elapsed.TotalSeconds);
@@ -223,13 +226,20 @@ public class GameStateService : IGameStateService
     {
         try
         {
-            var result = await _httpClient.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId);
+            var worldId = _currentSession?.Id;
+            if (!worldId.HasValue)
+            {
+                _logger.LogWarning("MoveFleetAsync called with no active session; server will return 404 without worldId.");
+                return false;
+            }
+            var clientId = await _clientIdProvider.GetClientIdAsync(CancellationToken.None);
+            var playerId = Guid.TryParse(clientId, out var g) ? g : Guid.Empty;
+            var result = await _httpClient.MoveFleetAsync(fleetId, fromPlanetId, toPlanetId, worldId, playerId);
             return result;
         }
         catch (Exception ex)
         {
-            // Log error
-            Console.WriteLine($"Error moving fleet: {ex.Message}");
+            _logger.LogError(ex, "Error moving fleet: {Message}", ex.Message);
             return false;
         }
     }

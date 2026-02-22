@@ -1,3 +1,4 @@
+using LiteDB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -11,6 +12,7 @@ using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.PulseFlow;
 using OpenTelemetry.Resources;
@@ -150,14 +152,29 @@ public static class StartupHelper
         Console.WriteLine("Registering RavenDB document store completed.");
     }
 
+    /// <summary>
+    /// Registers LiteDB for session and client persistence (replaces SQL Server for this data).
+    /// Events remain in RavenDB via IEventStore.
+    /// </summary>
+    public static void RegisterLiteDb(WebApplicationBuilder builder)
+    {
+        var connectionString = builder.Configuration.GetConnectionString("liteDb")
+            ?? builder.Configuration["LiteDb:FileName"]
+            ?? "Filename=game.db";
+        if (!connectionString.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase))
+            connectionString = "Filename=" + connectionString;
+        var db = new LiteDatabase(connectionString);
+        builder.Services.AddSingleton<ILiteDatabase>(db);
+        builder.Services.AddSingleton<IGamePersistence, LiteDbGamePersistence>();
+    }
+
     public static void RegisterGameDbContext(WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<GameDbContext>(options =>
         {
             var rawConnectionString = builder.Configuration.GetConnectionString("gameDb");
-            var connectionStringBuilder = new SqlConnectionStringBuilder(rawConnectionString)
+            var connectionStringBuilder = new SqlConnectionStringBuilder(rawConnectionString ?? "")
             {
-                // Ensure the connection string is valid and not using default placeholder
                 ApplicationName = "StarConflictsRevolt.Server.WebApi",
                 MultipleActiveResultSets = true,
                 InitialCatalog = "StarConflictsRevolt"
@@ -169,30 +186,8 @@ public static class StartupHelper
         });
     }
 
-    public static async Task ConfigureAsync(WebApplication app)
+    public static Task ConfigureAsync(WebApplication app)
     {
-        // Run migrations
-        using (var scope = app.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-
-            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-            if (pendingMigrations.Any())
-            {
-                // Clean the database if it exists
-                await dbContext.Database.EnsureDeletedAsync();
-                // await dbContext.Database.EnsureCreatedAsync();
-
-                Console.WriteLine("Applying pending migrations...");
-                await dbContext.Database.MigrateAsync();
-                Console.WriteLine("Migrations applied successfully.");
-            }
-            else
-            {
-                Console.WriteLine("No pending migrations found.");
-            }
-        }
-
         app.UseAuthentication();
         app.UseAuthorization();
         ApiEndpointHandler.MapAllEndpoints(app);
@@ -200,6 +195,7 @@ public static class StartupHelper
         app.MapHub<WorldHub>("/gamehub");
         app.MapHub<GameHub>("/commandhub");
         app.UseCors();
+        return Task.CompletedTask;
     }
 
     public static void RegisterTelemetry(WebApplicationBuilder builder)

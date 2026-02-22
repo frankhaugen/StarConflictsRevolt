@@ -76,10 +76,11 @@
 @code {
     private StarSystemDto? _selected;
 
+    /// <summary>Map world coordinates to CSS left/top %. Y is flipped so world +Y is up on screen.</summary>
     private static (double, double) Coords(Vector2 v)
     {
         var left = 10.0 + (v.X + 1000) / 2000.0 * 80;
-        var top = 10.0 + (v.Y + 1000) / 2000.0 * 80;
+        var top = 90.0 - (v.Y + 1000) / 2000.0 * 80; // flip Y so +Y = up
         return (Math.Clamp(left, 2, 98), Math.Clamp(top, 2, 98));
     }
 }

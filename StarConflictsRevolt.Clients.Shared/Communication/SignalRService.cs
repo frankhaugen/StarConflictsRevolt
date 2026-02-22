@@ -185,12 +185,13 @@ public class SignalRService : ISignalRService
         if (_hubConnection.State != HubConnectionState.Connected)
         {
             _logger.LogInformation("SignalR not yet connected for session {SessionId}, waiting up to 15s...", sessionId);
-            var timeout = TimeSpan.FromSeconds(15);
-            var deadline = DateTime.UtcNow.Add(timeout);
-            while (_hubConnection.State != HubConnectionState.Connected && DateTime.UtcNow < deadline && !_cts.Token.IsCancellationRequested)
+            using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            try
             {
-                await Task.Delay(500, _cts.Token);
+                while (_hubConnection.State != HubConnectionState.Connected && !waitCts.Token.IsCancellationRequested)
+                    await Task.Delay(500, waitCts.Token);
             }
+            catch (OperationCanceledException) { /* timeout */ }
             if (_hubConnection.State != HubConnectionState.Connected)
             {
                 _logger.LogWarning("Cannot join session {SessionId}: SignalR connection not established after waiting", sessionId);
@@ -200,7 +201,7 @@ public class SignalRService : ISignalRService
 
         _currentSessionId = sessionId;
         _logger.LogInformation("Joining world group for session: {SessionId}", sessionId);
-        await _hubConnection.SendAsync("JoinWorld", sessionId.ToString(), _cts.Token);
+        await _hubConnection.SendAsync("JoinWorld", sessionId.ToString(), CancellationToken.None);
         _logger.LogInformation("Successfully joined world group for session {SessionId}", sessionId);
     }
 

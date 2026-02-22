@@ -56,6 +56,21 @@
             }
         }, false);
         
+        // Persistent player id for session resume (player tracking)
+        window.getPlayerId = function() {
+            var key = 'StarConflictsRevolt.PlayerId';
+            try {
+                var id = localStorage.getItem(key);
+                if (!id) {
+                    id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; var v = c === 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });
+                    localStorage.setItem(key, id);
+                }
+                return id;
+            } catch (e) {
+                return 'anonymous-' + Math.random().toString(36).slice(2);
+            }
+        };
+
         // Debug function for navigation
         window.debugNavigation = function(url) {
             console.log('Navigating to:', url, new Date().toISOString());

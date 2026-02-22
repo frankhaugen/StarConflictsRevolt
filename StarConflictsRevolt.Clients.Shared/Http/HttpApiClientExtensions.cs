@@ -6,23 +6,26 @@ namespace StarConflictsRevolt.Clients.Shared.Http;
 public static class HttpApiClientExtensions
 {
     /// <summary>
-    ///     Creates a new game session
+    ///     Creates a new game session or resumes an existing single-player session for the given client id.
     /// </summary>
     /// <param name="client">The HTTP API client</param>
     /// <param name="sessionName">Name of the session</param>
     /// <param name="sessionType">Type of session (SinglePlayer/Multiplayer)</param>
+    /// <param name="clientId">Optional client/player id for player tracking; when set with SinglePlayer, server may return existing session instead of creating a new world.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Session response with session ID and world data</returns>
     public static async Task<SessionResponse?> CreateNewSessionAsync(
         this IHttpApiClient client,
         string sessionName,
         string sessionType = "Multiplayer",
+        string? clientId = null,
         CancellationToken cancellationToken = default)
     {
         var request = new
         {
             SessionName = sessionName,
-            SessionType = sessionType
+            SessionType = sessionType,
+            ClientId = clientId
         };
 
         var response = await client.PostAsync("/game/session", request, cancellationToken);
@@ -166,7 +169,8 @@ public static class HttpApiClientExtensions
     /// <param name="fleetId">Fleet ID to move</param>
     /// <param name="fromPlanetId">Source planet ID</param>
     /// <param name="toPlanetId">Destination planet ID</param>
-    /// <param name="worldId">World ID (optional)</param>
+    /// <param name="worldId">World/session ID (required by server; 404 if missing)</param>
+    /// <param name="playerId">Player ID (Guid) for ownership check; use Guid.Empty if unknown</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if successful</returns>
     public static async Task<bool> MoveFleetAsync(
@@ -174,11 +178,13 @@ public static class HttpApiClientExtensions
         Guid fleetId,
         Guid fromPlanetId,
         Guid toPlanetId,
-        Guid? worldId = null,
+        Guid? worldId,
+        Guid playerId,
         CancellationToken cancellationToken = default)
     {
         var payload = new
         {
+            PlayerId = playerId,
             FleetId = fleetId,
             FromPlanetId = fromPlanetId,
             ToPlanetId = toPlanetId

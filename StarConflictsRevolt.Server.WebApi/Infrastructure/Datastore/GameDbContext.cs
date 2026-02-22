@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
@@ -57,6 +57,10 @@ public class GameDbContext(DbContextOptions<GameDbContext> options, IEnumerable<
             .WithMany(c => c.Sessions)
             .HasForeignKey(s => s.ClientId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Session>()
+            .Property(s => s.PlayerId)
+            .HasMaxLength(200);
 
         modelBuilder.Entity<Client>()
             .HasKey(c => c.Id);

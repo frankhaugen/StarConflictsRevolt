@@ -1,19 +1,18 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 public class SessionService
 {
-    private readonly GameDbContext _dbContext;
+    private readonly IGamePersistence _persistence;
 
-    public SessionService(GameDbContext dbContext)
+    public SessionService(IGamePersistence persistence)
     {
-        _dbContext = dbContext;
+        _persistence = persistence;
     }
 
-    public async Task<Guid> CreateSessionAsync(string sessionName, SessionType sessionType, CancellationToken cancellationToken = default)
+    public Task<Guid> CreateSessionAsync(string sessionName, SessionType sessionType, string? playerId = null, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.CreateSessionAsync(sessionName, sessionType, cancellationToken);
+        return _persistence.CreateSessionAsync(sessionName, sessionType, playerId, cancellationToken);
     }
 }
