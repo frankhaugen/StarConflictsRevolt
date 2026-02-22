@@ -14,15 +14,15 @@ var rootDir = new DirectoryInfo(Path.GetDirectoryName(slnxPath)!);
 var doc = LoadOrCreateSolution(slnxPath);
 var solution = doc.Root ?? throw new InvalidOperationException("Missing <Solution> root.");
 
-// 1. Deployment folder
-var deploymentDir = new DirectoryInfo(Path.Combine(rootDir.FullName, "Deployment"));
-var desiredDeployment = deploymentDir.Exists
-	? deploymentDir.EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+// 1. Github folder (.github directory)
+var githubDir = new DirectoryInfo(Path.Combine(rootDir.FullName, ".github"));
+var desiredGithub = githubDir.Exists
+	? githubDir.EnumerateFiles("*", SearchOption.TopDirectoryOnly)
 		.Select(f => ToRelativePath(f.FullName, rootDir))
 		.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
 		.ToArray()
 	: [];
-var deploymentChanged = UpdateFolder(solution, "/Deployment/", desiredDeployment, "Deployment");
+var githubChanged = UpdateFolder(solution, "/Github/", desiredGithub, "Github");
 
 // 2. Docs — one Folder per subdirectory, declared sequentially (parent before child)
 var docsDir = new DirectoryInfo(Path.Combine(rootDir.FullName, "docs"));
@@ -38,9 +38,9 @@ var rootFiles = rootDir.EnumerateFiles("*", SearchOption.TopDirectoryOnly)
 	.ToArray();
 var solutionItemsChanged = UpdateFolder(solution, "/Solution Items/", rootFiles, "Solution Items");
 
-// Reorder: Projects, Deployment, Solution Items, Docs (improves git diffing — stable sections first, volatile docs last)
+// Reorder: Projects, Github, Solution Items, Docs (improves git diffing — stable sections first, volatile docs last)
 var reordered = ReorderSolution(solution);
-if (!docsChanged && !deploymentChanged && !solutionItemsChanged && !reordered)
+if (!docsChanged && !githubChanged && !solutionItemsChanged && !reordered)
 	return;
 
 // Write back without reformatting everything
@@ -182,7 +182,7 @@ static bool IsManagedFolder(XElement folder)
 	var name = (string?)folder.Attribute("Name");
 	if (string.IsNullOrEmpty(name)) return false;
 	var cmp = StringComparison.OrdinalIgnoreCase;
-	return string.Equals(name, "/Deployment/", cmp) || string.Equals(name, "Deployment", cmp)
+	return string.Equals(name, "/Github/", cmp) || string.Equals(name, "Github", cmp)
 		|| string.Equals(name, "/Solution Items/", cmp) || string.Equals(name, "Solution Items", cmp)
 		|| IsDocsFolder(name);
 }
@@ -192,16 +192,16 @@ static bool ReorderSolution(XElement solution)
 	var projects = solution.Elements("Project").ToList();
 	var allFolders = solution.Elements("Folder").ToList();
 	var unmanagedFolders = allFolders.Where(f => !IsManagedFolder(f)).ToList();
-	var deployment = allFolders.FirstOrDefault(f => string.Equals((string?)f.Attribute("Name"), "/Deployment/", StringComparison.OrdinalIgnoreCase));
+	var github = allFolders.FirstOrDefault(f => string.Equals((string?)f.Attribute("Name"), "/Github/", StringComparison.OrdinalIgnoreCase));
 	var solutionItems = allFolders.FirstOrDefault(f => string.Equals((string?)f.Attribute("Name"), "/Solution Items/", StringComparison.OrdinalIgnoreCase));
 	var docsFolders = allFolders.Where(f => IsDocsFolder((string?)f.Attribute("Name")))
 		.OrderBy(f => (string?)f.Attribute("Name"), StringComparer.OrdinalIgnoreCase)
 		.ToList();
 
-	// Order: Projects, unmanaged folders (unchanged), Deployment, Solution Items, Docs (sequential, last — changes often)
+	// Order: Projects, unmanaged folders (unchanged), Github, Solution Items, Docs (sequential, last — changes often)
 	var elements = projects.Cast<XElement>()
 		.Concat(unmanagedFolders)
-		.Concat(new[] { deployment, solutionItems }.Where(n => n is not null).Cast<XElement>())
+		.Concat(new[] { github, solutionItems }.Where(n => n is not null).Cast<XElement>())
 		.Concat(docsFolders)
 		.ToList();
 

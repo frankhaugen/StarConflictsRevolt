@@ -22,7 +22,7 @@ To revert: `git config --unset core.hooksPath`.
 
 **tools/generate-slnx.cs** keeps the solution file (`.slnx`) in sync with:
 
-- **Deployment/** — top-level files only
+- **.github/** — top-level files only
 - **docs/** — all `*.md` files, one solution folder per docs subdirectory
 - **Solution Items** — root files (excluding `*.slnx`, `*.user`, `pull_request_template.md`)
 
@@ -32,7 +32,7 @@ Run manually from repo root:
 dotnet run --file tools/generate-slnx.cs
 ```
 
-Requires .NET SDK. The pre-commit hook runs this when staged paths include docs, Deployment, or root files; use `git commit --no-verify` to skip once.
+Requires .NET SDK. The pre-commit hook runs this when staged paths include docs, .github, or root files; use `git commit --no-verify` to skip once.
 
 ## Pre-commit hook
 

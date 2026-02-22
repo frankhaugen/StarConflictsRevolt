@@ -49,7 +49,7 @@ $stagedList = $staged -split "`n" | Where-Object { $_.Trim() -ne "" }
 function Test-IsRelevantPath {
     param([string]$path)
     if ($path -match "^docs/") { return $true }
-    if ($path -match "^Deployment/") { return $true }
+    if ($path -match "^\.github/") { return $true }
     if ($path -notmatch "/") {
         foreach ($pat in $ExcludedRootPatterns) {
             if ($path -like $pat) { return $false }

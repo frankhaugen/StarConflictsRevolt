@@ -20,7 +20,7 @@ Requires .NET SDK for the generator. To revert hooks: `git config --unset core.h
 
 ## generate-slnx.cs
 
-Keeps `.slnx` in sync with Deployment/, docs/, and root files. Run manually:
+Keeps `.slnx` in sync with .github/, docs/, and root files. Run manually:
 
 ```bash
 dotnet run --file tools/generate-slnx.cs
@@ -33,8 +33,8 @@ The pre-commit hook runs this when relevant paths are staged; use `--no-verify` 
 ```xml
 <Solution>
   <Project Path="MyProject/MyProject.csproj" />
-  <Folder Name="/Deployment/">
-    <File Path="Deployment/azResource.bicep" />
+  <Folder Name="/Github/">
+    <File Path=".github/workflows/ci.yml" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />

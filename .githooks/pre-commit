@@ -40,14 +40,14 @@ if [ -z "${staged_paths}" ]; then
   exit 0
 fi
 
-# Check for relevant paths: docs/**, Deployment/**, or root-level (excluding sentinels)
+# Check for relevant paths: docs/**, .github/**, or root-level (excluding sentinels)
 has_relevant=0
 only_slnx=1
 while IFS= read -r path; do
   [ -z "$path" ] && continue
   case "$path" in *.slnx) : ;; *) only_slnx=0 ;; esac
   case "$path" in
-    docs/*|Deployment/*) has_relevant=1 ;;
+    docs/*|.github/*) has_relevant=1 ;;
     */*) : ;;
     *.slnx|*.user) : ;;
     "$EXCLUDED_ROOT_FILES") : ;;
