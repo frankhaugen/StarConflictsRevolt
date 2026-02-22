@@ -218,6 +218,17 @@ public class MockGameStateService : IGameStateService
     {
         return Task.FromResult(new List<SessionDto>());
     }
+
+    public Task<bool> DeleteSessionAsync(Guid sessionId)
+    {
+        if (CurrentSession?.Id == sessionId)
+        {
+            CurrentSession = null;
+            CurrentWorld = null;
+            StateChanged?.Invoke();
+        }
+        return Task.FromResult(true);
+    }
     
     public Task<bool> MoveFleetAsync(Guid fleetId, Guid fromPlanetId, Guid toPlanetId)
     {

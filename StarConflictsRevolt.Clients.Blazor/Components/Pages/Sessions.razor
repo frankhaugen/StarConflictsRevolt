@@ -75,13 +75,13 @@
                                             <td>
                                                 @if (session.Id == GameState.CurrentSession?.Id)
                                                 {
-                                                    <button class="btn btn-success btn-sm" @onclick="NavigateToGalaxy">
+                                                    <button class="btn btn-success btn-sm me-1" @onclick="NavigateToGalaxy">
                                                         <i class="fas fa-play"></i> <text>Continue</text>
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <button class="btn btn-primary btn-sm" @onclick="() => JoinSession(session.Id)"
+                                                    <button class="btn btn-primary btn-sm me-1" @onclick="() => JoinSession(session.Id)"
                                                             disabled="@isJoining" title="Join this session">
                                                         @if (joiningSessionId == session.Id)
                                                         {
@@ -94,6 +94,17 @@
                                                         }
                                                     </button>
                                                 }
+                                                <button data-testid="delete-session-btn" class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSession(session.Id)"
+                                                        disabled="@(deletingSessionId == session.Id)" title="Delete this session">
+                                                    @if (deletingSessionId == session.Id)
+                                                    {
+                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    }
+                                                </button>
                                             </td>
                                         </tr>
                                     }
@@ -124,6 +135,7 @@
     private bool isLoading = false;
     private bool isJoining = false;
     private Guid? joiningSessionId = null;
+    private Guid? deletingSessionId = null;
     private string? errorMessage;
 
     private void ClearError() { errorMessage = null; }
@@ -193,6 +205,33 @@
         {
             isJoining = false;
             joiningSessionId = null;
+        }
+    }
+
+    private async Task DeleteSession(Guid sessionId)
+    {
+        deletingSessionId = sessionId;
+        errorMessage = null;
+
+        try
+        {
+            var success = await GameState.DeleteSessionAsync(sessionId);
+            if (success)
+            {
+                await RefreshSessions();
+            }
+            else
+            {
+                errorMessage = "Could not delete this session. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            deletingSessionId = null;
         }
     }
 }

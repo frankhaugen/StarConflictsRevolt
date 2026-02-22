@@ -14,6 +14,7 @@ public interface IGameStateService
     Task<bool> JoinSessionAsync(Guid sessionId);
     Task<bool> LeaveSessionAsync();
     Task<List<SessionDto>> GetAvailableSessionsAsync();
+    Task<bool> DeleteSessionAsync(Guid sessionId);
     Task<bool> MoveFleetAsync(Guid fleetId, Guid fromPlanetId, Guid toPlanetId);
     Task<bool> BuildStructureAsync(Guid planetId, string structureType);
     Task<bool> AttackAsync(Guid attackerFleetId, Guid targetFleetId);

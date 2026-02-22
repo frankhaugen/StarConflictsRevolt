@@ -111,6 +111,22 @@ public static class HttpApiClientExtensions
     }
 
     /// <summary>
+    ///     Deletes (ends) a game session.
+    /// </summary>
+    /// <param name="client">The HTTP API client</param>
+    /// <param name="sessionId">Session ID to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if the session was deleted (204), false otherwise</returns>
+    public static async Task<bool> DeleteSessionAsync(
+        this IHttpApiClient client,
+        Guid sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await client.DeleteAsync($"/game/session/{sessionId}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    /// <summary>
     ///     Moves a fleet from one planet to another
     /// </summary>
     /// <param name="client">The HTTP API client</param>

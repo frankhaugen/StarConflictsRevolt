@@ -47,6 +47,7 @@ public static class SessionEndpointHandler
             {
                 var sessionService = context.RequestServices.GetRequiredService<SessionService>();
                 var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
+                var worldFactory = context.RequestServices.GetRequiredService<WorldFactory>();
                 var request = await context.Request.ReadFromJsonAsync<CreateSessionRequest>(context.RequestAborted);
                 if (request == null || string.IsNullOrWhiteSpace(request.SessionName))
                 {
@@ -63,9 +64,9 @@ public static class SessionEndpointHandler
                 };
 
                 var sessionId = await sessionService.CreateSessionAsync(request.SessionName, sessionType, context.RequestAborted);
-                // Create a default world for the new session with planets
-                var worldService = context.RequestServices.GetRequiredService<WorldService>();
-                var world = await worldService.GetWorldAsync(sessionId, context.RequestAborted);
+                // Generate default galaxy (star systems and planets) and create session with that world
+                var world = worldFactory.CreateDefaultWorld();
+                world.Id = sessionId; // Tie world to session so lookups by sessionId find it
                 sessionManagerService.CreateSession(sessionId, world);
                 context.Response.StatusCode = 201;
                 await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
@@ -165,6 +166,35 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(session, context.RequestAborted);
             })
             .WithName("GetGameSession")
+            .RequireAuthorization();
+
+        app.MapDelete("/game/session/{sessionId}", async context =>
+            {
+                var sessionIdStr = context.Request.RouteValues["sessionId"]?.ToString();
+                if (!Guid.TryParse(sessionIdStr, out var sessionId))
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Invalid session ID");
+                    return;
+                }
+
+                var dbContext = context.RequestServices.GetRequiredService<GameDbContext>();
+                var sessionManagerService = context.RequestServices.GetRequiredService<SessionAggregateManager>();
+
+                var session = await dbContext.GetSessionAsync(sessionId, context.RequestAborted);
+                if (session == null)
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("Session not found");
+                    return;
+                }
+
+                await dbContext.EndSessionAsync(sessionId, context.RequestAborted);
+                sessionManagerService.RemoveAggregate(sessionId);
+
+                context.Response.StatusCode = 204;
+            })
+            .WithName("DeleteGameSession")
             .RequireAuthorization();
     }
 }

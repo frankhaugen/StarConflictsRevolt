@@ -33,3 +33,15 @@ Paste Aspire dashboard logs, browser console errors, or terminal output here.
 ## What you did / what happened
 
 (Optional: short description, e.g. "Clicked Join on session X, got SignalR not established" or "Blazor page shows blank after create session.")
+
+---
+
+## Resolved (2025-02-22)
+
+- **No delete for galaxies/sessions**: Added delete session API and UI.
+  - API: `DELETE /game/session/{sessionId}` (ends session in DB, removes in-memory aggregate).
+  - Client: `DeleteSessionAsync(sessionId)` on `IHttpApiClient` and `IGameStateService`.
+  - Sessions page: delete (trash) button per row; clears current session if you delete the one you’re in.
+- **Galaxy not generating**: Fixed create-session flow so the galaxy is generated and returned.
+  - Create session now builds the default world (with star systems and planets) via `WorldFactory.CreateDefaultWorld()`, assigns `world.Id = sessionId`, registers it with `SessionAggregateManager`, and returns that world in the response so the client gets the full galaxy.
+  - Galaxy view no longer uses random positions: star systems are placed using `StarSystemDto.Coordinates` mapped to percentage (10–90%) so positions are stable and match server data.

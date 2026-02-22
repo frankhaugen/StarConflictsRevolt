@@ -1,4 +1,5 @@
 @page "/galaxy"
+@using System.Numerics
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
 @inject IGameStateService GameState
@@ -77,8 +78,9 @@
                     {
                         @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
                         {
+                            var (left, top) = CoordinatesToPercent(starSystem.Coordinates);
                             <div class="planet position-absolute" 
-                                 style="left: @(GetRandomPosition().x)%; top: @(GetRandomPosition().y)%;"
+                                 style="left: @(left)%; top: @(top)%;"
                                  @onclick="() => SelectStarSystem(starSystem)">
                                 <div class="planet-icon @GetStarSystemClass(starSystem)">
                                     <i class="fas fa-circle"></i>
@@ -175,10 +177,18 @@
         Navigation.NavigateTo("/");
     }
 
-    private (int x, int y) GetRandomPosition()
+    /// <summary>
+    /// Maps star system coordinates (e.g. -1000..1000) to percentage position (10..90) for the galaxy map.
+    /// </summary>
+    private static (double left, double top) CoordinatesToPercent(Vector2 coordinates)
     {
-        var random = new Random();
-        return (random.Next(10, 90), random.Next(10, 90));
+        const double scale = 2000.0; // expected coordinate range -1000 to 1000
+        const double offset = 1000.0;
+        const double margin = 10.0;
+        const double range = 80.0;
+        var left = margin + (coordinates.X + offset) / scale * range;
+        var top = margin + (coordinates.Y + offset) / scale * range;
+        return (Math.Clamp(left, 2, 98), Math.Clamp(top, 2, 98));
     }
 }
 

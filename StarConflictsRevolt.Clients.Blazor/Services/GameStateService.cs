@@ -199,6 +199,26 @@ public class GameStateService : IGameStateService
         }
     }
 
+    public async Task<bool> DeleteSessionAsync(Guid sessionId)
+    {
+        try
+        {
+            var deleted = await _httpClient.DeleteSessionAsync(sessionId);
+            if (deleted && _currentSession?.Id == sessionId)
+            {
+                _currentSession = null;
+                _currentWorld = null;
+                NotifyStateChanged();
+            }
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting session {SessionId}", sessionId);
+            return false;
+        }
+    }
+
     public async Task<bool> MoveFleetAsync(Guid fleetId, Guid fromPlanetId, Guid toPlanetId)
     {
         try
