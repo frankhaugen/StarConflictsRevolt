@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +16,6 @@ using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
 using Frank.PulseFlow;
@@ -36,14 +33,12 @@ namespace StarConflictsRevolt.Tests.TestingInfrastructure;
 public class TestHostApplication : IDisposable
 {
     private readonly IDocumentStore _documentStore;
-    private readonly SqliteConnection _sqliteConnection;
     private readonly string _uniqueDataDir;
 
     public TestHostApplication(bool includeClientServices = true)
     {
         Port = FindRandomUnusedPort();
         _uniqueDataDir = Path.Combine(Path.GetTempPath(), $"StarConflictsRevoltTest_{Guid.NewGuid()}");
-        _sqliteConnection = new SqliteConnection("DataSource=:memory:");
 
         var builder = WebApplication.CreateBuilder();
 
@@ -78,10 +73,7 @@ public class TestHostApplication : IDisposable
             sp.GetRequiredService<IDocumentStore>().OpenAsyncSession());
 
         AddInMemoryConfigurationOverrides(builder);
-        OpenSqliteConnectionAndConfigureDbContext(builder);
-
-        // Set the log level of "Microsoft.EntityFrameworkCore.Database.Command" to "Warning" to reduce noise
-        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+        StartupHelper.RegisterLiteDb(builder);
 
         // Register test-specific services instead of production StartupHelper
         builder.Services.AddSingleton<IEventStore, RavenEventStore>();
@@ -189,8 +181,6 @@ public class TestHostApplication : IDisposable
         else
             (Server as IDisposable)?.Dispose();
 
-        _sqliteConnection.Dispose();
-
         try
         {
             if (Directory.Exists(_uniqueDataDir))
@@ -202,23 +192,11 @@ public class TestHostApplication : IDisposable
         }
     }
 
-    private void OpenSqliteConnectionAndConfigureDbContext(WebApplicationBuilder builder)
-    {
-        _sqliteConnection.Open();
-
-        builder.Services.AddDbContext<GameDbContext>(options =>
-        {
-            options.UseSqlite(_sqliteConnection)
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors();
-        });
-    }
-
     private void AddInMemoryConfigurationOverrides(WebApplicationBuilder builder)
     {
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
         {
-            ["ConnectionStrings:gameDb"] = "DataSource=:memory:",
+            ["ConnectionStrings:liteDb"] = "Filename=:memory:",
             ["ConnectionStrings:ravenDb"] = "http://localhost:8080",
             ["TokenProviderOptions:TokenEndpoint"] = "http://localhost:" + Port + "/token",
             ["TokenProviderOptions:ClientId"] = "test-client",
@@ -239,48 +217,7 @@ public class TestHostApplication : IDisposable
         app.MapHub<WorldHub>("/gamehub");
         app.UseCors();
 
-        // Ensure database is created with retry logic
-        using (var scope = app.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<TestHostApplication>>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            var connectionString = configuration.GetConnectionString("gameDb");
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                var safeConnectionString = connectionString.Replace("Password=", "Password=***");
-                logger.LogInformation("Using connection string: {ConnectionString}", safeConnectionString);
-                if (connectionString == "SET_BY_ASPIRE_OR_ENVIRONMENT") logger.LogWarning("The gameDb connection string is not set by Aspire or environment. Database will not work.");
-            }
-            else
-            {
-                logger.LogWarning("No connection string found for 'gameDb'");
-            }
-
-            var maxRetries = 2;
-            var retryDelay = TimeSpan.FromSeconds(1);
-            for (var attempt = 1; attempt <= maxRetries; attempt++)
-                try
-                {
-                    logger.LogInformation("Attempting to ensure database is created (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
-                    db.Database.EnsureCreated();
-                    logger.LogInformation("Database created successfully");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to create database on attempt {Attempt}/{MaxRetries}", attempt, maxRetries);
-                    if (attempt == maxRetries)
-                    {
-                        logger.LogError(ex, "Failed to create database after {MaxRetries} attempts. Application will continue but database operations may fail.", maxRetries);
-                        break;
-                    }
-
-                    Thread.Sleep(retryDelay);
-                }
-
-            logger.LogInformation("Database created successfully");
-        }
+        // LiteDB is ready on first use; no EnsureCreated needed.
     }
 
     private static int FindRandomUnusedPort()
@@ -300,11 +237,11 @@ public class TestHostApplication : IDisposable
         }
     }
 
-    public async Task UseGameDbContextAsync(Func<GameDbContext, Task> action)
+    public async Task UseGamePersistenceAsync(Func<IGamePersistence, Task> action)
     {
         await using var scope = Server.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await action(dbContext);
+        var persistence = scope.ServiceProvider.GetRequiredService<IGamePersistence>();
+        await action(persistence);
     }
 
     public string GetGameServerHubUrl()

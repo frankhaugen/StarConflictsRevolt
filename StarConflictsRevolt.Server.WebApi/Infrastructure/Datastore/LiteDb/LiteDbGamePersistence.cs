@@ -11,6 +11,7 @@ public sealed class LiteDbGamePersistence : IGamePersistence
     private readonly ILiteDatabase _db;
     private const string SessionsCollection = "sessions";
     private const string ClientsCollection = "clients";
+    private const string PlayerStatsCollection = "playerstats";
 
     public LiteDbGamePersistence(ILiteDatabase db)
     {
@@ -78,5 +79,36 @@ public sealed class LiteDbGamePersistence : IGamePersistence
         var col = _db.GetCollection<ClientDoc>(ClientsCollection);
         col.Upsert(ClientDoc.From(client));
         return Task.CompletedTask;
+    }
+
+    public Task<List<PlayerStats>> GetLeaderboardAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    {
+        var col = _db.GetCollection<PlayerStatsDoc>(PlayerStatsCollection);
+        var list = col.Find(ps => ps.SessionId == sessionId)
+            .OrderByDescending(ps => ps.BattlesWon)
+            .ThenByDescending(ps => ps.PlanetsControlled)
+            .ThenByDescending(ps => ps.FleetsOwned)
+            .Select(ps => ps.ToPlayerStats())
+            .ToList();
+        return Task.FromResult(list);
+    }
+
+    public Task<PlayerStats?> GetPlayerStatsAsync(Guid sessionId, Guid playerId, CancellationToken cancellationToken = default)
+    {
+        var col = _db.GetCollection<PlayerStatsDoc>(PlayerStatsCollection);
+        var doc = col.Find(ps => ps.SessionId == sessionId && ps.PlayerId == playerId).FirstOrDefault();
+        return Task.FromResult<PlayerStats?>(doc?.ToPlayerStats());
+    }
+
+    public Task<List<PlayerStats>> GetTopPlayersAsync(int count = 10, CancellationToken cancellationToken = default)
+    {
+        var col = _db.GetCollection<PlayerStatsDoc>(PlayerStatsCollection);
+        var list = col.FindAll()
+            .OrderByDescending(ps => ps.BattlesWon)
+            .ThenByDescending(ps => ps.PlanetsControlled)
+            .Take(count)
+            .Select(ps => ps.ToPlayerStats())
+            .ToList();
+        return Task.FromResult(list);
     }
 }

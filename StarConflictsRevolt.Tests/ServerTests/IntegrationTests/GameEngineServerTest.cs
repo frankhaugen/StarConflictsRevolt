@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -11,7 +11,6 @@ using StarConflictsRevolt.Clients.Shared.Infrastructure;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -26,14 +25,8 @@ public class GameEngineServerTest
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
-        // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-
-        // Fill the database with test data if necessary
-        using var scope = app.Services.CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        var dbContext = serviceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken); // Ensure the database is created
+        var serviceProvider = app.Services;
 
         // === AUTHENTICATION: Obtain JWT token ===
         var testClientId = $"test-client-{Guid.NewGuid()}";

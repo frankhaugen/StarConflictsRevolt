@@ -83,7 +83,7 @@ See [aspire.md](aspire.md) (this folder) for AppHost resources, health checks, a
 
 | Responsibility | Location |
 |----------------|----------|
-| **DI and pipeline** | `Infrastructure/Configuration/StartupHelper.cs` — RegisterAllServices, RegisterRavenDb, RegisterGameDbContext, ConfigureAsync; MapHub, MapEndpoints. |
+| **DI and pipeline** | `Infrastructure/Configuration/StartupHelper.cs` — RegisterAllServices, RegisterRavenDb, RegisterLiteDb, ConfigureAsync; MapHub, MapEndpoints. |
 
 ---
 

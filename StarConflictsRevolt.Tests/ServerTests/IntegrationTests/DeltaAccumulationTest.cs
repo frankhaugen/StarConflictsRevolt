@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -22,14 +21,7 @@ public class DeltaAccumulationTest
         // Log sink for capturing logs
         var logSink = new ConcurrentBag<string>();
 
-        // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-
-        // Ensure the database is created
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync();
-
         var httpClient = testHost.GetHttpClient();
 
         // Player IDs for the test

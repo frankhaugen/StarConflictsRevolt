@@ -17,4 +17,8 @@ public interface IGamePersistence
 
     Task<Client?> GetClientAsync(string clientId, CancellationToken cancellationToken = default);
     Task UpsertClientAsync(Client client, CancellationToken cancellationToken = default);
+
+    Task<List<PlayerStats>> GetLeaderboardAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task<PlayerStats?> GetPlayerStatsAsync(Guid sessionId, Guid playerId, CancellationToken cancellationToken = default);
+    Task<List<PlayerStats>> GetTopPlayersAsync(int count = 10, CancellationToken cancellationToken = default);
 }

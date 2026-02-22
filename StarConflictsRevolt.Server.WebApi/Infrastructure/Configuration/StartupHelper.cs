@@ -1,8 +1,6 @@
 using LiteDB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
@@ -11,7 +9,6 @@ using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.PulseFlow;
@@ -23,7 +20,7 @@ namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
 public static class StartupHelper
 {
-    // Register all core services except databases. Call RegisterRavenDb/RegisterGameDbContext explicitly in app or test setup.
+    // Register all core services except databases. Call RegisterRavenDb/RegisterLiteDb explicitly in app or test setup.
     public static void RegisterAllServices(WebApplicationBuilder builder)
     {
         // Set minimum log level to Debug for all loggers
@@ -166,24 +163,6 @@ public static class StartupHelper
         var db = new LiteDatabase(connectionString);
         builder.Services.AddSingleton<ILiteDatabase>(db);
         builder.Services.AddSingleton<IGamePersistence, LiteDbGamePersistence>();
-    }
-
-    public static void RegisterGameDbContext(WebApplicationBuilder builder)
-    {
-        builder.Services.AddDbContext<GameDbContext>(options =>
-        {
-            var rawConnectionString = builder.Configuration.GetConnectionString("gameDb");
-            var connectionStringBuilder = new SqlConnectionStringBuilder(rawConnectionString ?? "")
-            {
-                ApplicationName = "StarConflictsRevolt.Server.WebApi",
-                MultipleActiveResultSets = true,
-                InitialCatalog = "StarConflictsRevolt"
-            };
-            var connectionString = connectionStringBuilder.ConnectionString;
-            options.UseSqlServer(connectionString);
-            options.EnableSensitiveDataLogging();
-            options.EnableDetailedErrors();
-        });
     }
 
     public static Task ConfigureAsync(WebApplication app)

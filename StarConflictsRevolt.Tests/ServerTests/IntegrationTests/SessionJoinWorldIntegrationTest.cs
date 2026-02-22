@@ -2,7 +2,6 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
@@ -17,11 +16,6 @@ public class SessionJoinWorldIntegrationTest
         var testHost = new TestHostApplication(false);
 
         await testHost.StartServerAsync(cancellationToken);
-        // The application is already built and started by TestHostApplication
-        var app = testHost.Server;
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
         // Create session

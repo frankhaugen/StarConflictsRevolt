@@ -8,7 +8,6 @@ using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -29,11 +28,6 @@ public class FullStackIntegrationTest
 
         // The application is already built and started by GameServerTestHost
         var app = testHost.App;
-
-        // Ensure the database is created
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken); // Ensure the database is created
 
         // Create an HttpClient that can communicate with the test server
         var httpClient = testHost.GetHttpClient();
@@ -98,11 +92,11 @@ public class FullStackIntegrationTest
         };
 
         await Context.Current.OutputWriter.WriteLineAsync($"Sending build command for planet: {planet.Id}");
-        var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand);
+        var buildResponse = await httpClient.PostAsJsonAsync($"/game/build-structure?worldId={sessionId}", buildCommand, cancellationToken: cancellationToken);
 
         if (!buildResponse.IsSuccessStatusCode)
         {
-            var errorContent = await buildResponse.Content.ReadAsStringAsync();
+            var errorContent = await buildResponse.Content.ReadAsStringAsync(cancellationToken);
             await Context.Current.OutputWriter.WriteLineAsync($"Build command failed: {buildResponse.StatusCode} - {errorContent}");
             throw new Exception($"Build command failed: {buildResponse.StatusCode} - {errorContent}");
         }
@@ -120,6 +114,7 @@ public class FullStackIntegrationTest
 
         if (receivedDeltas.Count == 0)
         {
+            var scope = testHost.App.Services.CreateScope();
             await Context.Current.OutputWriter.WriteLineAsync("No deltas received. Checking if session exists...");
             var aggregateManager = scope.ServiceProvider.GetRequiredService<SessionAggregateManager>();
             var sessionExists = aggregateManager.HasAggregate(sessionId);

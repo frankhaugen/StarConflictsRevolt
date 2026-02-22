@@ -4,9 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
-using Session = StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay.Session;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -21,32 +19,12 @@ public class TokenErrorHandlingTest
         await testHost.StartServerAsync(cancellationToken);
         var httpClient = testHost.GetHttpClient();
 
-        // Create some test sessions first
-        using var scope = testHost.App.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-
-        var testSession1 = new Session
+        // Create some test sessions via persistence
+        await testHost.UseGamePersistenceAsync(async persistence =>
         {
-            Id = Guid.NewGuid(),
-            SessionName = "Test Session 1",
-            Created = DateTime.UtcNow.AddMinutes(-10),
-            IsActive = true,
-            SessionType = SessionType.Multiplayer
-        };
-
-        var testSession2 = new Session
-        {
-            Id = Guid.NewGuid(),
-            SessionName = "Test Session 2",
-            Created = DateTime.UtcNow.AddMinutes(-5),
-            IsActive = true,
-            SessionType = SessionType.SinglePlayer
-        };
-
-        dbContext.Sessions.Add(testSession1);
-        dbContext.Sessions.Add(testSession2);
-        await dbContext.SaveChangesAsync(cancellationToken);
+            await persistence.CreateSessionAsync("Test Session 1", SessionType.Multiplayer, null, cancellationToken);
+            await persistence.CreateSessionAsync("Test Session 2", SessionType.SinglePlayer, null, cancellationToken);
+        });
 
         // Act - Try to get token with wrong secret
         var tokenRequest = new TokenRequest

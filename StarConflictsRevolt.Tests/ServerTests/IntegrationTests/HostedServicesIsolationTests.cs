@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using Frank.Channels.DependencyInjection;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
@@ -105,8 +105,10 @@ public class HostedServicesIsolationTests
         // Create a minimal service provider with all hosted services
         var services = new ServiceCollection();
 
-        // Add db context
-        services.AddDbContext<GameDbContext>(options => options.UseSqlite("Data Source=:memory:;Mode=Memory;Cache=Shared"));
+        // Add LiteDB + IGamePersistence (in-memory)
+        var db = new LiteDatabase("Filename=:memory:");
+        services.AddSingleton<ILiteDatabase>(db);
+        services.AddSingleton<IGamePersistence, LiteDbGamePersistence>();
 
         // Add logging - this will provide ILogger<T> automatically
         services.AddLogging(builder => builder.AddConsole());
@@ -133,20 +135,6 @@ public class HostedServicesIsolationTests
         services.AddChannel<GameTickMessage>();
 
         var serviceProvider = services.BuildServiceProvider();
-
-        // Ensure the database is created
-        using (var scope = serviceProvider.CreateScope())
-        {
-            try
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-                await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                await Context.Current.OutputWriter.WriteLineAsync($"Error ensuring database creation: {e.Message}");
-            }
-        }
 
         // Get all hosted services
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToList();

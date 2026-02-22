@@ -34,10 +34,6 @@ No Aspire container is used for LiteDB; the WebApi opens the file directly.
 3. Open `game.db` (in the WebApi run directory or the path you configured).
 4. Inspect or edit the `sessions` and `clients` collections.
 
-## Reverting to SQL Server (optional)
+## Player stats (leaderboard)
 
-The codebase still contains `GameDbContext` and `RegisterGameDbContext` in `StartupHelper`. To use SQL Server again for sessions/clients you would:
-
-- Call `StartupHelper.RegisterGameDbContext(builder)` instead of `RegisterLiteDb(builder)` in `Program.cs`.
-- Restore the `gameDb` resource and references in the AppHost.
-- Point session and auth handlers back to `GameDbContext` (or a compatibility layer). This is not maintained in the current pivot; the default is LiteDB.
+Leaderboard data is stored in LiteDB in the `playerstats` collection. `IGamePersistence` exposes `GetLeaderboardAsync`, `GetPlayerStatsAsync`, and `GetTopPlayersAsync`. Nothing in the app currently writes `PlayerStats`; those methods return empty/list from LiteDB until a projection or service populates them.
