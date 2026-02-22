@@ -88,13 +88,8 @@ public class TestHostApplication : IDisposable
         builder.Services.AddSingleton<WorldEngine>();
 
         // Transport: tick fan-out to in-process listeners and SignalR
-        builder.Services.AddSingleton<AiTurnTickListener>();
-        builder.Services.AddSingleton<GameUpdateTickListener>();
-        builder.Services.AddSingleton<IEnumerable<ITickListener>>(sp => new ITickListener[]
-        {
-            sp.GetRequiredService<AiTurnTickListener>(),
-            sp.GetRequiredService<GameUpdateTickListener>()
-        });
+        builder.Services.AddSingleton<ITickListener, AiTurnTickListener>();
+        builder.Services.AddSingleton<ITickListener, GameUpdateTickListener>();
         builder.Services.AddSingleton<TickTransport>();
         builder.Services.AddSingleton<ITickPublisher>(sp => sp.GetRequiredService<TickTransport>());
 

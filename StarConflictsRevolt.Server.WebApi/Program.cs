@@ -23,7 +23,7 @@ if (!app.Environment.IsDevelopment())
 var config = app.Services.GetRequiredService<IConfiguration>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 if (config.GetConnectionString("ravenDb") == "SET_BY_ASPIRE_OR_ENVIRONMENT")
-    logger.LogWarning("ravenDb connection string not set (Aspire containers may not be running). Start Docker and run AppHost again, or set ConnectionStrings__ravenDb.");
+    logger.LogWarning("ravenDb connection string not set (Aspire containers may not be running). Start Docker and run AppHost again, or set ConnectionStrings__ravenDb");
 
 app.MapDefaultEndpoints();
 

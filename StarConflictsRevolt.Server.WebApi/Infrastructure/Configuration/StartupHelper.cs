@@ -27,13 +27,8 @@ public static class StartupHelper
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
         // Transport: tick fan-out to in-process listeners and SignalR (see docs/reference/transport-layer-spec.md)
-        builder.Services.AddSingleton<AiTurnTickListener>();
-        builder.Services.AddSingleton<GameUpdateTickListener>();
-        builder.Services.AddSingleton<IEnumerable<ITickListener>>(sp => new ITickListener[]
-        {
-            sp.GetRequiredService<AiTurnTickListener>(),
-            sp.GetRequiredService<GameUpdateTickListener>()
-        });
+        builder.Services.AddSingleton<ITickListener, AiTurnTickListener>();
+        builder.Services.AddSingleton<ITickListener, GameUpdateTickListener>();
         builder.Services.AddSingleton<TickTransport>();
         builder.Services.AddSingleton<ITickPublisher>(sp => sp.GetRequiredService<TickTransport>());
 
