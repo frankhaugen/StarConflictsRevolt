@@ -1,6 +1,6 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Resources;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Players;
+using StarConflictsRevolt.Server.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Resources;
+using StarConflictsRevolt.Server.Domain.Players;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

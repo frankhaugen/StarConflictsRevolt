@@ -13,13 +13,14 @@ using Raven.Client.Documents.Session;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.Domain.AI;
+using StarConflictsRevolt.Server.Domain.Engine;
+using StarConflictsRevolt.Server.Simulation.Engine;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
-using Frank.PulseFlow;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Transport;
 using StarConflictsRevolt.Clients.Blazor.Services;
 using StarConflictsRevolt.Clients.Shared.Authentication;
 using StarConflictsRevolt.Clients.Shared.Communication;
@@ -81,19 +82,27 @@ public class TestHostApplication : IDisposable
         builder.Services.AddSingleton<CommandQueue>();
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
-        
-        // Add Frank.PulseFlow for GameTick pulse
-        builder.Services.AddPulseFlow<GameTickMessageFlow>();
+        builder.Services.AddSingleton<ICommandQueue, CommandQueueChannel>();
+        builder.Services.AddSingleton<IGameSim, GameSim>();
+        builder.Services.AddSingleton<WorldEngine>();
+
+        // Transport: tick fan-out to in-process listeners and SignalR
+        builder.Services.AddSingleton<AiTurnTickListener>();
+        builder.Services.AddSingleton<GameUpdateTickListener>();
+        builder.Services.AddSingleton<IEnumerable<ITickListener>>(sp => new ITickListener[]
+        {
+            sp.GetRequiredService<AiTurnTickListener>(),
+            sp.GetRequiredService<GameUpdateTickListener>()
+        });
+        builder.Services.AddSingleton<TickTransport>();
+        builder.Services.AddSingleton<ITickPublisher>(sp => sp.GetRequiredService<TickTransport>());
 
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
 
-        // Register AI strategy for AiTurnService
         builder.Services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         builder.Services.AddSingleton<AiMemoryBank>();
-        
-        // Register services required by GameTickMessageFlow
         builder.Services.AddSingleton<AiTurnService>();
         builder.Services.AddSingleton<GameUpdateService>();
 

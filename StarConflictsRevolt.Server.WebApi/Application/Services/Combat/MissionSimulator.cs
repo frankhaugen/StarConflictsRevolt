@@ -1,5 +1,5 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.Combat;
+using StarConflictsRevolt.Server.Domain.Planets;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 

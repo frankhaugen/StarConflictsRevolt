@@ -5,7 +5,8 @@ Technical specifications for the game backend.
 | Document | Description |
 |----------|-------------|
 | [architecture.md](architecture.md) | Pipeline, tick loop, event types, event store, SignalR/REST. |
-| [domain.md](domain.md) | World vs session, map, fleets, economy, loyalty. |
+| [transport-layer-spec.md](transport-layer-spec.md) | Transport layer: tick fan-out to in-process listeners and SignalR; Simulation decoupled. |
+| [domain.md](domain.md) | World vs session, map, fleets, economy, loyalty. Domain types live in **StarConflictsRevolt.Server.Domain**; Simulation has no domain models. |
 | [api-transport.md](api-transport.md) | Auth, client flow, WorldHub, GameHub, REST, examples. |
 | [encounters.md](encounters.md) | Abstract encounter resolution. |
 | [glossary.md](glossary.md) | Definitions: command, event, session, world, tick, delta, hubs. |

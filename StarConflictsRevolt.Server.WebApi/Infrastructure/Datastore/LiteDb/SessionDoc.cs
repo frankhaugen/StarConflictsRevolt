@@ -1,5 +1,5 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
-using Session = StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay.Session;
+using StarConflictsRevolt.Server.Domain.Sessions;
+using Session = StarConflictsRevolt.Server.Domain.Gameplay.Session;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 

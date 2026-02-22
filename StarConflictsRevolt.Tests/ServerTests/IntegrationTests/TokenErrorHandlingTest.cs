@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using StarConflictsRevolt.Clients.Models.Authentication;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
+using StarConflictsRevolt.Server.Domain.Sessions;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;

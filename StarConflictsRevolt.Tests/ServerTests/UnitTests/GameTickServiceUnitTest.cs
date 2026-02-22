@@ -1,8 +1,7 @@
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
-using Frank.PulseFlow;
+using StarConflictsRevolt.Server.Simulation.Engine;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
@@ -12,86 +11,70 @@ public class GameTickServiceUnitTest
     [Timeout(30_000)]
     public async Task GameTickService_ShouldStartAndStopWithoutErrors(CancellationToken cancellationToken)
     {
-        // Arrange
+        var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
-        
-        // Add Frank.PulseFlow
-        services.AddPulseFlow<GameTickMessageFlow>();
-        
+        services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
-        
+
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        
-        // Start the service
-        await gameTickService.StartAsync(cancellationToken);
-        
-        // Wait a bit to allow ticks to be published
-        await Task.Delay(2000, cancellationToken);
 
-        // Stop the service
+        await gameTickService.StartAsync(cancellationToken);
+        await Task.Delay(2000, cancellationToken);
         await gameTickService.StopAsync(cancellationToken);
-        
-        // Assert: Service should have started and stopped without errors
-        // If we get here, the service ran without crashing - no assertion needed
     }
 
     [Test]
     [Timeout(30_000)]
-    public async Task GameTickService_ShouldPublishTicksToPulseFlow(CancellationToken cancellationToken)
+    public async Task GameTickService_ShouldPublishTicksToTransport(CancellationToken cancellationToken)
     {
-        // Arrange
+        var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
-        
-        // Add Frank.PulseFlow
-        services.AddPulseFlow<GameTickMessageFlow>();
-        
+        services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
-        
+
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        
-        // Start the service
-        await gameTickService.StartAsync(cancellationToken);
-        
-        // Wait a bit to allow ticks to be published
-        await Task.Delay(2000, cancellationToken);
 
-        // Stop the service
+        await gameTickService.StartAsync(cancellationToken);
+        await Task.Delay(2000, cancellationToken);
         await gameTickService.StopAsync(cancellationToken);
-        
-        // Assert: Service should have started and stopped without errors
-        // If we get here, the service ran without crashing - no assertion needed
+
+        publisher.PublishCount.Should().BeGreaterThan(0, "at least one tick should have been published to Transport");
     }
 
     [Test]
     [Timeout(30_000)]
-    public async Task GameTickService_ShouldHandleMultipleFlows(CancellationToken cancellationToken)
+    public async Task GameTickService_ShouldHandleMultipleListeners(CancellationToken cancellationToken)
     {
-        // Arrange
+        var publisher = new FakeTickPublisher();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
-        
-        // Add Frank.PulseFlow
-        services.AddPulseFlow<GameTickMessageFlow>();
-        
+        services.AddSingleton<ITickPublisher>(publisher);
         services.AddSingleton<GameTickService>();
-        
+
         var serviceProvider = services.BuildServiceProvider();
         var gameTickService = serviceProvider.GetRequiredService<GameTickService>();
-        
-        // Start the service
-        await gameTickService.StartAsync(cancellationToken);
-        
-        // Wait a bit to allow ticks to be published
-        await Task.Delay(2000, cancellationToken);
 
-        // Stop the service
+        await gameTickService.StartAsync(cancellationToken);
+        await Task.Delay(2000, cancellationToken);
         await gameTickService.StopAsync(cancellationToken);
-        
-        // Assert: Service should have started and stopped without errors
-        // If we get here, the service ran without crashing - no assertion needed
+
+        publisher.PublishCount.Should().BeGreaterThan(0);
     }
-} 
+
+    private sealed class FakeTickPublisher : ITickPublisher
+    {
+        private long _publishCount;
+
+        public long PublishCount => Interlocked.Read(ref _publishCount);
+
+        public Task PublishTickAsync(GameTickMessage tick, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _publishCount);
+            return Task.CompletedTask;
+        }
+    }
+}

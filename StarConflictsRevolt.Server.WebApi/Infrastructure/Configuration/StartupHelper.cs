@@ -5,17 +5,18 @@ using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
+using StarConflictsRevolt.Server.Simulation.Engine;
+using StarConflictsRevolt.Server.Domain.AI;
+using StarConflictsRevolt.Server.Domain.Engine;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.Storage.Abstractions;
 using StarConflictsRevolt.Server.Storage.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
-using Frank.PulseFlow;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.MessageFlows;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.Transport;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 
@@ -27,9 +28,17 @@ public static class StartupHelper
         // Set minimum log level to Debug for all loggers
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
         
-        // Add Frank.PulseFlow for GameTick pulse
-        builder.Services.AddPulseFlow<GameTickMessageFlow>();
-        
+        // Transport: tick fan-out to in-process listeners and SignalR (see docs/reference/transport-layer-spec.md)
+        builder.Services.AddSingleton<AiTurnTickListener>();
+        builder.Services.AddSingleton<GameUpdateTickListener>();
+        builder.Services.AddSingleton<IEnumerable<ITickListener>>(sp => new ITickListener[]
+        {
+            sp.GetRequiredService<AiTurnTickListener>(),
+            sp.GetRequiredService<GameUpdateTickListener>()
+        });
+        builder.Services.AddSingleton<TickTransport>();
+        builder.Services.AddSingleton<ITickPublisher>(sp => sp.GetRequiredService<TickTransport>());
+
         // Add core services (IEventStore is registered by RegisterRavenDb via AddRavenDbEventStorage; call RegisterRavenDb before RegisterAllServices)
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();

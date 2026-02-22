@@ -3,18 +3,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Enums;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Fleets;
+using StarConflictsRevolt.Server.Domain.Galaxies;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.Stars;
+using StarConflictsRevolt.Server.Domain.Structures;
+using StarConflictsRevolt.Server.Domain.World;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore;
-using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.SeedData;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 
@@ -46,7 +45,7 @@ public class CoreGameLogicTests
         var playerId = Guid.NewGuid();
         var planetA = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>());
         var planetB = new Planet("B", 1, 1, 1, 1, 2, new List<Fleet>(), new List<Structure>());
-        var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { ShipCollection.XWing.ToModel() }, planetA.Id, playerId);
+        var fleet = new Fleet(Guid.NewGuid(), "Test Fleet", new List<Ship> { new Ship(Guid.Parse("10000000-0000-0000-0000-000000000001"), "X-Wing", false) }, planetA.Id, playerId);
         planetA.Fleets.Add(fleet);
         var system = new StarSystem(Guid.NewGuid(), "Sys", [planetA, planetB], new Vector2(0, 0));
         var galaxy = new Galaxy([system]);
@@ -150,10 +149,10 @@ public class CoreGameLogicTests
         var planet = new Planet("A", 1, 1, 1, 1, 1, new List<Fleet>(), new List<Structure>());
         var system = new StarSystem(Guid.NewGuid(), "Sys", [planet], new Vector2(0, 0));
         var galaxy = new Galaxy([system]);
-        var world = new World(Guid.NewGuid(), galaxy, new List<PlayerController>
+        var world = new World(Guid.NewGuid(), galaxy, new List<StarConflictsRevolt.Server.Domain.IPlayerController>
         {
-            new() { PlayerId = playerId, Name = "Player1" },
-            new() { PlayerId = targetPlayerId, Name = "Player2" }
+            new PlayerController { PlayerId = playerId, Name = "Player1" },
+            new PlayerController { PlayerId = targetPlayerId, Name = "Player2" }
         });
         var aggregate = CreateAggregate(Guid.NewGuid(), world);
         var initialVersion = aggregate.Version;

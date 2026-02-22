@@ -1,8 +1,8 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Players;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Fleets;
+using StarConflictsRevolt.Server.Domain.Players;
+using StarConflictsRevolt.Server.Domain.Structures;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

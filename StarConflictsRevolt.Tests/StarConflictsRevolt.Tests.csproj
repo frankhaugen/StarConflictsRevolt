@@ -35,6 +35,8 @@
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Blazor\StarConflictsRevolt.Clients.Blazor.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.Abstractions\StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.RavenDB\StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Simulation\StarConflictsRevolt.Server.Simulation.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Domain\StarConflictsRevolt.Server.Domain.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />

@@ -1,4 +1,4 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using StarConflictsRevolt.Server.Domain.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

@@ -6,14 +6,14 @@ All commands go through **ICommandIngress**. Base URL = webapi root. Auth: JWT i
 
 1. Connect to **WorldHub** + **GameHub**.
 2. **JoinWorld(worldId)** on WorldHub (use sessionId from create/join).
-3. Subscribe to **ReceiveUpdates** on WorldHub (deltas when world changes).
+3. Subscribe to **ReceiveUpdates** on WorldHub (deltas when world changes) and **ReceiveTick** (simulation tick number every tick).
 4. Send commands via GameHub or REST → outcomes as ReceiveUpdates on next tick(s).
 
 ## Hubs
 
 | Hub | Path | Purpose |
 |-----|------|---------|
-| **WorldHub** | /gamehub | JoinWorld(worldId). Server → ReceiveUpdates (deltas) to group. |
+| **WorldHub** | /gamehub | JoinWorld(worldId). Server → ReceiveUpdates (deltas) to group; ReceiveTick(tickNumber) every simulation tick. |
 | **GameHub** | /commandhub | MoveFleet(sessionId, fleetId, toSystemId, clientTick), QueueBuild, StartRally, StartMartialLaw. → ICommandIngress. |
 
 ## REST

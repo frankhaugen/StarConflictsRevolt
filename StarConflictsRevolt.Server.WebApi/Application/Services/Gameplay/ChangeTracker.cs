@@ -1,5 +1,5 @@
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

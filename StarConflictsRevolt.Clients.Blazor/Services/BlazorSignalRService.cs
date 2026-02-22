@@ -24,6 +24,12 @@ public class BlazorSignalRService : ISignalRService, IDisposable
         remove => _baseSignalRService.UpdatesReceived -= value;
     }
 
+    public event Action<long>? TickReceived
+    {
+        add => _baseSignalRService.TickReceived += value;
+        remove => _baseSignalRService.TickReceived -= value;
+    }
+
     public event Action<Exception?>? ConnectionClosed
     {
         add => _baseSignalRService.ConnectionClosed += value;

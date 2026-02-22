@@ -1,11 +1,11 @@
 using System.Numerics;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Fleets;
+using StarConflictsRevolt.Server.Domain.Galaxies;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.Stars;
+using StarConflictsRevolt.Server.Domain.Structures;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -106,7 +106,7 @@ public class WorldFactory
             {
                 PlayerId = playerSetup.Id,
                 Name = playerSetup.Name,
-                AiStrategy = playerSetup.AiStrategy
+                AiStrategy = playerSetup.AiStrategy as IAiStrategy
             };
             world.Players.Add(controller);
         }

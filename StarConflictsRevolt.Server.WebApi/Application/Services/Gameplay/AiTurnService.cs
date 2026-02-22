@@ -1,4 +1,5 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Enums;
+using StarConflictsRevolt.Server.Simulation.Engine;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -57,7 +58,7 @@ public class AiTurnService
             return;
         }
         var world = sessionAggregate.World;
-        var aiPlayers = world.Players.Where(p => p.AiStrategy != null).ToList();
+        var aiPlayers = world.Players.OfType<PlayerController>().Where(p => p.AiStrategy != null).ToList();
         if (!aiPlayers.Any()) return;
         if (!ShouldProcessAiActions(sessionState, tick.TickNumber)) return;
         _logger.LogDebug("Processing AI turn for {AiPlayerCount} AI players in session {SessionId} on tick {TickNumber}", aiPlayers.Count, sessionId, tick.TickNumber);

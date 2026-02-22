@@ -1,5 +1,5 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
-using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using WorldState = StarConflictsRevolt.Server.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.World;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;

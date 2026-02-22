@@ -1,4 +1,4 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Enums;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.Entities;
 

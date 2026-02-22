@@ -1,5 +1,5 @@
 using System.Collections;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using StarConflictsRevolt.Server.Domain.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.SeedData;
 

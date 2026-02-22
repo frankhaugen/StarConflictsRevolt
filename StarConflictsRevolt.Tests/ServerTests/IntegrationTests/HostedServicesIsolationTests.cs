@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
+using StarConflictsRevolt.Server.Domain.AI;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.Simulation.Engine;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
-using Frank.Channels.DependencyInjection;
 
 namespace StarConflictsRevolt.Tests.ServerTests.IntegrationTests;
 
@@ -130,9 +130,6 @@ public class HostedServicesIsolationTests
         services.AddSingleton<CommandQueue>();
         services.AddSingleton<IAiStrategy, DefaultAiStrategy>();
         services.AddSingleton<AiMemoryBank>();
-        
-        // Add Frank.Channels.DependencyInjection for GameTick channel
-        services.AddChannel<GameTickMessage>();
 
         var serviceProvider = services.BuildServiceProvider();
 

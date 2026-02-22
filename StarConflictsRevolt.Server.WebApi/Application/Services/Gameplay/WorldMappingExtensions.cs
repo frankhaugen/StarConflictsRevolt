@@ -1,8 +1,8 @@
-﻿using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.Domain.Galaxies;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.Stars;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

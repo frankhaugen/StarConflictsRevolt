@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 

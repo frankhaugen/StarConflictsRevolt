@@ -1,4 +1,4 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
+using StarConflictsRevolt.Server.Domain.Sessions;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

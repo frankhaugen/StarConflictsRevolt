@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 

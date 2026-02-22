@@ -1,4 +1,4 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
+using StarConflictsRevolt.Server.Domain.Combat;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

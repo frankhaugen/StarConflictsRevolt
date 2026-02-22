@@ -28,6 +28,8 @@
   <Project Path="StarConflictsRevolt.Server.Storage.LiteDb/StarConflictsRevolt.Server.Storage.LiteDb.csproj" />
   <Project Path="StarConflictsRevolt.Server.EventStorage.Abstractions/StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
   <Project Path="StarConflictsRevolt.Server.EventStorage.RavenDB/StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Simulation/StarConflictsRevolt.Server.Simulation.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Domain/StarConflictsRevolt.Server.Domain.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
 </Solution>

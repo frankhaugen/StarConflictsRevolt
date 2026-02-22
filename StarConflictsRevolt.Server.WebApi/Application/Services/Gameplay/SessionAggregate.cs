@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Events;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 

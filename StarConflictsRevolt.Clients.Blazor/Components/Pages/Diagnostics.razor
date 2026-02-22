@@ -325,38 +325,48 @@
                     </button>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-3">Each row is a batch of updates received from the server (per tick when something changed). Join a session and play to see events.</p>
+                    <p class="text-muted small mb-3">Simulation ticks (core) and update batches from the server. Join a session to see every tick and ReceiveUpdates when something changed.</p>
                     <div data-testid="server-events-log" class="server-events-log" style="height: 320px; overflow-y: auto; font-family: var(--bs-font-monospace); font-size: 0.8rem;">
-                        @foreach (var batch in serverEventBatches.AsEnumerable().Reverse().Take(30))
+                        @foreach (var batch in serverEventBatches.AsEnumerable().Reverse().Take(50))
                         {
                             <div class="server-event-batch border-bottom mb-2 pb-2">
-                                <div class="d-flex justify-content-between align-items-center text-nowrap">
+                                <div class="d-flex justify-content-between align-items-center text-nowrap flex-wrap gap-1">
                                     <span class="text-info">[@batch.Timestamp.ToString("HH:mm:ss.fff")]</span>
-                                    <span class="badge bg-secondary">@batch.Updates.Count update@(batch.Updates.Count == 1 ? "" : "s")</span>
-                                </div>
-                                <ul class="list-unstyled mb-0 mt-1 small">
-                                    @foreach (var u in batch.Updates.Take(20))
+                                    @if (batch.TickNumber.HasValue)
                                     {
-                                        <li class="text-break">
-                                            <span class="text-warning">@u.Type</span> <span class="text-muted">@u.Id.ToString("N")[..8]…</span>
-                                            @if (u.Data != null)
-                                            {
-                                                var raw = u.Data.Value.GetRawText();
-                                                var preview = raw.Length > 120 ? raw.Substring(0, 120) + "…" : raw;
-                                                <span class="d-block text-muted ms-2">@preview</span>
-                                            }
-                                        </li>
+                                        <span class="badge bg-primary">Tick @batch.TickNumber.Value</span>
                                     }
-                                </ul>
-                                @if (batch.Updates.Count > 20)
+                                    @if (batch.Updates.Count > 0)
+                                    {
+                                        <span class="badge bg-secondary">@batch.Updates.Count update@(batch.Updates.Count == 1 ? "" : "s")</span>
+                                    }
+                                </div>
+                                @if (batch.Updates.Count > 0)
                                 {
-                                    <div class="small text-muted mt-1">+ @(batch.Updates.Count - 20) more</div>
+                                    <ul class="list-unstyled mb-0 mt-1 small">
+                                        @foreach (var u in batch.Updates.Take(20))
+                                        {
+                                            <li class="text-break">
+                                                <span class="text-warning">@u.Type</span> <span class="text-muted">@u.Id.ToString("N")[..8]…</span>
+                                                @if (u.Data != null)
+                                                {
+                                                    var raw = u.Data.Value.GetRawText();
+                                                    var preview = raw.Length > 120 ? raw.Substring(0, 120) + "…" : raw;
+                                                    <span class="d-block text-muted ms-2">@preview</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                    @if (batch.Updates.Count > 20)
+                                    {
+                                        <div class="small text-muted mt-1">+ @(batch.Updates.Count - 20) more</div>
+                                    }
                                 }
                             </div>
                         }
                         @if (!serverEventBatches.Any())
                         {
-                            <div class="text-muted small">No server events yet. Join a session to see ReceiveUpdates batches (each tick with changes).</div>
+                            <div class="text-muted small">No server events yet. Join a session to see simulation ticks and ReceiveUpdates batches.</div>
                         }
                     </div>
                 </div>
@@ -456,15 +466,16 @@
     // Raw state variables
     private string rawStateJson = "Loading...";
 
-    // Server events (ReceiveUpdates batches per tick)
+    // Server events: simulation ticks (ReceiveTick) and update batches (ReceiveUpdates)
     private readonly List<ServerEventBatch> serverEventBatches = new();
-    private const int MaxServerEventBatches = 50;
+    private const int MaxServerEventBatches = 100;
 
     private bool isFirstRender = true;
 
     protected override async Task OnInitializedAsync()
     {
         // Subscribe to SignalR events
+        SignalRService.TickReceived += OnTickReceived;
         SignalRService.UpdatesReceived += OnSignalRMessage;
         SignalRService.ConnectionClosed += OnSignalRConnectionClosed;
         SignalRService.Reconnecting += OnSignalRReconnecting;
@@ -639,13 +650,21 @@
         }
     }
 
+    private void OnTickReceived(long tickNumber)
+    {
+        serverEventBatches.Add(new ServerEventBatch(DateTime.Now, tickNumber, new List<GameObjectUpdate>()));
+        while (serverEventBatches.Count > MaxServerEventBatches)
+            serverEventBatches.RemoveAt(0);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     private void OnSignalRMessage(List<GameObjectUpdate> updates)
     {
         signalRMessageCount += updates.Count;
         lastSignalRMessage = DateTime.Now;
         AddLogEntry("info", $"Received {updates.Count} SignalR updates");
         // Append to server events view (each batch = one tick’s worth of updates)
-        serverEventBatches.Add(new ServerEventBatch(DateTime.Now, new List<GameObjectUpdate>(updates)));
+        serverEventBatches.Add(new ServerEventBatch(DateTime.Now, null, new List<GameObjectUpdate>(updates)));
         while (serverEventBatches.Count > MaxServerEventBatches)
             serverEventBatches.RemoveAt(0);
         _ = InvokeAsync(StateHasChanged);
@@ -923,7 +942,7 @@
         public string? Error { get; set; }
     }
 
-    private sealed record ServerEventBatch(DateTime Timestamp, List<GameObjectUpdate> Updates);
+    private sealed record ServerEventBatch(DateTime Timestamp, long? TickNumber, List<GameObjectUpdate> Updates);
 
     private async Task RequestNewToken()
     {

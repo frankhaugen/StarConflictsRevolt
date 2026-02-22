@@ -36,6 +36,11 @@ public class SignalRService : ISignalRService
     public event Action<List<GameObjectUpdate>>? UpdatesReceived;
 
     /// <summary>
+    /// Event that is raised when the server sends a simulation tick (every tick from the core).
+    /// </summary>
+    public event Action<long>? TickReceived;
+
+    /// <summary>
     /// Event that is raised when the connection is closed
     /// </summary>
     public event Action<Exception?>? ConnectionClosed;
@@ -126,6 +131,12 @@ public class SignalRService : ISignalRService
                     _logger.LogDebug("Update: Id={Id}, Type={Type}", update.Id, update.Type);
 
             UpdatesReceived?.Invoke(updates ?? new List<GameObjectUpdate>());
+        });
+
+        _hubConnection.On<long>("ReceiveTick", tickNumber =>
+        {
+            _logger.LogDebug("Received tick {TickNumber} via SignalR", tickNumber);
+            TickReceived?.Invoke(tickNumber);
         });
 
         // Register connection event handlers

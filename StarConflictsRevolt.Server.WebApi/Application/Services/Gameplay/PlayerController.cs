@@ -1,9 +1,10 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
-using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
+using StarConflictsRevolt.Server.Domain;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using WorldState = StarConflictsRevolt.Server.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
-public class PlayerController
+public class PlayerController : IPlayerController
 {
     public Guid PlayerId { get; init; }
     public string Name { get; init; } = "Unknown Player";

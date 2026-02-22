@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Frank.PulseFlow" Version="3.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
@@ -20,6 +19,8 @@
         <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.Abstractions\StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.RavenDB\StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Simulation\StarConflictsRevolt.Server.Simulation.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Domain\StarConflictsRevolt.Server.Domain.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.Storage.LiteDb\StarConflictsRevolt.Server.Storage.LiteDb.csproj" />
     </ItemGroup>
 

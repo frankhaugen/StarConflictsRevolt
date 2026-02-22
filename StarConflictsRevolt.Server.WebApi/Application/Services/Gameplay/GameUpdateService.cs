@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Events;
+using StarConflictsRevolt.Server.Simulation.Engine;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -30,6 +31,9 @@ public class GameUpdateService
         _worldEngine = worldEngine;
     }
 
+    /// <summary>
+    /// Runs world engine tick and processes all sessions. ReceiveTick is pushed by Transport.
+    /// </summary>
     public async Task ProcessTickAsync(GameTickMessage tick, CancellationToken cancellationToken)
     {
         await _worldEngine.TickAsync(tick, cancellationToken).AsTask();

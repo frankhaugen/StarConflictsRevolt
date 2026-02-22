@@ -8,8 +8,8 @@ using Raven.Client.Documents;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Clients.Shared.Infrastructure;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.World;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 

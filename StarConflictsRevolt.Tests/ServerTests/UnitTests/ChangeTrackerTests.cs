@@ -4,15 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Enums;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.World;
+using StarConflictsRevolt.Server.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Fleets;
+using StarConflictsRevolt.Server.Domain.Galaxies;
+using StarConflictsRevolt.Server.Domain.Planets;
+using StarConflictsRevolt.Server.Domain.Stars;
+using StarConflictsRevolt.Server.Domain.Structures;
+using StarConflictsRevolt.Server.Domain.World;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

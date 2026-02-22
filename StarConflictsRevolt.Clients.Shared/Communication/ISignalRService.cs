@@ -41,6 +41,11 @@ public interface ISignalRService : IAsyncDisposable
     event Action<List<GameObjectUpdate>>? UpdatesReceived;
 
     /// <summary>
+    /// Event that is raised when the server sends a simulation tick (every tick from the core).
+    /// </summary>
+    event Action<long>? TickReceived;
+
+    /// <summary>
     /// Event that is raised when the connection is closed
     /// </summary>
     event Action<Exception?>? ConnectionClosed;

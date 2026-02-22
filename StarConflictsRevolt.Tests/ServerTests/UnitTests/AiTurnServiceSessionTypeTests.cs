@@ -1,6 +1,6 @@
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
+using StarConflictsRevolt.Server.Domain.AI;
+using StarConflictsRevolt.Server.Domain.Sessions;
 
 namespace StarConflictsRevolt.Tests.ServerTests.UnitTests;
 

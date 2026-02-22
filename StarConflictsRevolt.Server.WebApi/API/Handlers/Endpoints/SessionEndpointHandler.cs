@@ -1,17 +1,21 @@
+using Microsoft.AspNetCore.Authorization;
 using StarConflictsRevolt.Clients.Models;
+using StarConflictsRevolt.Server.Domain.Sessions;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Sessions;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 
 /// <summary>
-///     Handles session management endpoints
+///     Handles session management endpoints.
+///     In Development, session and game-state endpoints allow anonymous access so single-player works without JWT setup.
 /// </summary>
 public static class SessionEndpointHandler
 {
     public static void MapEndpoints(WebApplication app)
     {
+        var requireAuth = !app.Environment.IsDevelopment();
+
         app.MapGet("/game/state", async context =>
             {
                 var worldService = context.RequestServices.GetRequiredService<WorldService>();
@@ -39,7 +43,7 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(world.ToDto(playerId), context.RequestAborted);
             })
             .WithName("GetGameState")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
 
         app.MapPost("/game/session", async context =>
             {
@@ -104,7 +108,7 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = newWorld.ToDto() }, context.RequestAborted);
             })
             .WithName("CreateGameSession")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
 
         app.MapPost("/game/session/{sessionId}/join", async context =>
             {
@@ -140,7 +144,7 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(new SessionResponse { SessionId = sessionId, World = world.ToDto() }, context.RequestAborted);
             })
             .WithName("JoinGameSession")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
 
         app.MapGet("/game/sessions", async context =>
             {
@@ -158,7 +162,7 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(dtos, context.RequestAborted);
             })
             .WithName("ListGameSessions")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
 
         app.MapGet("/game/session/{sessionId}", async context =>
             {
@@ -186,7 +190,7 @@ public static class SessionEndpointHandler
                 await context.Response.WriteAsJsonAsync(session, context.RequestAborted);
             })
             .WithName("GetGameSession")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
 
         app.MapDelete("/game/session/{sessionId}", async context =>
             {
@@ -215,6 +219,12 @@ public static class SessionEndpointHandler
                 context.Response.StatusCode = 204;
             })
             .WithName("DeleteGameSession")
-            .RequireAuthorization();
+            .RequireAuthorizationIf(requireAuth);
+    }
+
+    private static IEndpointConventionBuilder RequireAuthorizationIf(this IEndpointConventionBuilder builder, bool require)
+    {
+        if (require) builder.RequireAuthorization();
+        return builder;
     }
 }

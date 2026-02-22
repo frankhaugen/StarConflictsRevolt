@@ -114,6 +114,7 @@ public class MockSignalRService : ISignalRService
 {
     public event Action<WorldDto>? FullWorldReceived;
     public event Action<List<GameObjectUpdate>>? UpdatesReceived;
+    public event Action<long>? TickReceived;
     public event Action<Exception?>? ConnectionClosed;
     public event Action<Exception?>? Reconnecting;
     public event Action<string>? Reconnected;

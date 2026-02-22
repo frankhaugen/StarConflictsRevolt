@@ -1,4 +1,4 @@
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;

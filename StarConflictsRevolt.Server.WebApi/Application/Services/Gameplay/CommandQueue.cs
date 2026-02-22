@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.Domain.Events;
+using StarConflictsRevolt.Server.Simulation.Engine;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
