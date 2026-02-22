@@ -1,4 +1,4 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 using Fleet = StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets.Fleet;
 using Structure = StarConflictsRevolt.Server.WebApi.Core.Domain.Structures.Structure;
 
@@ -21,7 +21,7 @@ public record Planet(
     int Energy = 50,
     int MaxEnergy = 500,
     double ProductionRate = 1.0,
-    PlanetType PlanetType = null,
+    PlanetType? PlanetType = null,
     int Credits = 0,
     int Materials = 0,
     int Fuel = 0

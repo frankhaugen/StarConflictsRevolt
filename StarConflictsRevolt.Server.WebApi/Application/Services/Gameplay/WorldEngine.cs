@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
+using WorldState = StarConflictsRevolt.Server.WebApi.Core.Domain.World.World;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
@@ -34,10 +38,10 @@ public sealed class WorldEngine
 
     public async ValueTask TickAsync(GameTickMessage tick, CancellationToken ct)
     {
-        var queued = await _commands.DrainAsync(ct);
-        if (queued.Count == 0)
-            return;
+        var tickValue = tick.TickNumber.Value;
 
+        // 1. Drain and process commands (move orders, etc.)
+        var queued = await _commands.DrainAsync(ct);
         var bySession = queued.GroupBy(q => q.SessionId);
         foreach (var group in bySession)
         {
@@ -55,7 +59,6 @@ public sealed class WorldEngine
             {
                 if (ct.IsCancellationRequested) break;
                 var world = sessionAggregate.World;
-                var tickValue = tick.TickNumber.Value;
                 var events = _sim.Execute(tickValue, world, q.Command);
                 foreach (var evt in events)
                 {
@@ -72,6 +75,48 @@ public sealed class WorldEngine
                 await HandleSnapshotAsync(sessionAggregate, ct);
             }
         }
+
+        // 2. Time advancement: every tick, finalize fleet arrivals for all active sessions
+        foreach (var sessionId in _aggregateManager.GetActiveSessionIds())
+        {
+            if (ct.IsCancellationRequested) break;
+            var sessionAggregate = _aggregateManager.GetAggregate(sessionId);
+            if (sessionAggregate == null) continue;
+
+            var arrivals = CollectFleetArrivals(sessionAggregate.World, tickValue);
+            var applied = 0;
+            foreach (var evt in arrivals)
+            {
+                if (ct.IsCancellationRequested) break;
+                sessionAggregate.Apply(evt);
+                await _eventStore.PublishAsync(sessionId, evt);
+                _aggregateManager.IncrementEventCount(sessionId);
+                applied++;
+            }
+            if (applied > 0)
+            {
+                await SendDeltasAsync(sessionAggregate, ct);
+                await HandleSnapshotAsync(sessionAggregate, ct);
+            }
+        }
+    }
+
+    /// <summary>Collect FleetArrived events for fleets that have reached their ETA this tick.</summary>
+    private static List<FleetArrived> CollectFleetArrivals(WorldState world, long currentTick)
+    {
+        var list = new List<FleetArrived>();
+        foreach (var system in world.Galaxy.StarSystems)
+        {
+            foreach (var planet in system.Planets)
+            {
+                foreach (var fleet in planet.Fleets)
+                {
+                    if (fleet.Status == FleetStatus.Moving && fleet.EtaTick.HasValue && fleet.EtaTick.Value <= currentTick)
+                        list.Add(new FleetArrived(currentTick, fleet.Id, planet.Id));
+                }
+            }
+        }
+        return list;
     }
 
     private async Task SendDeltasAsync(SessionAggregate sessionAggregate, CancellationToken cancellationToken)

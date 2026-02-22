@@ -11,7 +11,7 @@ namespace StarConflictsRevolt.Tests.ClientTests.UnitTests;
 /// <summary>
 /// Unit tests for GameStateService using bUnit
 /// </summary>
-public class GameStateServiceTests
+public class GameStateServiceTests : IDisposable
 {
     private BunitContext _testContext = null!;
     private IHttpApiClient _mockHttpClient = null!;
@@ -191,7 +191,7 @@ public class GameStateServiceTests
         };
         
         _mockHttpClient.GetAsync<List<SessionInfo>>("/game/sessions", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(sessionInfos));
+            .Returns(Task.FromResult<List<SessionInfo>?>(sessionInfos));
 
         // Act
         var result = await _gameStateService.GetAvailableSessionsAsync();

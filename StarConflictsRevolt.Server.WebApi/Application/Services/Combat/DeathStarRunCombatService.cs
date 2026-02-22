@@ -7,8 +7,8 @@ public interface IDeathStarRunCombatService
 {
     DeathStarRunResult ExecuteDeathStarRun(Fleet attackingFleet, DeathStar deathStar, List<Character> heroes);
     TrenchRunResult ExecuteTrenchRun(Fleet fleet, DeathStar deathStar, List<Character> heroes);
-    bool ExecuteShieldGeneratorAttack(Fleet fleet, DeathStar deathStar, Character hero);
-    bool ExecuteExhaustPortAttack(Fleet fleet, DeathStar deathStar, Character hero);
+    bool ExecuteShieldGeneratorAttack(Fleet fleet, DeathStar deathStar, Character? hero);
+    bool ExecuteExhaustPortAttack(Fleet fleet, DeathStar deathStar, Character? hero);
     List<TurbolaserShot> GenerateTurbolaserDefense(DeathStar deathStar, int round);
     List<TIEFighter> GenerateTIEInterceptors(DeathStar deathStar, int round);
 }
@@ -186,7 +186,7 @@ public class DeathStarRunCombatService : IDeathStarRunCombatService
         return TrenchRunResult.Success;
     }
 
-    public bool ExecuteShieldGeneratorAttack(Fleet fleet, DeathStar deathStar, Character hero)
+    public bool ExecuteShieldGeneratorAttack(Fleet fleet, DeathStar deathStar, Character? hero)
     {
         _logger.LogDebug("Executing shield generator attack");
 
@@ -215,7 +215,7 @@ public class DeathStarRunCombatService : IDeathStarRunCombatService
         return false;
     }
 
-    public bool ExecuteExhaustPortAttack(Fleet fleet, DeathStar deathStar, Character hero)
+    public bool ExecuteExhaustPortAttack(Fleet fleet, DeathStar deathStar, Character? hero)
     {
         _logger.LogDebug("Executing exhaust port attack");
 

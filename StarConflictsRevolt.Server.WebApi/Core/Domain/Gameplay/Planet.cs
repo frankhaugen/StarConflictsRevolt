@@ -1,8 +1,8 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Gameplay;
 
 public class Planet : Infrastructure.Datastore.Entities.GameObject
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public double Radius { get; set; }
     public double Mass { get; set; }
     public double RotationSpeed { get; set; }

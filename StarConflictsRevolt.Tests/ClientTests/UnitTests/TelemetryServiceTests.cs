@@ -15,11 +15,6 @@ public class TelemetryServiceTests
         _telemetryService = new TelemetryService();
     }
 
-    public void Dispose()
-    {
-        _telemetryService?.Dispose();
-    }
-
     [Test]
     public void RecordSignalRMessage_DoesNotThrow()
     {

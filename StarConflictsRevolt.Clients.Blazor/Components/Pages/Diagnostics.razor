@@ -545,7 +545,7 @@
     private void OnGameStateChanged()
     {
         AddLogEntry("info", "Game state changed");
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private async void AddLogEntry(string type, string message)
@@ -594,7 +594,7 @@
             }
         }
         
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void ClearLog()

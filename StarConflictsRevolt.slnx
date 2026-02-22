@@ -1,10 +1,16 @@
 <Solution>
   <Folder Name="/docs/">
     <File Path="docs\README.md" />
+    <File Path="docs\story.md" />
     <File Path="docs\architecture.md" />
     <File Path="docs\domain.md" />
     <File Path="docs\api-transport.md" />
     <File Path="docs\encounters.md" />
+    <File Path="docs\aspire.md" />
+    <File Path="docs\playtesting-strategy.md" />
+    <File Path="docs\work-items\README.md" />
+    <File Path="docs\work-items\current.md" />
+    <File Path="docs\work-items\done.md" />
   </Folder>
   <Folder Name="/DesignDocs/">
     <File Path="DesignDocs\ApiRefactoring.md" />

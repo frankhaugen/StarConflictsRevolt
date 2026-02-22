@@ -69,20 +69,15 @@ public class ClientInitializer : IClientInitializer
         Debug.Assert(!string.IsNullOrWhiteSpace(clientId) && clientId != "SET_BY_ASPIRE_OR_ENVIRONMENT", "ClientId is not set correctly");
         Debug.Assert(!string.IsNullOrWhiteSpace(secret) && secret != "SET_BY_ASPIRE_OR_ENVIRONMENT", "Secret is not set correctly");
 
-        // Optionally, enforce expected values for manual runs
+        // Optionally, enforce expected values only for manual runs (fixed localhost:5153). Skip when URLs are from Aspire/CI (dynamic).
 #if DEBUG
-        // Only enforce these in debug/manual runs, not in CI/Aspire
         const string expectedBaseUrl = "http://localhost:5153";
-        const string expectedHubUrl = "http://localhost:5153/gamehub";
-        const string expectedTokenEndpoint = "http://localhost:5153/token";
-        const string expectedClientId = "raylib-client";
-        const string expectedSecret = "SuperSecretKeyForJwtTokenGeneration123";
-
-        Debug.Assert(apiBaseUrl == expectedBaseUrl, $"ApiBaseUrl should be {expectedBaseUrl} for manual runs");
-        Debug.Assert(hubUrl == expectedHubUrl, $"GameServerHubUrl should be {expectedHubUrl} for manual runs");
-        Debug.Assert(tokenEndpoint == expectedTokenEndpoint, $"TokenEndpoint should be {expectedTokenEndpoint} for manual runs");
-        Debug.Assert(clientId == expectedClientId, $"ClientId should be {expectedClientId} for manual runs");
-        Debug.Assert(secret == expectedSecret, $"Secret should be {expectedSecret} for manual runs");
+        if (apiBaseUrl == expectedBaseUrl)
+        {
+            Debug.Assert(hubUrl == "http://localhost:5153/gamehub", "GameServerHubUrl should match for manual runs");
+            Debug.Assert(tokenEndpoint == "http://localhost:5153/token", "TokenEndpoint should match for manual runs");
+        }
+        // ClientId/Secret vary by client (e.g. Blazor uses test-client); do not assert exact values.
 #endif
     }
 

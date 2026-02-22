@@ -63,7 +63,7 @@ public class SessionTypeUnitTests
     public async Task SessionType_Enum_Values_AreUnique()
     {
         var values = Enum.GetValues<SessionType>();
-        await Assert.That(values).HasCount(2);
+        await Assert.That(values).Count().IsEqualTo(2);
         await Assert.That(values).Contains(SessionType.SinglePlayer);
         await Assert.That(values).Contains(SessionType.Multiplayer);
     }

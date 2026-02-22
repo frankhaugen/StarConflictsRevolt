@@ -1,10 +1,10 @@
-﻿namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
+namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Combat;
 
 public class CharacterAbility
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public AbilityEffect Effect { get; set; }
+    public AbilityEffect Effect { get; set; } = null!;
     public int Cooldown { get; set; } = 0;
     public int CurrentCooldown { get; set; }
     public bool IsActive { get; set; }

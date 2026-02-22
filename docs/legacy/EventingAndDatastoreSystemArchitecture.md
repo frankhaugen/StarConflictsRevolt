@@ -94,7 +94,7 @@ flowchart TD
 
 ## 6. **Actionable Steps**
 
-1. **Document this model** in a new design doc (`DesignDocs/DatastoreAndEventing.md`).
+1. **Document this model** in a new design doc (`docs/legacy/DatastoreAndEventing.md`).
 2. **Implement**:
    - Command handler pipeline (HTTP → queue → tick)
    - Event sourcing with RavenDB (events, snapshots)

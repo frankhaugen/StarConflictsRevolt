@@ -137,15 +137,16 @@ public class SessionAggregateManager
 
     public async Task<bool> SessionExistsAsync(Guid worldId)
     {
-        // Check if the world exists in the event store
+        // In-memory aggregate (e.g. newly created session with no events yet)
+        if (_aggregates.ContainsKey(worldId))
+            return true;
+        // Event store has history for this world
         if (_eventStore is RavenEventStore ravenStore)
         {
             var events = ravenStore.GetEventsForWorld(worldId);
             return events.Any();
         }
-
-        // Fallback: check if we have an aggregate in memory
-        return _aggregates.ContainsKey(worldId);
+        return false;
     }
 
     public void CreateSession(Guid sessionId, World world)

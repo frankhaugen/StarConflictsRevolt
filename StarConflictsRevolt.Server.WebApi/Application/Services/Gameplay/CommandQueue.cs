@@ -33,12 +33,14 @@ public class CommandQueue
 
     public bool TryDequeue(GameSessionId sessionId, out GameCommandMessage commandMessage)
     {
+#pragma warning disable CS8625 // Out parameter unused when return false
         commandMessage = default!;
-        if (_queues.TryGetValue(sessionId, out var queue))
+#pragma warning restore CS8625
+        if (_queues.TryGetValue(sessionId, out var queue) && queue.TryDequeue(out var msg))
         {
-            var dequeued = queue.TryDequeue(out commandMessage);
-            if (dequeued) _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", commandMessage.Command?.GetType().Name, sessionId);
-            return dequeued;
+            commandMessage = msg;
+            _logger.LogInformation("Dequeued command {CommandType} for session {SessionId}", msg.Command?.GetType().Name, sessionId);
+            return true;
         }
 
         return false;

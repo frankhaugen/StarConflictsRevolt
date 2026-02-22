@@ -17,8 +17,8 @@ public class Fleet : Infrastructure.Datastore.Entities.GameObject
         // Default constructor for serialization
     }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public Guid OwnerId { get; set; }
-    public IEnumerable<Ship> Ships { get; set; }
+    public IEnumerable<Ship> Ships { get; set; } = Array.Empty<Ship>();
     public FleetStatus Status { get; set; }
 }

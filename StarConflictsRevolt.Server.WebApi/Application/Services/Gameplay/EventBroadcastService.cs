@@ -124,6 +124,15 @@ public class EventBroadcastService(IEventStore eventStore, IHubContext<WorldHub>
                     EventType = "FleetOrderAccepted"
                 }));
                 break;
+            case FleetArrived arrived:
+                updates.Add(GameObjectUpdate.Update(arrived.FleetId, new
+                {
+                    arrived.FleetId,
+                    arrived.PlanetId,
+                    arrived.Tick,
+                    EventType = "FleetArrived"
+                }));
+                break;
             case CommandRejected rejected:
                 updates.Add(GameObjectUpdate.Update(rejected.PlayerId, new
                 {

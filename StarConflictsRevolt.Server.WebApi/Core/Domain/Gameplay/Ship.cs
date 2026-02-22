@@ -14,6 +14,6 @@ public class Ship : Infrastructure.Datastore.Entities.GameObject
         // Default constructor for serialization
     }
 
-    public string Model { get; set; }
+    public string Model { get; set; } = string.Empty;
     public bool IsUnderConstruction { get; set; }
 }

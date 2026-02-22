@@ -45,7 +45,8 @@ public sealed record FleetOrderAccepted(long Tick, Guid FleetId, Guid FromPlanet
             Status = FleetStatus.Moving,
             DestinationPlanetId = ToPlanetId,
             DepartureTime = DateTime.UtcNow,
-            ArrivalTime = arrivalTime
+            ArrivalTime = arrivalTime,
+            EtaTick = EtaTick
         };
 
         toPlanet.Fleets.Add(updatedFleet);

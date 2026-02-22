@@ -1,72 +1,52 @@
-# Star Conflicts Revolt – Solution Overview
+# Star Conflicts Revolt
 
-This repository contains all core projects for the Star Conflicts Revolt game, a modern, event-sourced, real-time 4X strategy game inspired by Star Wars: Rebellion.
+Event-sourced, real-time 4X strategy backend and Blazor client—inspired by *Sins of a Solar Empire* and *Star Wars Rebellion*. Single-process server: commands → simulation → events → SignalR deltas.
 
-## Project Structure
+## Quick start
 
-- **StarConflictsRevolt.Clients.Blazor**
-  - Modern, web-based game client using Blazor Server
-  - Responsive, cross-platform web UI that works in any browser
-  - Real-time updates via SignalR, testable architecture
-  - See [DesignDocs/BlazorClient.md](DesignDocs/BlazorClient.md)
+```bash
+# Build (stop AppHost first if running)
+dotnet build StarConflictsRevolt.slnx
 
-- **StarConflictsRevolt.Clients.Shared**
-  - Shared client logic for HTTP/SignalR communication, authentication, and configuration
-  - Used by all clients to avoid duplication
+# Run full stack (Docker required for Redis, SQL Server, RavenDB)
+dotnet run --project StarConflictsRevolt.Aspire.AppHost
 
-- **StarConflictsRevolt.Clients.Models**
-  - DTOs for API requests/responses and world state
-  - Shared between server and clients for strong typing
+# Tests
+dotnet test StarConflictsRevolt.Tests
+```
 
-- **StarConflictsRevolt.Server.WebApi**
-  - Backend API server (ASP.NET Core)
-  - Provides REST and SignalR endpoints for game commands, session management, and real-time updates
-  - Uses modular Handlers (not Controllers) for endpoint organization
-  - Event-sourced with RavenDB for world state and snapshots
+Open the Aspire dashboard URL from the console; use it to open the Blazor app and webapi.
 
-- **StarConflictsRevolt.Aspire.AppHost**
-  - Orchestrates local/dev environment (RavenDB, Redis, API, EngineWorker)
-  - Ensures local/cloud parity and easy development setup
+## Project structure
 
-- **StarConflictsRevolt.Aspire.ServiceDefaults**
-  - Shared service defaults for Aspire-based orchestration
+| Project | Purpose |
+|--------|---------|
+| **StarConflictsRevolt.Server.WebApi** | Backend: REST + SignalR, event-sourced world, tick-driven sim (10 ticks/s). |
+| **StarConflictsRevolt.Clients.Blazor** | Web client (Blazor Server); real-time updates via WorldHub. |
+| **StarConflictsRevolt.Clients.Shared** | Shared HTTP/SignalR, auth, configuration. |
+| **StarConflictsRevolt.Clients.Models** | DTOs for API and world state. |
+| **StarConflictsRevolt.Aspire.AppHost** | Local orchestration: dashboard, webapi, Blazor, optional Redis/SQL/RavenDB containers. |
+| **StarConflictsRevolt.Aspire.ServiceDefaults** | Shared Aspire defaults (health, OTLP). |
+| **StarConflictsRevolt.Tests** | Unit and integration tests (TUnit). |
 
-- **StarConflictsRevolt.Tests**
-  - High-level integration and unit tests using TUnit
-  - Tests resolve types from DI for realistic scenarios
+## Features
 
-## Key Architectural Features
-
-- **Event Sourcing**: All world state changes are events, persisted in RavenDB. Snapshots optimize load/replay.
-- **Single-writer Simulation**: Each world/session is managed by a single authoritative simulation loop.
-- **SignalR**: Real-time updates to clients, with Redis backplane for scaling.
-- **DTOs**: Strictly separated in Clients.Models, never returned as 'object'.
-- **Handlers-based API**: Endpoints are grouped by concern (Health, Auth, Session, GameAction, Leaderboard, Event).
-- **Testable UI**: Client UI/view logic is structured for testability without requiring a renderer.
-
-## Getting Started
-
-1. **Start the AppHost (local dev):**
-   ```bash
-   dotnet run --project StarConflictsRevolt.Aspire.AppHost
-   ```
-   This will spin up RavenDB, Redis, API, and simulation services.
-
-2. **Run the Blazor Client:**
-   ```bash
-   dotnet run --project StarConflictsRevolt.Clients.Blazor
-   ```
-
-3. **Run Tests:**
-   ```bash
-   dotnet test StarConflictsRevolt.Tests
-   ```
+- **Event sourcing** — World changes are events in RavenDB; snapshots for fast load.
+- **Tick loop** — Fixed 10 ticks/s: commands drained each tick, fleet arrivals advanced every tick.
+- **Single pipeline** — Ingress → ICommandQueue → WorldEngine → event store → SignalR deltas.
+- **Client-agnostic** — Same API for Blazor, REST, or other clients.
 
 ## Documentation
 
-- See the `DesignDocs/` folder for architecture, design, and API documentation.
-- See each project's README for details and usage.
+All specs and runbooks live in **[docs/](docs/README.md)**. New to the repo? Start with **[docs/getting-started.md](docs/getting-started.md)**.
 
----
+| Doc | Description |
+|-----|-------------|
+| [docs/README.md](docs/README.md) | **Documentation hub** — quick start, hierarchy, work items. |
+| [docs/getting-started.md](docs/getting-started.md) | **Getting started** — run stack, create session, join, move fleet. |
+| [docs/story.md](docs/story.md) | Vision, commands vs events, from zero to running. |
+| [docs/reference/](docs/reference/) | **Reference** — architecture, domain, api-transport, encounters, glossary. |
+| [docs/operations/](docs/operations/) | **Operations** — aspire, development, troubleshooting, playtesting. |
+| [docs/tooling/](docs/tooling/) | **Tooling** — agents, tunit-playwright, implementation plan/summary. |
 
-*For more details, see [DesignDocs/ARCHITECTURE.md](DesignDocs/ARCHITECTURE.md) and [DesignDocs/DESIGN.md](DesignDocs/DESIGN.md).*
+**All documentation lives in [docs/](docs/README.md).** No other doc folders at solution root.

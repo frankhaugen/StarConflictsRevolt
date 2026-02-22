@@ -66,7 +66,7 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var worldId = Guid.TryParse(context.Request.Query["worldId"].ToString(), out var wid) ? wid : Guid.Empty;
             var world = await worldService.GetWorldAsync(worldId, context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.PlanetId);
             if (planet == null)
@@ -101,7 +101,7 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var worldId = Guid.TryParse(context.Request.Query["worldId"].ToString(), out var wid2) ? wid2 : Guid.Empty;
             var world = await worldService.GetWorldAsync(context.RequestAborted);
             var planet = world.Galaxy.StarSystems.SelectMany(s => s.Planets).FirstOrDefault(p => p.Id == dto.LocationPlanetId);
             if (planet == null)
@@ -151,7 +151,7 @@ public static class GameActionEndpointHandler
                 return;
             }
 
-            var worldId = context.Request.Query.ContainsKey("worldId") ? Guid.Parse(context.Request.Query["worldId"]) : Guid.Empty;
+            var worldId = Guid.TryParse(context.Request.Query["worldId"].ToString(), out var wid3) ? wid3 : Guid.Empty;
             var world = await worldService.GetWorldAsync(context.RequestAborted);
             // For demo, assume players are fleets' owners (stub)
             var allPlayerIds = world.Galaxy.StarSystems.SelectMany(s => s.Planets).SelectMany(p => p.Fleets).Select(f => f.Id).ToHashSet();

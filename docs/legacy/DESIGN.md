@@ -22,7 +22,7 @@ StarConflictsRevolt/
 ├── StarConflictsRevolt.Aspire.AppHost        # Aspire orchestrator (local/dev infra)
 ├── StarConflictsRevolt.Aspire.ServiceDefaults# Shared Aspire service defaults
 ├── StarConflictsRevolt.Tests                 # Integration and unit tests (TUnit)
-└── DesignDocs/                               # Architecture and design docs
+└── docs/legacy/                              # Legacy architecture and design docs
 ```
 
 - Blazor client is the main UI implementation in this repository.

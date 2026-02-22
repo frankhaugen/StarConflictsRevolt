@@ -109,6 +109,7 @@ public class BlazorTestHost : IDisposable
 /// <summary>
 /// Mock SignalR service for testing
 /// </summary>
+#pragma warning disable CS0067 // Events raised by test code or interface requirement
 public class MockSignalRService : ISignalRService
 {
     public event Action<WorldDto>? FullWorldReceived;
@@ -116,6 +117,7 @@ public class MockSignalRService : ISignalRService
     public event Action<Exception?>? ConnectionClosed;
     public event Action<Exception?>? Reconnecting;
     public event Action<string>? Reconnected;
+#pragma warning restore CS0067
     
     public Task StartAsync(CancellationToken cancellationToken = default)
     {

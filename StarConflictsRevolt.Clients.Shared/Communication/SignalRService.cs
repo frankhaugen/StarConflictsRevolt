@@ -131,7 +131,7 @@ public class SignalRService : ISignalRService
         _hubConnection.Reconnected += connectionId =>
         {
             _logger.LogInformation("SignalR reconnected with connection ID: {ConnectionId}", connectionId);
-            Reconnected?.Invoke(connectionId);
+            Reconnected?.Invoke(connectionId ?? string.Empty);
             return Task.CompletedTask;
         };
 
