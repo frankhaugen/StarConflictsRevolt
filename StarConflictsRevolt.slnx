@@ -17,7 +17,6 @@
   <Project Path="StarConflictsRevolt.Server.Combat\StarConflictsRevolt.Server.Combat.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
-  <Folder Name="/Deployment/" />
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="AGENTS.md" />
