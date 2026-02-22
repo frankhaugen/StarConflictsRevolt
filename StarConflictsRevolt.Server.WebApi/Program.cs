@@ -1,14 +1,18 @@
 using StarConflictsRevolt.Aspire.ServiceDefaults;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
+using StarConflictsRevolt.Server.WebApi.Infrastructure.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 StartupHelper.RegisterRavenDb(builder);  // Before RegisterAllServices so IEventStore is available
+
+// Dependency health checks for Aspire dashboard (RavenDB; Redis not used by WebApi yet)
+builder.Services.AddHealthChecks()
+    .AddCheck<RavenDbHealthCheck>("ravendb", tags: ["ready"]);
 StartupHelper.RegisterAllServices(builder);
 StartupHelper.RegisterLiteDb(builder);
-StartupHelper.RegisterTelemetry(builder);
 
 var app = builder.Build();
 

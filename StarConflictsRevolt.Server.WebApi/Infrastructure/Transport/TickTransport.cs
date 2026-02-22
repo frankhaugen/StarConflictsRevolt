@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using StarConflictsRevolt.Server.Simulation.Engine;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Transport;
 

@@ -51,6 +51,7 @@ See [operations/development.md](operations/development.md) for details and [oper
 
 | Document | Description |
 |----------|-------------|
+| [tooling/tools-and-githooks.md](tooling/tools-and-githooks.md) | Repo tools (generate-slnx) and versioned Git hooks (pre-commit). |
 | [tooling/agents.md](tooling/agents.md) | Copilot/AI agent instructions (Aspire, MCP, Playwright). |
 | [tooling/tunit-playwright.md](tooling/tunit-playwright.md) | TUnit and Playwright integration for UI tests. |
 | [tooling/implementation-plan.md](tooling/implementation-plan.md) | Implementation plan for Blazor, testing, diagnostics. |

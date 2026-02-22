@@ -1,22 +1,4 @@
 <Solution>
-  <Folder Name="/docs/">
-    <File Path="docs\README.md" />
-    <File Path="docs\story.md" />
-    <File Path="docs\architecture.md" />
-    <File Path="docs\domain.md" />
-    <File Path="docs\api-transport.md" />
-    <File Path="docs\encounters.md" />
-    <File Path="docs\aspire.md" />
-    <File Path="docs\playtesting-strategy.md" />
-    <File Path="docs\work-items\README.md" />
-    <File Path="docs\work-items\current.md" />
-    <File Path="docs\work-items\done.md" />
-  </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path=".gitignore" />
-    <File Path="LICENSE" />
-    <File Path="README.md" />
-  </Folder>
   <Project Path="StarConflictsRevolt.Aspire.AppHost\StarConflictsRevolt.Aspire.AppHost.csproj" />
   <Project Path="StarConflictsRevolt.Aspire.ServiceDefaults\StarConflictsRevolt.Aspire.ServiceDefaults.csproj" />
   <Project Path="StarConflictsRevolt.Clients.Blazor/StarConflictsRevolt.Clients.Blazor.csproj" />
@@ -30,6 +12,81 @@
   <Project Path="StarConflictsRevolt.Server.EventStorage.RavenDB/StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
   <Project Path="StarConflictsRevolt.Server.Simulation/StarConflictsRevolt.Server.Simulation.csproj" />
   <Project Path="StarConflictsRevolt.Server.Domain/StarConflictsRevolt.Server.Domain.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Application\StarConflictsRevolt.Server.Application.csproj" />
+  <Project Path="StarConflictsRevolt.Server.AI\StarConflictsRevolt.Server.AI.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Combat\StarConflictsRevolt.Server.Combat.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
+  <Folder Name="/Deployment/" />
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="bootstrap.ps1" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/getting-started.md" />
+    <File Path="docs/INDEX.md" />
+    <File Path="docs/README.md" />
+    <File Path="docs/story.md" />
+    <File Path="docs/ux-overhaul.md" />
+  </Folder>
+  <Folder Name="/Docs/legacy/">
+    <File Path="docs/legacy/ApiRefactoring.md" />
+    <File Path="docs/legacy/ARCHITECTURE.md" />
+    <File Path="docs/legacy/BasicUiDescription.md" />
+    <File Path="docs/legacy/BlazorClient.md" />
+    <File Path="docs/legacy/BlissClient.md" />
+    <File Path="docs/legacy/CombatSystem.md" />
+    <File Path="docs/legacy/DESIGN.md" />
+    <File Path="docs/legacy/EventingAndDatastoreSystemArchitecture.md" />
+    <File Path="docs/legacy/GameActionsFlow.md" />
+    <File Path="docs/legacy/MissionSystem.md" />
+    <File Path="docs/legacy/RebellionGameMechanics.md" />
+    <File Path="docs/legacy/RebellionGameViews.md" />
+    <File Path="docs/legacy/SessionAggregate.md" />
+    <File Path="docs/legacy/SimpleAuth.md" />
+    <File Path="docs/legacy/SimpleAuthAndSelfRegistration.md" />
+    <File Path="docs/legacy/TODOs.md" />
+  </Folder>
+  <Folder Name="/Docs/operations/">
+    <File Path="docs/operations/aspire-mcp-findings.md" />
+    <File Path="docs/operations/aspire.md" />
+    <File Path="docs/operations/current-issues.md" />
+    <File Path="docs/operations/datastore-litedb.md" />
+    <File Path="docs/operations/development.md" />
+    <File Path="docs/operations/playtest-runbook.md" />
+    <File Path="docs/operations/playtesting-strategy.md" />
+    <File Path="docs/operations/README.md" />
+    <File Path="docs/operations/troubleshooting.md" />
+  </Folder>
+  <Folder Name="/Docs/projects/">
+    <File Path="docs/projects/clients-shared.md" />
+  </Folder>
+  <Folder Name="/Docs/reference/">
+    <File Path="docs/reference/api-transport.md" />
+    <File Path="docs/reference/architecture.md" />
+    <File Path="docs/reference/domain.md" />
+    <File Path="docs/reference/encounters.md" />
+    <File Path="docs/reference/glossary.md" />
+    <File Path="docs/reference/README.md" />
+    <File Path="docs/reference/server-restructure.md" />
+    <File Path="docs/reference/storage-abstractions.md" />
+    <File Path="docs/reference/transport-layer-spec.md" />
+  </Folder>
+  <Folder Name="/Docs/tooling/">
+    <File Path="docs/tooling/agents.md" />
+    <File Path="docs/tooling/implementation-plan.md" />
+    <File Path="docs/tooling/implementation-summary.md" />
+    <File Path="docs/tooling/README.md" />
+    <File Path="docs/tooling/tools-and-githooks.md" />
+    <File Path="docs/tooling/tunit-playwright.md" />
+  </Folder>
+  <Folder Name="/Docs/work-items/">
+    <File Path="docs/work-items/current.md" />
+    <File Path="docs/work-items/done.md" />
+    <File Path="docs/work-items/README.md" />
+  </Folder>
 </Solution>

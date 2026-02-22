@@ -2,7 +2,7 @@ using StarConflictsRevolt.Server.Domain.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 
-internal sealed class PlayerStatsDoc
+public class PlayerStatsDoc
 {
     public Guid Id { get; set; }
     public Guid PlayerId { get; set; }
@@ -16,39 +16,18 @@ internal sealed class PlayerStatsDoc
     public DateTime LastUpdated { get; set; }
     public DateTime Created { get; set; }
 
-    public static PlayerStatsDoc From(PlayerStats ps)
+    public PlayerStats ToPlayerStats() => new()
     {
-        return new PlayerStatsDoc
-        {
-            Id = ps.Id,
-            PlayerId = ps.PlayerId,
-            SessionId = ps.SessionId,
-            PlayerName = ps.PlayerName,
-            FleetsOwned = ps.FleetsOwned,
-            PlanetsControlled = ps.PlanetsControlled,
-            StructuresBuilt = ps.StructuresBuilt,
-            BattlesWon = ps.BattlesWon,
-            BattlesLost = ps.BattlesLost,
-            LastUpdated = ps.LastUpdated,
-            Created = ps.Created
-        };
-    }
-
-    public PlayerStats ToPlayerStats()
-    {
-        return new PlayerStats
-        {
-            Id = Id,
-            PlayerId = PlayerId,
-            SessionId = SessionId,
-            PlayerName = PlayerName,
-            FleetsOwned = FleetsOwned,
-            PlanetsControlled = PlanetsControlled,
-            StructuresBuilt = StructuresBuilt,
-            BattlesWon = BattlesWon,
-            BattlesLost = BattlesLost,
-            LastUpdated = LastUpdated,
-            Created = Created
-        };
-    }
+        Id = Id,
+        PlayerId = PlayerId,
+        SessionId = SessionId,
+        PlayerName = PlayerName,
+        FleetsOwned = FleetsOwned,
+        PlanetsControlled = PlanetsControlled,
+        StructuresBuilt = StructuresBuilt,
+        BattlesWon = BattlesWon,
+        BattlesLost = BattlesLost,
+        LastUpdated = LastUpdated,
+        Created = Created
+    };
 }

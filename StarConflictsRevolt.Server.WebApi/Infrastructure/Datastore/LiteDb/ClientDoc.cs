@@ -2,19 +2,23 @@ using StarConflictsRevolt.Server.Domain.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 
-internal sealed class ClientDoc
+public class ClientDoc
 {
     public string Id { get; set; } = string.Empty;
     public DateTime LastSeen { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public static ClientDoc From(Client c)
+    public static ClientDoc From(Client c) => new()
     {
-        return new ClientDoc { Id = c.Id, LastSeen = c.LastSeen, IsActive = c.IsActive };
-    }
+        Id = c.Id,
+        LastSeen = c.LastSeen,
+        IsActive = c.IsActive
+    };
 
-    public Client ToClient()
+    public Client ToClient() => new()
     {
-        return new Client { Id = Id, LastSeen = LastSeen, IsActive = IsActive };
-    }
+        Id = Id,
+        LastSeen = LastSeen,
+        IsActive = IsActive
+    };
 }

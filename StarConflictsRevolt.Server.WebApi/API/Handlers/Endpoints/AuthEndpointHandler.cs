@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Clients.Models.Authentication;
 using StarConflictsRevolt.Server.Domain.Gameplay;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 

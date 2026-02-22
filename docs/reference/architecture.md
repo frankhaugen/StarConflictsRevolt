@@ -2,7 +2,15 @@
 
 Single process: clients send **commands**; **Ingress → Queue → Engine** runs the sim, persists **events**, pushes deltas via SignalR. Terms: [glossary.md](glossary.md). Narrative: [../story.md](../story.md). Code map: [../operations/development.md](../operations/development.md).
 
-**Simulation vs Domain:** **StarConflictsRevolt.Server.Simulation** contains only the tick/engine layer (GameTickService, ITickPublisher, ITickListener, ICommandQueue, GameTickMessage). It has no domain models. **StarConflictsRevolt.Server.Domain** is the single source of truth for all domain types (World, Galaxy, Fleet, Planet, Commands, Events, AI, Combat, etc.) and the sim execution (IGameSim, GameSim). The WebApi project must not define its own domain or “Core/Domain” — it uses Server.Domain only. Command/event contracts (IGameCommand, IGameEvent) live in **StarConflictsRevolt.Server.EventStorage.Abstractions**.
+**SRP (Single Responsibility) — server projects:**
+- **StarConflictsRevolt.Server.Domain** — Domain types and sim execution (World, Galaxy, Fleet, Commands, Events, IGameSim, GameSim). Single source of truth for domain; no duplicate “Core” in other projects.
+- **StarConflictsRevolt.Server.Simulation** — Tick/engine only (GameTickService, ITickPublisher, ITickListener, ICommandQueue, GameTickMessage). No domain models.
+- **StarConflictsRevolt.Server.Combat** — Combat resolution only (fleet, planetary, death star, missions; simulators, resolvers, target selection). References Domain only.
+- **StarConflictsRevolt.Server.AI** — AI only (IAiStrategy, strategies, AiDifficultyService, AiSessionState). References Domain, Simulation, EventStorage.Abstractions.
+- **StarConflictsRevolt.Server.Application** — Gameplay orchestration only: world engine, session aggregates, command ingress, game update, hubs, event broadcast, session/world/content services. References Domain, Simulation, EventStorage, Combat, AI; does not implement combat or AI logic itself.
+- **StarConflictsRevolt.Server.WebApi** — Host only: API endpoints, infrastructure (config, transport, persistence wiring), DI. References Application, AI, Combat, Domain; does not contain application/domain logic.
+
+**Simulation vs Domain vs Application (legacy paragraph):** **StarConflictsRevolt.Server.Simulation** contains only the tick/engine layer (GameTickService, ITickPublisher, ITickListener, ICommandQueue, GameTickMessage). It has no domain models. **StarConflictsRevolt.Server.Domain** is the single source of truth for all domain types (World, Galaxy, Fleet, Planet, Commands, Events, AI, Combat, etc.) and the sim execution (IGameSim, GameSim). **StarConflictsRevolt.Server.Application** holds application services: gameplay (WorldEngine, SessionAggregateManager, CommandIngress, GameUpdateService, hubs), AI strategies, and combat. The WebApi project is the host only: API endpoints, infrastructure (config, transport, persistence wiring), and DI; it references Application and does not contain application or domain logic; it must not define its own domain or “Core/Domain” — it uses Server.Domain only. Command/event contracts (IGameCommand, IGameEvent) live in **StarConflictsRevolt.Server.EventStorage.Abstractions**.
 
 ## Blazor frontend (not Hybrid)
 

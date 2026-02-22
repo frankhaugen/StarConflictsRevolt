@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.Domain.Sessions;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;

@@ -1,8 +1,8 @@
 using System.Numerics;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.AI;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.Domain.AI;
 using StarConflictsRevolt.Server.Domain.Fleets;
 using StarConflictsRevolt.Server.Domain.Galaxies;

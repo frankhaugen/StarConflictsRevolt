@@ -1,4 +1,5 @@
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.AI;
 using StarConflictsRevolt.Server.Domain.AI;
 using StarConflictsRevolt.Server.Domain.Sessions;
 

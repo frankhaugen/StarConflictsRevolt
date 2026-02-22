@@ -3,19 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
-using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
+using StarConflictsRevolt.Server.AI;
+using StarConflictsRevolt.Server.Combat;
 using StarConflictsRevolt.Server.Simulation.Engine;
 using StarConflictsRevolt.Server.Domain.AI;
 using StarConflictsRevolt.Server.Domain.Engine;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.Storage.Abstractions;
 using StarConflictsRevolt.Server.Storage.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Transport;
 
 namespace StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
@@ -180,21 +178,6 @@ public static class StartupHelper
         app.MapHub<GameHub>("/commandhub");
         app.UseCors();
         return Task.CompletedTask;
-    }
-
-    public static void RegisterTelemetry(WebApplicationBuilder builder)
-    {
-        // Add Application Insights telemetry
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(tracingBuilder =>
-            {
-                tracingBuilder.AddAspNetCoreInstrumentation();
-                tracingBuilder.AddHttpClientInstrumentation();
-                
-                tracingBuilder.AddSource("StarConflictsRevolt.Server.WebApi");
-                tracingBuilder.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
-                    .AddService("StarConflictsRevolt.Server.WebApi"));
-            });
     }
 }
 

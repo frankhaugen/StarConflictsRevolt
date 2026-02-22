@@ -3,7 +3,7 @@ using StarConflictsRevolt.Server.Domain.Commands;
 using StarConflictsRevolt.Server.Domain.Enums;
 using StarConflictsRevolt.Server.Domain.Events;
 using StarConflictsRevolt.Server.EventStorage.Abstractions;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 

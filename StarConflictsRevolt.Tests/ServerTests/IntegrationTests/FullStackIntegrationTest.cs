@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.Domain.Planets;
 using StarConflictsRevolt.Server.Domain.World;
 using StarConflictsRevolt.Tests.TestingInfrastructure;

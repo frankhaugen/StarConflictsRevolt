@@ -20,6 +20,9 @@
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.Abstractions\StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.RavenDB\StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.Simulation\StarConflictsRevolt.Server.Simulation.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Application\StarConflictsRevolt.Server.Application.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.AI\StarConflictsRevolt.Server.AI.csproj" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Combat\StarConflictsRevolt.Server.Combat.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.Domain\StarConflictsRevolt.Server.Domain.csproj" />
         <ProjectReference Include="..\StarConflictsRevolt.Server.Storage.LiteDb\StarConflictsRevolt.Server.Storage.LiteDb.csproj" />
     </ItemGroup>

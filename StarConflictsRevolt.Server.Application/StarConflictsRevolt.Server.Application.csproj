@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>StarConflictsRevolt.Server.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.AI\StarConflictsRevolt.Server.AI.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.Combat\StarConflictsRevolt.Server.Combat.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.Domain\StarConflictsRevolt.Server.Domain.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.Abstractions\StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.EventStorage.RavenDB\StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
+    <ProjectReference Include="..\StarConflictsRevolt.Server.Simulation\StarConflictsRevolt.Server.Simulation.csproj" />
+  </ItemGroup>
+
+</Project>

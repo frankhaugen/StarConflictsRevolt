@@ -1,4 +1,4 @@
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 

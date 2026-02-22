@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.Domain.Resources;
 using StarConflictsRevolt.Server.Domain.Technology;
 using StarConflictsRevolt.Server.Domain.Victory;
