@@ -118,7 +118,10 @@ public class MockSignalRService : ISignalRService
     public event Action<Exception?>? Reconnecting;
     public event Action<string>? Reconnected;
 #pragma warning restore CS0067
-    
+
+    /// <inheritdoc />
+    public bool IsConnected { get; set; }
+
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
@@ -131,6 +134,7 @@ public class MockSignalRService : ISignalRService
     
     public Task JoinSessionAsync(Guid sessionId)
     {
+        IsConnected = true;
         return Task.CompletedTask;
     }
     

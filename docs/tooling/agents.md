@@ -36,9 +36,22 @@ IMPORTANT! Aspire is designed to capture rich logs and telemetry for all resourc
 1. _select apphost_; use this tool if working with multiple app hosts within a workspace.
 2. _list apphosts_; use this tool to get details about active app hosts.
 
-## Playwright MCP server
+## Playwright and playtesting
 
-The playwright MCP server has also been configured in this repository and you should use it to perform functional investigations of the resources defined in the app model as you work on the codebase. To get endpoints that can be used for navigation using the playwright MCP server use the list resources tool.
+**When asked to "play" the game or verify it works**, run the automated playtest (no MCP or live browser required):
+
+```powershell
+.\scripts\playtest.ps1
+```
+
+From repo root. This runs Playwright UI tests against an in-process Blazor host. Exit code 0 = game is playable. See [operations/current-issues.md](../operations/current-issues.md) and [operations/playtest-runbook.md](../operations/playtest-runbook.md).
+
+**If using the Playwright MCP** (e.g. server id `user-microsoft/playwright-mcp`) for interactive playtesting against the full stack:
+
+1. **Run the stack first**: `dotnet run --project StarConflictsRevolt.Aspire.AppHost` (or `aspire run`). Wait until webapi and blazor are healthy.
+2. **Use Playwright MCP** (not cursor-ide-browser) so you get full snapshots with element refs: `browser_navigate` to the Blazor URL (typically `https://localhost:7120`), then `browser_snapshot`, then `browser_click` with refs from the snapshot.
+3. **Playtest flow**: Navigate to `/singleplayer` to create a session and load the galaxy, or go to `/sessions` and click Join on a session. See [operations/playtest-runbook.md](../operations/playtest-runbook.md) for the full runbook.
+4. To get the Blazor URL when using Aspire, use the Aspire MCP _list resources_ tool, or assume `https://localhost:7120` if using default launch profiles.
 
 ## Updating the app host
 The user may request that you update the Aspire apphost. You can do this using the `aspire update` command. This will update the apphost to the latest version and some of the Aspire specific packages in referenced projects, however you may need to manually update other packages in the solution to ensure compatibility. You can consider using the `dotnet-outdated` with the users consent. To install the `dotnet-outdated` tool use the following command:

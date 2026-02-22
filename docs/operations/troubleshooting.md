@@ -54,8 +54,15 @@ Common issues when building, running, or playing StarConflictsRevolt, and how to
 
 ---
 
+## Letting the assistant see issues
+
+The assistant cannot open localhost. To have it see errors or behaviour: paste console/output in [current-issues.md](current-issues.md) and optionally add screenshots in `operations/current-issues/`. Then ask it to read that file.
+
+---
+
 ## See also
 
 - [aspire.md](aspire.md) — When the dashboard shows issues.
+- [current-issues.md](current-issues.md) — Paste errors/logs here so the assistant can read them.
 - [../getting-started.md](../getting-started.md) — Create session, join, move fleet.
 - [../reference/api-transport.md](../reference/api-transport.md) — Auth, hubs, REST.

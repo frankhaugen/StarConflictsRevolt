@@ -79,4 +79,5 @@ When running under Aspire, the client can use `CommandHubUrl` for sending comman
 ## See also
 
 - [development.md](development.md) — Build, test, run; running without AppHost.
+- [playtest-runbook.md](playtest-runbook.md) — Assistant-driven playtest with Playwright MCP.
 - [../reference/architecture.md](../reference/architecture.md) — What webapi and Blazor do in the pipeline.

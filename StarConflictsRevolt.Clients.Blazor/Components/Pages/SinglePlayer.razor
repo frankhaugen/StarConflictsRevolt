@@ -22,12 +22,20 @@
             @if (GameState.CurrentSession != null)
             {
                 <div class="card bg-secondary mb-3">
-                    <div class="card-body">
-                        <h6 class="card-title">@GameState.CurrentSession.SessionName</h6>
-                        <p class="card-text small">
-                            Type: @GameState.CurrentSession.SessionType<br/>
-                            Status: @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
+                    <div class="card-body py-2">
+                        <h6 class="card-title mb-1">@GameState.CurrentSession.SessionName</h6>
+                        <p class="card-text small mb-0">
+                            @GameState.CurrentSession.SessionType &nbsp;·&nbsp; @(GameState.CurrentSession.IsActive ? "Active" : "Waiting")
                         </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card bg-secondary mb-3 opacity-75">
+                    <div class="card-body py-2">
+                        <h6 class="card-title mb-1 text-muted">Session</h6>
+                        <p class="card-text small mb-0 text-muted"><i class="fas fa-spinner fa-spin me-1"></i> Creating your game…</p>
                     </div>
                 </div>
             }
@@ -88,11 +96,11 @@
             <div data-testid="game-container" class="game-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
                 <!-- Galaxy Map -->
                 <div class="galaxy-map position-absolute w-100 h-100">
-                    @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
+                    @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null && GameState.CurrentWorld.Galaxy.StarSystems.Any())
                     {
                         @foreach (var starSystem in GameState.CurrentWorld.Galaxy.StarSystems)
                         {
-                            <div class="star-system position-absolute" 
+                            <div class="star-system position-absolute"
                                  style="left: @(GetStarSystemPosition(starSystem).x)%; top: @(GetStarSystemPosition(starSystem).y)%;"
                                  @onclick="() => SelectStarSystem(starSystem)">
                                 <div class="star-system-icon @GetStarSystemClass(starSystem)">
@@ -102,11 +110,17 @@
                             </div>
                         }
                     }
-                    else
+                    else if (GameState.CurrentWorld != null && (GameState.CurrentWorld.Galaxy?.StarSystems == null || !GameState.CurrentWorld.Galaxy.StarSystems.Any()))
                     {
                         <div class="position-absolute top-50 start-50 translate-middle text-center text-light">
-                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-                            <p>Loading galaxy...</p>
+                            <p class="text-warning">No star systems in galaxy. Create a new session from Home.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-light" role="status" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3" aria-hidden="true"></i>
+                            <p class="mb-0">@(GameState.CurrentSession == null ? "Creating your galaxy…" : "Loading galaxy…")</p>
                         </div>
                     }
                 </div>
@@ -140,19 +154,17 @@
                 <!-- Game Messages -->
                 @if (gameMessages.Any())
                 {
-                    <div class="game-messages position-absolute bottom-0 start-0 m-3" style="max-width: 400px;">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">Game Messages</h6>
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="ClearMessages">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                    <div class="game-messages position-absolute bottom-0 start-0 m-3 shadow" style="max-width: 380px;">
+                        <div class="card border-0">
+                            <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center bg-dark text-light">
+                                <span class="small">Messages</span>
+                                <button type="button" class="btn btn-sm btn-outline-light" @onclick="ClearMessages" title="Clear messages">Clear</button>
                             </div>
-                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                            <div class="card-body py-1 small" style="max-height: 160px; overflow-y: auto;">
                                 @foreach (var message in gameMessages.Take(10))
                                 {
-                                    <div class="message-item @message.Type.ToLower()">
-                                        <small>[@message.Timestamp.ToString("HH:mm:ss")] @message.Text</small>
+                                    <div class="message-item @message.Type.ToLower() py-1 border-bottom border-light border-opacity-25">
+                                        <span class="text-muted">@message.Timestamp.ToString("HH:mm:ss")</span> @message.Text
                                     </div>
                                 }
                             </div>
@@ -191,16 +203,21 @@
 
     protected override void OnInitialized()
     {
-        GameState.StateChanged += StateHasChanged;
-        
+        GameState.StateChanged += OnGameStateChanged;
+
         // Start the game if no session exists
         if (GameState.CurrentSession == null)
         {
             _ = Task.Run(StartNewGame);
         }
-        
+
         // Add welcome message
         AddGameMessage("info", "Welcome to Star Conflicts Revolt! Your galactic empire awaits.");
+    }
+
+    private void OnGameStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private async Task StartNewGame()
@@ -214,6 +231,7 @@
         {
             AddGameMessage("error", "Failed to create game session. Please try again.");
         }
+        OnGameStateChanged();
     }
 
     private void SelectStarSystem(StarSystemDto starSystem)
@@ -306,7 +324,7 @@
 
     public void Dispose()
     {
-        GameState.StateChanged -= StateHasChanged;
+        GameState.StateChanged -= OnGameStateChanged;
     }
 }
 
@@ -339,15 +357,15 @@
     }
     
     .star-system-rebellion {
-        color: #007bff;
+        color: var(--scr-map-node-empire);
     }
     
     .star-system-empire {
-        color: #dc3545;
+        color: var(--scr-map-node-rebellion);
     }
     
     .star-system-neutral {
-        color: #6c757d;
+        color: var(--scr-map-node-neutral);
     }
     
     .resource-display {
@@ -390,19 +408,19 @@
     }
     
     .message-item.info {
-        color: #0d6efd;
+        color: var(--scr-info);
     }
     
     .message-item.success {
-        color: #198754;
+        color: var(--scr-success);
     }
     
     .message-item.warning {
-        color: #ffc107;
+        color: var(--scr-warning);
     }
     
     .message-item.error {
-        color: #dc3545;
+        color: var(--scr-error);
     }
 </style>
 

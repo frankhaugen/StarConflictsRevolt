@@ -1,13 +1,23 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+@inject StarConflictsRevolt.Clients.Blazor.Services.IGameStateService GameState
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Star Conflicts Revolt</a>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+@if (GameState.CurrentSession != null)
+{
+    <div class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+        <span class="small text-white opacity-90"><i class="fas fa-circle text-success small me-1" aria-hidden="true"></i> In game</span>
+        <div class="small text-white opacity-75 text-truncate" title="@GameState.CurrentSession.SessionName">@GameState.CurrentSession.SessionName</div>
+    </div>
+}
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" aria-label="Toggle navigation menu" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+    <nav class="nav flex-column" role="navigation" aria-label="Main">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -33,4 +43,16 @@
         </div>
     </nav>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        GameState.StateChanged += OnGameStateChanged;
+    }
+
+    private void OnGameStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+}
 

@@ -44,6 +44,7 @@ See [operations/development.md](operations/development.md) for details and [oper
 | [operations/aspire.md](operations/aspire.md) | AppHost, resources (redis, gameDb, ravenDb), health checks, Blazor config. |
 | [operations/development.md](operations/development.md) | Solution layout, build/test/run, where key code lives. |
 | [operations/troubleshooting.md](operations/troubleshooting.md) | Build locked, containers unhealthy, 404s, no deltas, auth. |
+| [operations/playtest-runbook.md](operations/playtest-runbook.md) | Assistant-driven playtest with Playwright MCP (create/join, galaxy). |
 | [operations/playtesting-strategy.md](operations/playtesting-strategy.md) | Playtesting goals, levels, scenarios, what to observe. |
 
 ### Tooling and implementation

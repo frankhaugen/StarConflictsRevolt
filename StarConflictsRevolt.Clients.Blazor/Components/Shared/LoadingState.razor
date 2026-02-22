@@ -1,0 +1,18 @@
+@* Reusable loading indicator with accessible label. *@
+<div class="scr-loading-state text-center py-4 @(Inverse ? "text-light" : "")" role="status" aria-live="polite" aria-busy="true">
+    <div class="scr-loading-spinner @(Size == LoadingSize.Large ? "spinner-border" : "spinner-border spinner-border-sm") mb-2 @(Inverse ? "text-light" : "")" aria-hidden="true"></div>
+    <p class="mb-0 small @(Inverse ? "text-light opacity-75" : "text-muted")">@Message</p>
+    @if (!string.IsNullOrEmpty(SubMessage))
+    {
+        <p class="mb-0 small mt-1 @(Inverse ? "text-light opacity-75" : "text-muted")">@SubMessage</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Message { get; set; } = "Loading…";
+    [Parameter] public string? SubMessage { get; set; }
+    [Parameter] public LoadingSize Size { get; set; } = LoadingSize.Medium;
+    [Parameter] public bool Inverse { get; set; }
+
+    public enum LoadingSize { Small, Medium, Large }
+}

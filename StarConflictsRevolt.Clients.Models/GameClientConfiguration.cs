@@ -7,4 +7,6 @@ public class GameClientConfiguration
     /// <summary>Optional. When set (e.g. by Aspire), client can use GameHub for commands.</summary>
     public string? CommandHubUrl { get; set; }
     public string ApiBaseUrl { get; set; } = "http://localhost:5153";
+    /// <summary>When true (e.g. in Development), SignalR client accepts invalid HTTPS certificates (localhost dev cert).</summary>
+    public bool AllowInvalidHttpsForSignalR { get; set; }
 }

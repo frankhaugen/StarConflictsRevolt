@@ -20,6 +20,8 @@ public class GameStateService : IGameStateService
     private DateTime _lastConnectionCheck = DateTime.MinValue;
     private readonly TimeSpan _connectionCheckInterval = TimeSpan.FromSeconds(30);
 
+    private readonly SynchronizationContext? _uiContext;
+
     public GameStateService(IHttpApiClient httpClient, ISignalRService signalRService, TelemetryService telemetryService, ILogger<GameStateService> logger)
     {
         _httpClient = httpClient;
@@ -33,6 +35,9 @@ public class GameStateService : IGameStateService
         _signalRService.UpdatesReceived += OnSignalRUpdates;
         _signalRService.ConnectionClosed += OnSignalRConnectionClosed;
         _signalRService.Reconnected += OnSignalRReconnected;
+
+        // Capture the Blazor UI synchronization context (if created on the UI thread).
+        _uiContext = SynchronizationContext.Current;
         
         _logger.LogInformation("GameStateService initialized");
     }
@@ -67,9 +72,9 @@ public class GameStateService : IGameStateService
             
             if (sessionResponse != null)
             {
-                _logger.LogInformation("Successfully created session {SessionId} with name {SessionName}", 
+                _logger.LogInformation("Successfully created session {SessionId} with name {SessionName}",
                     sessionResponse.SessionId, sessionName);
-                
+
                 _currentSession = new SessionDto
                 {
                     Id = sessionResponse.SessionId,
@@ -79,13 +84,15 @@ public class GameStateService : IGameStateService
                     IsActive = true
                 };
                 _currentWorld = sessionResponse.World;
-                
+                if (_currentWorld == null)
+                    _logger.LogWarning("Session created but server returned no world data for {SessionId}", sessionResponse.SessionId);
+
                 _logger.LogDebug("Joining SignalR session {SessionId}", sessionResponse.SessionId);
                 await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
-                
+
                 _isConnected = true;
                 NotifyStateChanged();
-                
+
                 _telemetryService.RecordGameAction("create_session");
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 return true;
@@ -126,7 +133,9 @@ public class GameStateService : IGameStateService
                     IsActive = true
                 };
                 _currentWorld = sessionResponse.World;
-                
+                if (_currentWorld == null)
+                    _logger.LogWarning("Joined session but server returned no world data for {SessionId}", sessionId);
+
                 _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
                 await _signalRService.JoinSessionAsync(sessionId);
                 
@@ -303,8 +312,22 @@ public class GameStateService : IGameStateService
 
     private void NotifyStateChanged()
     {
-        _logger.LogDebug("Notifying state change. Connected: {IsConnected}, Session: {SessionId}", 
+        _logger.LogDebug("Notifying state change. Connected: {IsConnected}, Session: {SessionId}",
             _isConnected, _currentSession?.Id);
+
+        // If we are on a SignalR/background thread, marshal back to the Blazor UI context
+        // before notifying subscribers (which often call StateHasChanged()).
+        if (_uiContext != null && SynchronizationContext.Current != _uiContext)
+        {
+            _uiContext.Post(static state =>
+            {
+                var svc = (GameStateService)state!;
+                svc.StateChanged?.Invoke();
+            }, this);
+
+            return;
+        }
+
         StateChanged?.Invoke();
     }
 }

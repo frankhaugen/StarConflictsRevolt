@@ -15,7 +15,15 @@
                 <p class="lead">Configure your game settings</p>
             </div>
             
-            <div class="card">
+            @if (!string.IsNullOrEmpty(optionsMessage))
+            {
+                <div class="alert @(optionsMessageType == "success" ? "alert-success" : "alert-danger") alert-dismissible fade show mb-3" role="alert">
+                    <i class="fas @(optionsMessageType == "success" ? "fa-check-circle" : "fa-exclamation-circle") me-2"></i>@optionsMessage
+                    <button type="button" class="btn-close" aria-label="Dismiss" @onclick="ClearOptionsMessage"></button>
+                </div>
+            }
+
+            <div class="card scr-card">
                 <div class="card-header">
                     <h3>Game Settings</h3>
                 </div>
@@ -86,16 +94,26 @@
 </div>
 
 @code {
+    private string? optionsMessage;
+    private string optionsMessageType = "success";
+
     private void SaveOptions()
     {
-        // TODO: Implement save functionality
-        // For now, just show a success message
+        // TODO: Persist to backend when implemented
+        optionsMessage = "Settings saved.";
+        optionsMessageType = "success";
     }
 
     private void ResetOptions()
     {
-        // TODO: Implement reset functionality
-        // For now, just show a reset message
+        // TODO: Reset to defaults when implemented
+        optionsMessage = "Settings reset to defaults.";
+        optionsMessageType = "success";
+    }
+
+    private void ClearOptionsMessage()
+    {
+        optionsMessage = null;
     }
 
     private void NavigateToHome()

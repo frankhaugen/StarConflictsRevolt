@@ -9,6 +9,11 @@ namespace StarConflictsRevolt.Clients.Shared.Communication;
 public interface ISignalRService : IAsyncDisposable
 {
     /// <summary>
+    /// True when the SignalR hub connection is in Connected state (ready for JoinWorld, etc.).
+    /// </summary>
+    bool IsConnected { get; }
+
+    /// <summary>
     /// Starts the SignalR connection
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>

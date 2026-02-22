@@ -1,0 +1,20 @@
+@* Page-level error message with optional dismiss. *@
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-danger d-flex align-items-center justify-content-between gap-2 mb-3" role="alert">
+        <span class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            @Message
+        </span>
+        @if (Dismissible)
+        {
+            <button type="button" class="btn-close btn-close-white" aria-label="Dismiss" @onclick="() => OnDismiss.InvokeAsync()"></button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public bool Dismissible { get; set; } = true;
+    [Parameter] public EventCallback OnDismiss { get; set; }
+}

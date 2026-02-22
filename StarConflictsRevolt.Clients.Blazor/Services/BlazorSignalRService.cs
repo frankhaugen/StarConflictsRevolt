@@ -42,6 +42,8 @@ public class BlazorSignalRService : ISignalRService, IDisposable
         remove => _baseSignalRService.Reconnected -= value;
     }
 
+    public bool IsConnected => _baseSignalRService.IsConnected;
+
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         await _baseSignalRService.StartAsync(cancellationToken);

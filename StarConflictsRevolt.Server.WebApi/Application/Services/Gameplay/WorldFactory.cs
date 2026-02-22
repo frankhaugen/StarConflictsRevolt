@@ -13,17 +13,35 @@ public class WorldFactory
 {
     public World CreateDefaultWorld()
     {
-        // Create a sample world with planets
-        var planets = new List<Planet>
+        // Create a playable default galaxy with several star systems
+        var systems = new List<StarSystem>();
+
+        var solPlanets = new List<Planet>
         {
             new("Earth", 6371, 5.972e24, 1670, 29.78, 149.6e6, new List<Fleet>(), new List<Structure>()),
             new("Mars", 3389.5, 0.64171e24, 868, 24.077, 227.9e6, new List<Fleet>(), new List<Structure>())
         };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Solar System", solPlanets, new Vector2(0, 0)));
 
-        var systems = new List<StarSystem>
+        var proximaPlanets = new List<Planet>
         {
-            new(Guid.NewGuid(), "Solar System", planets, new Vector2(0, 0))
+            new("Proxima b", 5000, 1.3e24, 900, 22, 7.5e6, new List<Fleet>(), new List<Structure>()),
+            new("Proxima c", 4000, 0.8e24, 600, 18, 15e6, new List<Fleet>(), new List<Structure>())
         };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Proxima Centauri", proximaPlanets, new Vector2(120, 80)));
+
+        var alphaPlanets = new List<Planet>
+        {
+            new("Alpha Prime", 6000, 2e24, 1200, 25, 100e6, new List<Fleet>(), new List<Structure>()),
+            new("Alpha Secundus", 3500, 0.6e24, 700, 20, 180e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Alpha Centauri", alphaPlanets, new Vector2(200, 150)));
+
+        var siriusPlanets = new List<Planet>
+        {
+            new("Sirius I", 5500, 1.5e24, 1000, 28, 50e6, new List<Fleet>(), new List<Structure>())
+        };
+        systems.Add(new StarSystem(Guid.NewGuid(), "Sirius", siriusPlanets, new Vector2(280, 50)));
 
         var galaxy = new Galaxy(systems);
         return new World(Guid.NewGuid(), galaxy);

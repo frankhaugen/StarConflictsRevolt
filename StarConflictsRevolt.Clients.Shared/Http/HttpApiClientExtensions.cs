@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using StarConflictsRevolt.Clients.Models;
 
 namespace StarConflictsRevolt.Clients.Shared.Http;
@@ -34,7 +34,8 @@ public static class HttpApiClientExtensions
 
             var jsonOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
             };
             var sessionResponse = JsonSerializer.Deserialize<SessionResponse>(responseJson, jsonOptions);
             Console.WriteLine($"Deserialized SessionResponse: SessionId={sessionResponse?.SessionId}, World={sessionResponse?.World != null}");
@@ -74,7 +75,8 @@ public static class HttpApiClientExtensions
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
             var jsonOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
             };
             return JsonSerializer.Deserialize<SessionResponse>(responseJson, jsonOptions);
         }

@@ -47,7 +47,7 @@
                     }
                     else
                     {
-                        <div class="text-muted small">No planets loaded</div>
+                        <EmptyState Title="No star systems" Description="Start or join a game to load the galaxy." IconClass="fas fa-star" Compact="true" />
                     }
                 </div>
             </div>
@@ -70,7 +70,7 @@
         
         <!-- Main Galaxy View -->
         <div class="col-md-9 p-0">
-            <div data-testid="galaxy-container" class="galaxy-container position-relative" style="height: 100vh; background: linear-gradient(45deg, #0a0a0a, #1a1a2e);">
+            <div data-testid="galaxy-container" class="galaxy-container position-relative" style="height: 100vh; background: linear-gradient(45deg, var(--scr-map-bg-start), var(--scr-map-bg-end));">
                 <!-- Galaxy Map -->
                 <div class="galaxy-map position-absolute w-100 h-100">
                     @if (GameState.CurrentWorld?.Galaxy?.StarSystems != null)
@@ -89,9 +89,8 @@
                     }
                     else
                     {
-                        <div class="position-absolute top-50 start-50 translate-middle text-center text-light">
-                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-                            <p>Loading galaxy...</p>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center" role="status" aria-live="polite">
+                            <LoadingState Message="Loading galaxy…" Size="LoadingState.LoadingSize.Large" Inverse="true" />
                         </div>
                     }
                 </div>
@@ -210,18 +209,18 @@
     }
     
     .planet-rebellion {
-        color: #007bff;
+        color: var(--scr-map-node-empire);
     }
     
     .planet-empire {
-        color: #dc3545;
+        color: var(--scr-map-node-rebellion);
     }
     
     .planet-neutral {
-        color: #6c757d;
+        color: var(--scr-map-node-neutral);
     }
     
     .planet-unknown {
-        color: #ffc107;
+        color: var(--scr-warning);
     }
 </style>

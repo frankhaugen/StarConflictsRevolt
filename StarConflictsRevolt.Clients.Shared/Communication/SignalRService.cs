@@ -51,6 +51,9 @@ public class SignalRService : ISignalRService
     public event Action<string>? Reconnected;
 
     /// <inheritdoc />
+    public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
+
+    /// <inheritdoc />
     public virtual async ValueTask DisposeAsync()
     {
         _logger.LogInformation("Disposing SignalR service");
@@ -76,8 +79,20 @@ public class SignalRService : ISignalRService
         _logger.LogInformation("Starting SignalR connection to: {HubUrl}", hubUrl);
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var allowInvalidCert = _gameClientConfiguration.Value.AllowInvalidHttpsForSignalR;
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
+            .WithUrl(hubUrl, options =>
+            {
+                if (allowInvalidCert)
+                {
+                    options.HttpMessageHandlerFactory = (message) =>
+                    {
+                        if (message is HttpClientHandler clientHandler)
+                            clientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return message;
+                    };
+                }
+            })
             .WithAutomaticReconnect()
             .ConfigureLogging(logging =>
             {
@@ -161,10 +176,26 @@ public class SignalRService : ISignalRService
 
     public virtual async Task JoinSessionAsync(Guid sessionId)
     {
-        if (_hubConnection?.State != HubConnectionState.Connected)
+        if (_hubConnection == null)
         {
-            _logger.LogWarning("Cannot join session {SessionId}: SignalR connection not established", sessionId);
+            _logger.LogWarning("Cannot join session {SessionId}: SignalR connection not initialized", sessionId);
             return;
+        }
+
+        if (_hubConnection.State != HubConnectionState.Connected)
+        {
+            _logger.LogInformation("SignalR not yet connected for session {SessionId}, waiting up to 15s...", sessionId);
+            var timeout = TimeSpan.FromSeconds(15);
+            var deadline = DateTime.UtcNow.Add(timeout);
+            while (_hubConnection.State != HubConnectionState.Connected && DateTime.UtcNow < deadline && !_cts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(500, _cts.Token);
+            }
+            if (_hubConnection.State != HubConnectionState.Connected)
+            {
+                _logger.LogWarning("Cannot join session {SessionId}: SignalR connection not established after waiting", sessionId);
+                return;
+            }
         }
 
         _currentSessionId = sessionId;
