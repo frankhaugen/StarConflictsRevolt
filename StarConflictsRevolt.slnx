@@ -22,6 +22,12 @@
   <Project Path="StarConflictsRevolt.Clients.Blazor/StarConflictsRevolt.Clients.Blazor.csproj" />
   <Project Path="StarConflictsRevolt.Clients.Models\StarConflictsRevolt.Clients.Models.csproj" />
   <Project Path="StarConflictsRevolt.Clients.Shared\StarConflictsRevolt.Clients.Shared.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Storage.Abstractions/StarConflictsRevolt.Server.Storage.Abstractions.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Storage.InMemory/StarConflictsRevolt.Server.Storage.InMemory.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Storage.JsonFiles/StarConflictsRevolt.Server.Storage.JsonFiles.csproj" />
+  <Project Path="StarConflictsRevolt.Server.Storage.LiteDb/StarConflictsRevolt.Server.Storage.LiteDb.csproj" />
+  <Project Path="StarConflictsRevolt.Server.EventStorage.Abstractions/StarConflictsRevolt.Server.EventStorage.Abstractions.csproj" />
+  <Project Path="StarConflictsRevolt.Server.EventStorage.RavenDB/StarConflictsRevolt.Server.EventStorage.RavenDB.csproj" />
   <Project Path="StarConflictsRevolt.Server.WebApi\StarConflictsRevolt.Server.WebApi.csproj" />
   <Project Path="StarConflictsRevolt.Tests\StarConflictsRevolt.Tests.csproj" />
 </Solution>

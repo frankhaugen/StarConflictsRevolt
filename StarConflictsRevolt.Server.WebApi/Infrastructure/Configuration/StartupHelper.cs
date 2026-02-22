@@ -1,14 +1,15 @@
-using LiteDB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Raven.Client.Documents;
+using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
 using StarConflictsRevolt.Server.WebApi.Application.Services.AI;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Combat;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.AI;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.Storage.Abstractions;
+using StarConflictsRevolt.Server.Storage.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Datastore.LiteDb;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Security;
 using Frank.PulseFlow;
@@ -29,8 +30,7 @@ public static class StartupHelper
         // Add Frank.PulseFlow for GameTick pulse
         builder.Services.AddPulseFlow<GameTickMessageFlow>();
         
-        // Add core services
-        builder.Services.AddSingleton<IEventStore, RavenEventStore>();
+        // Add core services (IEventStore is registered by RegisterRavenDb via AddRavenDbEventStorage; call RegisterRavenDb before RegisterAllServices)
         builder.Services.AddSingleton<SessionAggregateManager>();
         builder.Services.AddSingleton<WorldFactory>();
         builder.Services.AddSingleton<ICommandQueue, CommandQueueChannel>();
@@ -128,40 +128,36 @@ public static class StartupHelper
     }
 
     // --- Database registration methods ---
+    /// <summary>
+    /// Registers RavenDB event storage (document store + <see cref="IEventStore"/>). Call before <see cref="RegisterAllServices"/>.
+    /// </summary>
     public static void RegisterRavenDb(WebApplicationBuilder builder)
     {
-        Console.WriteLine("Registering RavenDB document store...");
-        var ravenDbConnectionString = builder.Configuration.GetConnectionString("ravenDb");
-        string ravenDbUrl;
-        if (ravenDbConnectionString?.StartsWith("URL=") == true)
-            ravenDbUrl = ravenDbConnectionString.Substring(4);
-        else
-            ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8090";
-
-        var documentStore = new DocumentStore
-        {
-            Urls = new[] { ravenDbUrl },
-            Database = "StarConflictsRevolt"
-        }.Initialize();
-
-        builder.Services.AddSingleton<IDocumentStore>(documentStore);
-
-        Console.WriteLine("Registering RavenDB document store completed.");
+        Console.WriteLine("Registering RavenDB event storage...");
+        builder.Services.AddRavenDbEventStorage(builder.Configuration);
+        Console.WriteLine("Registering RavenDB event storage completed.");
     }
 
     /// <summary>
-    /// Registers LiteDB for session and client persistence (replaces SQL Server for this data).
+    /// Registers storage (LiteDB provider) and session/client persistence.
+    /// Uses <see cref="AddStorage"/> and <see cref="LiteDbStorageExtensions.AddLiteDbProvider"/>; exposes <see cref="IRepository{T}"/> and <see cref="IGamePersistence"/>.
     /// Events remain in RavenDB via IEventStore.
     /// </summary>
     public static void RegisterLiteDb(WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("liteDb")
+        var pathOrConnection = builder.Configuration.GetConnectionString("liteDb")
             ?? builder.Configuration["LiteDb:FileName"]
-            ?? "Filename=game.db";
-        if (!connectionString.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase))
-            connectionString = "Filename=" + connectionString;
-        var db = new LiteDatabase(connectionString);
-        builder.Services.AddSingleton<ILiteDatabase>(db);
+            ?? "game.db";
+        if (pathOrConnection.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase))
+            pathOrConnection = pathOrConnection.Substring("Filename=".Length).Trim();
+
+        builder.Services.AddStorage(opt =>
+        {
+            opt.AddLiteDbProvider(o =>
+            {
+                o.DatabasePath = pathOrConnection;
+            });
+        });
         builder.Services.AddSingleton<IGamePersistence, LiteDbGamePersistence>();
     }
 

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="LiteDB" Version="5.0.21" />
+        <ProjectReference Include="..\StarConflictsRevolt.Server.Storage.Abstractions\StarConflictsRevolt.Server.Storage.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

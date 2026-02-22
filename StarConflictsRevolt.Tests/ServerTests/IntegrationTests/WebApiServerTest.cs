@@ -1,6 +1,6 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using FluentAssertions;
-using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.WebApi.Infrastructure.Configuration;
 using StarConflictsRevolt.Tests.TestingInfrastructure;
 

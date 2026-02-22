@@ -1,4 +1,5 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Stars;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Structures;
@@ -7,12 +8,13 @@ namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public record BuildStructureEvent(Guid PlayerId, Guid PlanetId, string StructureType) : IGameEvent
 {
-    public void ApplyTo(World.World world, ILogger logger)
+    public void ApplyTo(object world, ILogger logger)
     {
+        var w = (World.World)world;
         // Find the planet and its containing system
         Planet? planet = null;
         StarSystem? containingSystem = null;
-        foreach (var system in world.Galaxy.StarSystems)
+        foreach (var system in w.Galaxy.StarSystems)
         {
             planet = system.Planets.FirstOrDefault(p => p.Id == PlanetId);
             if (planet != null)

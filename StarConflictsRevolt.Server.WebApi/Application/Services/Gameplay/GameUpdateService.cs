@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 namespace StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;

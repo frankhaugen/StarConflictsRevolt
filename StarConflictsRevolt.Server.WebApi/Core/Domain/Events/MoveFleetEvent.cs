@@ -1,4 +1,5 @@
-﻿using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
 
@@ -6,14 +7,15 @@ namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public record MoveFleetEvent(Guid PlayerId, Guid FleetId, Guid FromPlanetId, Guid ToPlanetId) : IGameEvent
 {
-    public void ApplyTo(World.World world, ILogger logger)
+    public void ApplyTo(object world, ILogger logger)
     {
+        var w = (World.World)world;
         // Find the fleet and validate the move
         Fleet? fleet = null;
         Planet? fromPlanet = null;
         Planet? toPlanet = null;
 
-        foreach (var system in world.Galaxy.StarSystems)
+        foreach (var system in w.Galaxy.StarSystems)
         {
             // Find source planet and fleet
             var sourcePlanet = system.Planets.FirstOrDefault(p => p.Id == FromPlanetId);

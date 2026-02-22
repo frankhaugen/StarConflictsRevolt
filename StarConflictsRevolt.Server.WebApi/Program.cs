@@ -5,8 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+StartupHelper.RegisterRavenDb(builder);  // Before RegisterAllServices so IEventStore is available
 StartupHelper.RegisterAllServices(builder);
-StartupHelper.RegisterRavenDb(builder);
 StartupHelper.RegisterLiteDb(builder);
 StartupHelper.RegisterTelemetry(builder);
 

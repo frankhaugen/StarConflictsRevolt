@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using StarConflictsRevolt.Clients.Models;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;

@@ -1,14 +1,16 @@
-﻿using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 
 namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 
 public record DiplomacyEvent(Guid PlayerId, Guid TargetPlayerId, string ProposalType, string? Message) : IGameEvent
 {
-    public void ApplyTo(World.World world, ILogger logger)
+    public void ApplyTo(object world, ILogger logger)
     {
+        var w = (World.World)world;
         // Find the players
-        var player = world.Players?.FirstOrDefault(p => p.PlayerId == PlayerId);
-        var targetPlayer = world.Players?.FirstOrDefault(p => p.PlayerId == TargetPlayerId);
+        var player = w.Players?.FirstOrDefault(p => p.PlayerId == PlayerId);
+        var targetPlayer = w.Players?.FirstOrDefault(p => p.PlayerId == TargetPlayerId);
 
         if (player == null)
         {
@@ -26,16 +28,16 @@ public record DiplomacyEvent(Guid PlayerId, Guid TargetPlayerId, string Proposal
         switch (ProposalType.ToLowerInvariant())
         {
             case "alliance":
-                ProcessAllianceProposal(player, targetPlayer, world, logger);
+                ProcessAllianceProposal(player, targetPlayer, w, logger);
                 break;
             case "peace":
-                ProcessPeaceProposal(player, targetPlayer, world, logger);
+                ProcessPeaceProposal(player, targetPlayer, w, logger);
                 break;
             case "trade":
-                ProcessTradeProposal(player, targetPlayer, world, logger);
+                ProcessTradeProposal(player, targetPlayer, w, logger);
                 break;
             case "war":
-                ProcessWarDeclaration(player, targetPlayer, world, logger);
+                ProcessWarDeclaration(player, targetPlayer, w, logger);
                 break;
             default:
                 logger.LogWarning("Unknown diplomacy proposal type: {ProposalType}", ProposalType);

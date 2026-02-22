@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using StarConflictsRevolt.Server.WebApi.Application.Services.Gameplay;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
+using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Galaxies;

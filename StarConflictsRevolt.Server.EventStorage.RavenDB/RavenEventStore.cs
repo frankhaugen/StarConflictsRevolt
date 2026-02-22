@@ -1,9 +1,15 @@
-﻿using System.Threading.Channels;
+using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
 
-namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
+namespace StarConflictsRevolt.Server.EventStorage.RavenDB;
 
-public class RavenEventStore : IEventStore
+/// <summary>
+/// RavenDB-backed event store: channel for publish, process loop for persist and dispatch.
+/// Exposes GetEventsForWorld and SnapshotWorld for replay and snapshotting (RavenDB-specific).
+/// </summary>
+public sealed class RavenEventStore : IEventStore
 {
     private readonly Channel<EventEnvelope> _channel;
     private readonly CancellationTokenSource _cts = new();
@@ -19,7 +25,7 @@ public class RavenEventStore : IEventStore
         _logger = logger;
         _channel = Channel.CreateBounded<EventEnvelope>(new BoundedChannelOptions(capacity)
         {
-            SingleReader = true, 
+            SingleReader = true,
             SingleWriter = false,
             FullMode = BoundedChannelFullMode.Wait
         });
@@ -27,11 +33,12 @@ public class RavenEventStore : IEventStore
         _processLoopTask = Task.Run(ProcessLoop);
     }
 
+    /// <inheritdoc />
     public async Task PublishAsync(Guid worldId, IGameEvent @event)
     {
         var env = new EventEnvelope(worldId, @event, DateTime.UtcNow);
         _logger.LogDebug("Publishing event to channel: {EventType} for world {WorldId}", @event.GetType().Name, worldId);
-        
+
         try
         {
             await _channel.Writer.WriteAsync(env, _cts.Token);
@@ -49,37 +56,33 @@ public class RavenEventStore : IEventStore
         }
     }
 
+    /// <inheritdoc />
     public Task SubscribeAsync(Func<EventEnvelope, Task> handler, CancellationToken ct)
     {
         _logger.LogDebug("Registering event store subscriber: {Subscriber}", handler.Method.Name);
-        
+
         lock (_subscribersLock)
         {
             _subscribers.Add(handler);
         }
-        
+
         _logger.LogDebug("Subscriber registered: {Subscriber}", handler.Method.Name);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         _logger.LogDebug("Disposing RavenEventStore");
-        
+
         try
         {
-            // Complete the channel writer
             _channel.Writer.Complete();
-            
-            // Cancel the processing loop
             await _cts.CancelAsync();
-            
-            // Wait for the process loop to complete
+
             if (!_processLoopTask.IsCompleted)
-            {
                 await _processLoopTask.WaitAsync(TimeSpan.FromSeconds(10));
-            }
-            
+
             _logger.LogDebug("RavenEventStore disposed successfully");
         }
         catch (Exception ex)
@@ -92,40 +95,30 @@ public class RavenEventStore : IEventStore
     {
         var reader = _channel.Reader;
         _logger.LogDebug("RavenEventStore ProcessLoop started");
-        
+
         try
         {
             while (await reader.WaitToReadAsync(_cts.Token))
             {
-                _logger.LogDebug("Channel has data to read");
-                
                 try
                 {
                     var env = await reader.ReadAsync(_cts.Token);
                     _logger.LogDebug("Read event from channel: {EventType} for world {WorldId}", env.Event.GetType().Name, env.WorldId);
-                    
-                    // Persist to RavenDB
+
                     await PersistEventToDatabaseAsync(env);
-                    
-                    // Dispatch to subscribers
                     await DispatchToSubscribersAsync(env);
                 }
                 catch (OperationCanceledException) when (_cts.Token.IsCancellationRequested)
                 {
-                    _logger.LogDebug("ProcessLoop cancelled");
                     break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing event in ProcessLoop");
-                    // Continue processing other events
                 }
             }
         }
-        catch (OperationCanceledException) when (_cts.Token.IsCancellationRequested)
-        {
-            _logger.LogDebug("ProcessLoop cancelled during WaitToReadAsync");
-        }
+        catch (OperationCanceledException) when (_cts.Token.IsCancellationRequested) { }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error in ProcessLoop");
@@ -151,26 +144,24 @@ public class RavenEventStore : IEventStore
             _logger.LogError(ex, "Failed to persist event {EventType} to RavenDB for world {WorldId}", env.Event.GetType().Name, env.WorldId);
             throw;
         }
+
+        await Task.CompletedTask;
     }
 
     private async Task DispatchToSubscribersAsync(EventEnvelope env)
     {
         List<Func<EventEnvelope, Task>> subscribersCopy;
-        
         lock (_subscribersLock)
         {
             subscribersCopy = _subscribers.ToList();
         }
 
         var dispatchTasks = new List<Task>();
-        
         foreach (var subscriber in subscribersCopy)
         {
             try
             {
-                var dispatchTask = subscriber(env);
-                dispatchTasks.Add(dispatchTask);
-                _logger.LogDebug("Dispatched event to subscriber: {Subscriber}", subscriber.Method.Name);
+                dispatchTasks.Add(subscriber(env));
             }
             catch (Exception ex)
             {
@@ -178,22 +169,22 @@ public class RavenEventStore : IEventStore
             }
         }
 
-        // Wait for all dispatch tasks to complete
         if (dispatchTasks.Count > 0)
         {
             try
             {
                 await Task.WhenAll(dispatchTasks);
-                _logger.LogDebug("All subscribers processed event: {EventType} for world {WorldId}", env.Event.GetType().Name, env.WorldId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error waiting for subscriber tasks to complete for event {EventType} in world {WorldId}", env.Event.GetType().Name, env.WorldId);
+                _logger.LogError(ex, "Error waiting for subscriber tasks for event {EventType} in world {WorldId}", env.Event.GetType().Name, env.WorldId);
             }
         }
     }
 
-    // --- Snapshotting and Replay ---
+    /// <summary>
+    /// Returns all persisted events for the given world (for replay). RavenDB-specific.
+    /// </summary>
     public IEnumerable<EventEnvelope> GetEventsForWorld(Guid worldId)
     {
         try
@@ -208,6 +199,9 @@ public class RavenEventStore : IEventStore
         }
     }
 
+    /// <summary>
+    /// Stores a world snapshot and deletes events for that world up to the snapshot time. RavenDB-specific.
+    /// </summary>
     public void SnapshotWorld(Guid worldId, object worldState)
     {
         try
@@ -218,13 +212,12 @@ public class RavenEventStore : IEventStore
             session.Store(worldState, snapshotDocId);
             session.SaveChanges();
 
-            // Event scrubbing/aging: delete all events for this world up to the snapshot time
             var oldEvents = session.Query<EventEnvelope>()
                 .Where(e => e.WorldId == worldId && e.Timestamp <= snapshotTime)
                 .ToList();
             foreach (var ev in oldEvents) session.Delete(ev);
             session.SaveChanges();
-            
+
             _logger.LogInformation("Created snapshot for world {WorldId} and cleaned up {EventCount} old events", worldId, oldEvents.Count);
         }
         catch (Exception ex)

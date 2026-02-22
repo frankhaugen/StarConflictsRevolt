@@ -1,4 +1,5 @@
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Commands;
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;

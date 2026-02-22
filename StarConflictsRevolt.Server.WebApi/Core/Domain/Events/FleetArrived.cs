@@ -1,3 +1,4 @@
+using StarConflictsRevolt.Server.EventStorage.Abstractions;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Enums;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Fleets;
 using StarConflictsRevolt.Server.WebApi.Core.Domain.Planets;
@@ -9,12 +10,13 @@ namespace StarConflictsRevolt.Server.WebApi.Core.Domain.Events;
 /// </summary>
 public sealed record FleetArrived(long Tick, Guid FleetId, Guid PlanetId) : IGameEvent
 {
-    public void ApplyTo(World.World world, ILogger logger)
+    public void ApplyTo(object world, ILogger logger)
     {
+        var w = (World.World)world;
         Fleet? fleet = null;
         Planet? onPlanet = null;
 
-        foreach (var system in world.Galaxy.StarSystems)
+        foreach (var system in w.Galaxy.StarSystems)
         {
             foreach (var planet in system.Planets)
             {

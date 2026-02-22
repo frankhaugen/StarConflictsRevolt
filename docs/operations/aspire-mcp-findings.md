@@ -60,11 +60,21 @@ A `list_structured_logs` run returned 47 recent entries (515 older truncated). S
 
 ## How to re-check after changes (Aspire MCP)
 
-1. Select app host: `select_apphost` with path to `StarConflictsRevolt.Aspire.AppHost.csproj`.
-2. `list_resources` – confirm all resources Running/Healthy.
-3. `list_structured_logs` – look for `severity: "Error"` or `"Warning"`; confirm no "Invalid column name 'PlayerId'" after migration.
-4. `list_console_logs` with `resourceName: "webapi"` – confirm no SQL 207 (Invalid column name) after migration; with `resourceName: "blazor"` – confirm no 404 on move-fleet when session exists.
-5. `list_traces` with `has_error: true` – confirm POST /game/session and POST /game/move-fleet succeed (no 500/404) after migration and with an active session.
+**In Cursor**, the Aspire MCP server is exposed as **`user-aspire`** (not `aspire`). Use that when calling MCP tools.
+
+1. Select app host: `select_apphost` with path to `StarConflictsRevolt.Aspire.AppHost.csproj` (if multiple app hosts).
+2. **list_resources** (server `user-aspire`) – confirm all resources Running/Healthy (e.g. [ravenDb](https://localhost:17177/?resource=ravenDb-a56f944c), [webapi](https://localhost:17177/?resource=webapi-ncwuqudw), [blazor](https://localhost:17177/?resource=blazor-wnpyskcx), redis).
+3. **list_structured_logs** – look for `severity: "Error"` or `"Warning"`; confirm no "Invalid column name 'PlayerId'" (obsolete after LiteDB pivot).
+4. **list_console_logs** with `resource_name: "webapi"` – confirm no SQL 207 after migration; with `resource_name: "blazor"` – confirm no 404 on move-fleet when session exists.
+5. **list_traces** with `has_error: true` – confirm POST /game/session and POST /game/move-fleet succeed (no 500/404).
+
+**Latest Aspire MCP check (post–LiteDB):** `list_resources` showed ravenDb, webapi, redis, blazor, redis-password all **Running** and **Healthy**. No gameDb (removed). Recent `list_structured_logs` showed only Information-level Blazor auth messages; no Error/Warning in the returned window. Traces with `has_error: true` returned none with errors in the recent set.
+
+### 6. Database 'StarConflictsRevolt' does not exist (fixed)
+
+- **Source:** `DatabaseDoesNotExistException` when persisting events (e.g. CommandRejected) to RavenDB; ProcessLoop logs "Failed to persist event …" and "Error processing event in ProcessLoop".
+- **Cause:** RavenDB server (e.g. Aspire container) was running but the named database had not been created.
+- **Fix:** In **StartupHelper.RegisterRavenDb**, after initializing the DocumentStore we call **EnsureRavenDatabaseExists**: it uses `GetStatisticsOperation` to check if the database exists; if `DatabaseDoesNotExistException` is thrown, it sends **CreateDatabaseOperation** to create the database. So on first WebApi startup (or after a fresh RavenDB container), the database is created automatically.
 
 ## Session 500 – PlayerId column (fixed in startup)
 

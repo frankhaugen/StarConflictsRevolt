@@ -9,5 +9,6 @@ Technical specifications for the game backend.
 | [api-transport.md](api-transport.md) | Auth, client flow, WorldHub, GameHub, REST, examples. |
 | [encounters.md](encounters.md) | Abstract encounter resolution. |
 | [glossary.md](glossary.md) | Definitions: command, event, session, world, tick, delta, hubs. |
+| [storage-abstractions.md](storage-abstractions.md) | Repository contracts, IStorageBuilder, type-specific provider binding. |
 
 See [../README.md](../README.md) for the full documentation map.
