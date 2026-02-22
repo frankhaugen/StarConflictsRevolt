@@ -137,7 +137,7 @@ public static class StartupHelper
         if (ravenDbConnectionString?.StartsWith("URL=") == true)
             ravenDbUrl = ravenDbConnectionString.Substring(4);
         else
-            ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8080";
+            ravenDbUrl = ravenDbConnectionString ?? "http://localhost:8090";
 
         var documentStore = new DocumentStore
         {

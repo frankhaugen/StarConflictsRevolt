@@ -1,5 +1,6 @@
 using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.ServiceDiscovery;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -36,11 +37,12 @@ public static class Extensions
             http.AddServiceDiscovery();
         });
 
-        // Uncomment the following to restrict the allowed schemes for service discovery.
-        // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-        // {
-        //     options.AllowedSchemes = ["https"];
-        // });
+        // Prefer HTTPS for service discovery (all https).
+        builder.Services.Configure<ServiceDiscoveryOptions>(options =>
+        {
+            options.AllowAllSchemes = false;
+            options.AllowedSchemes = ["https"];
+        });
 
         return builder;
     }

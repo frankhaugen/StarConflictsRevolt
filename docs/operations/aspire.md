@@ -29,7 +29,7 @@ dotnet run --project StarConflictsRevolt.Aspire.AppHost
 |----------|---------|
 | **redis** | Caching/session; persistent volume `redis-data`, parameterized password. |
 | **gameDb** | SQL Server (EF Core game data); persistent volume `gameDb-data`, parameterized password. |
-| **ravenDb** | RavenDB (event store); persistent volume `ravenDb-data`, unsecured for dev. |
+| **ravenDb** | RavenDB (event store); persistent volume `ravenDb-data`, unsecured for dev. HTTP exposed on host port **8090** (not 8080, to avoid Windows "access forbidden" on 8080). |
 
 All use `ContainerLifetime.Persistent` so data survives AppHost restarts.
 
@@ -37,12 +37,12 @@ All use `ContainerLifetime.Persistent` so data survives AppHost restarts.
 
 ## Projects
 
-- **webapi** — `StarConflictsRevolt.Server.WebApi`. References redis, gameDb, ravenDb; waits for all three and exposes HTTP. Health check: `GET /health` on the `http` endpoint.
-- **blazor** — `StarConflictsRevolt.Clients.Blazor`. References webapi; waits for webapi. Health check: `GET /health` on the `http` endpoint. Blazor calls `MapDefaultEndpoints()` so `/health` is available in development.
+- **webapi** — `StarConflictsRevolt.Server.WebApi`. References redis, gameDb, ravenDb; waits for all three and exposes **HTTPS** (launch profile `https`). Health check: `GET /health` on the `https` endpoint. HTTP redirects to HTTPS.
+- **blazor** — `StarConflictsRevolt.Clients.Blazor`. References webapi; waits for webapi. Runs over **HTTPS** (launch profile `https`). Health check: `GET /health` on the `https` endpoint. Client configuration (API, hubs, token) uses the webapi HTTPS URL. Blazor calls `MapDefaultEndpoints()` so `/health` is available in development.
 
 ## Client configuration (Blazor)
 
-Set by AppHost so the Blazor app talks to the right backend (all use the webapi HTTP endpoint):
+Set by AppHost so the Blazor app talks to the right backend (all use the webapi **HTTPS** endpoint):
 
 | Env var | Value |
 |---------|--------|
@@ -72,6 +72,7 @@ When running under Aspire, the client can use `CommandHubUrl` for sending comman
 - **RavenDB Studio**: If the RavenDB container exposes a management UI, add `.WithUrl("studio", ...)` so the dashboard shows a direct link.
 - **Custom dashboard commands**: `.WithCommand("open-api", "Open API", ...)` on the webapi project adds a dashboard button to open the API base URL.
 - **Fixed ports**: `.WithEndpoint(..., port: 5153)` (or similar) on projects for stable URLs when debugging or using external tools.
+- **RavenDB port**: The AppHost uses host port **8090** for RavenDB (not 8080). If you see "bind: access forbidden" on 8080, ensure you are on a build that uses 8090, or set `RavenDBServerSettings.Port` in AppHost to another free port.
 
 ---
 

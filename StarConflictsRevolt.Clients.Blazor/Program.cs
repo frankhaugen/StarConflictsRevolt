@@ -23,6 +23,7 @@ builder.AddServiceDefaults();
 builder.Services.Configure<GameClientConfiguration>(
     builder.Configuration.GetSection("GameClientConfiguration"));
 builder.Services.AddSingleton<ISignalRService, SignalRService>();
+builder.Services.AddHostedService<SignalRStartupHostedService>();
 
 // Add authentication and HTTP client services
 builder.Services.AddStarConflictsHttpClients(builder.Configuration, "GameApi", client =>

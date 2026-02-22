@@ -21,41 +21,44 @@ static IResourceBuilder<ProjectResource> AddWebApiWithContainers(IDistributedApp
     var gameDb = b.AddSqlServer("gameDb", b.AddParameter("sqlserver-password", "My!Password123"))
         .WithDataVolume("gameDb-data")
         .WithLifetime(ContainerLifetime.Persistent);
-    var ravenDb = b.AddRavenDB("ravenDb", RavenDBServerSettings.Unsecured())
+    // Use host port 8090 to avoid Windows "access forbidden" on 8080 (reserved/excluded range).
+    var ravenSettings = RavenDBServerSettings.Unsecured();
+    ravenSettings.Port = 5090;
+    var ravenDb = b.AddRavenDB("ravenDb", ravenSettings)
         .WithDataVolume("ravenDb-data")
         .WithLifetime(ContainerLifetime.Persistent);
-    return b.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "http")
+    return b.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "https")
         .WithReference(redis)
         .WithReference(gameDb)
         .WithReference(ravenDb)
         .WaitFor(gameDb)
         .WaitFor(ravenDb)
         .WaitFor(redis)
-        .WithHttpHealthCheck(path: "/health", endpointName: "http");
+        .WithHttpHealthCheck(path: "/health", endpointName: "https");
 }
 
 static IResourceBuilder<ProjectResource> AddWebApiWithConnectionStringsOnly(IDistributedApplicationBuilder b)
 {
     var redisConn = b.AddParameter("redis-connection", "localhost:6379");
     var gameDbConn = b.AddParameter("gamedb-connection", "Server=localhost;Database=gameDb;User Id=sa;Password=My!Password123;TrustServerCertificate=True");
-    var ravenConn = b.AddParameter("ravendb-connection", "Url=http://localhost:8080");
-    return b.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "http")
+    var ravenConn = b.AddParameter("ravendb-connection", "Url=http://localhost:8090");
+    return b.AddProject<StarConflictsRevolt_Server_WebApi>("webapi", "https")
         .WithEnvironment("ConnectionStrings__redis", redisConn)
         .WithEnvironment("ConnectionStrings__gameDb", gameDbConn)
         .WithEnvironment("ConnectionStrings__ravenDb", ravenConn)
-        .WithHttpHealthCheck(path: "/health", endpointName: "http");
+        .WithHttpHealthCheck(path: "/health", endpointName: "https");
 }
 
-var webapiHttp = webapi.GetEndpoint("http");
-var blazor = builder.AddProject<StarConflictsRevolt_Clients_Blazor>("blazor", "http")
+var webapiHttps = webapi.GetEndpoint("https");
+var blazor = builder.AddProject<StarConflictsRevolt_Clients_Blazor>("blazor", "https")
     .WithReference(webapi)
     .WaitFor(webapi)
-    .WithHttpHealthCheck(path: "/health", endpointName: "http")
-    .WithEnvironment("GameClientConfiguration__ApiBaseUrl", webapiHttp)
-    .WithEnvironment("GameClientConfiguration__GameServerUrl", webapiHttp)
-    .WithEnvironment("GameClientConfiguration__GameServerHubUrl", $"{webapiHttp}/gamehub")
-    .WithEnvironment("GameClientConfiguration__CommandHubUrl", $"{webapiHttp}/commandhub")
-    .WithEnvironment("GameClientConfiguration__TokenEndpoint", $"{webapiHttp}/token")
-    .WithEnvironment("TokenProviderOptions__TokenEndpoint", $"{webapiHttp}/token");
+    .WithHttpHealthCheck(path: "/health", endpointName: "https")
+    .WithEnvironment("GameClientConfiguration__ApiBaseUrl", webapiHttps)
+    .WithEnvironment("GameClientConfiguration__GameServerUrl", webapiHttps)
+    .WithEnvironment("GameClientConfiguration__GameServerHubUrl", $"{webapiHttps}/gamehub")
+    .WithEnvironment("GameClientConfiguration__CommandHubUrl", $"{webapiHttps}/commandhub")
+    .WithEnvironment("GameClientConfiguration__TokenEndpoint", $"{webapiHttps}/token")
+    .WithEnvironment("TokenProviderOptions__TokenEndpoint", $"{webapiHttps}/token");
 
 builder.Build().Run();

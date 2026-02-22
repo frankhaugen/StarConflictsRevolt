@@ -12,6 +12,10 @@ StartupHelper.RegisterTelemetry(builder);
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHsts();
+
 var config = app.Services.GetRequiredService<IConfiguration>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 if (config.GetConnectionString("gameDb") == "SET_BY_ASPIRE_OR_ENVIRONMENT")

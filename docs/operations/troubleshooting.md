@@ -19,6 +19,7 @@ Common issues when building, running, or playing StarConflictsRevolt, and how to
 | Problem | Cause | What to do |
 |---------|--------|------------|
 | Containers (redis, gameDb, ravenDb) unhealthy or not starting | Docker not running or unhealthy; ports in use. | Start Docker Desktop; ensure healthy. Restart AppHost. Or set Aspire:UseContainers=false and provide connection strings ([aspire.md](aspire.md)). |
+| **HTTP 500 – Port 8080 bind forbidden** (`listen tcp 127.0.0.1:8080: bind: An attempt was made to access a socket in a way forbidden by its access permissions`) | Windows reserves or blocks port 8080 (e.g. excluded port range, Hyper-V). | This repo uses **RavenDB on host port 8090** (not 8080). Pull latest and run AppHost again. If you use an older build, update AppHost to set `RavenDBServerSettings.Port = 8090` and connection fallbacks to `localhost:8090`; see [aspire.md](aspire.md). |
 | webapi or blazor unhealthy in dashboard | App failed to start (config, DB connection). | Check dashboard logs for the failing project. Verify connection strings (gameDb, ravenDb, redis). |
 | Connection string not set in webapi logs | Containers not started or UseContainers=false without parameters. | Run with Docker (default) or set ConnectionStrings in config/env and AppHost parameters (gamedb-connection, etc.). |
 
