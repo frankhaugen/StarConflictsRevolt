@@ -79,6 +79,17 @@ public class SignalRService : ISignalRService
 
     public virtual async Task StartAsync(CancellationToken cancellationToken = default)
     {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            _logger.LogDebug("SignalR already connected, skipping StartAsync");
+            return;
+        }
+        if (_hubConnection != null)
+        {
+            await _hubConnection.DisposeAsync();
+            _hubConnection = null;
+        }
+
         // Use service discovery for the GameEngine service (SignalR is in GameEngine)
         var hubUrl = _gameClientConfiguration.Value.GameServerHubUrl;
         _logger.LogInformation("Starting SignalR connection to: {HubUrl}", hubUrl);

@@ -22,6 +22,8 @@
     <File Path=".gitignore" />
     <File Path="AGENTS.md" />
     <File Path="bootstrap.ps1" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
     <File Path="global.json" />
     <File Path="LICENSE" />
     <File Path="README.md" />
@@ -74,6 +76,7 @@
     <File Path="docs/reference/glossary.md" />
     <File Path="docs/reference/README.md" />
     <File Path="docs/reference/server-restructure.md" />
+    <File Path="docs/reference/star-map.md" />
     <File Path="docs/reference/storage-abstractions.md" />
     <File Path="docs/reference/transport-layer-spec.md" />
   </Folder>

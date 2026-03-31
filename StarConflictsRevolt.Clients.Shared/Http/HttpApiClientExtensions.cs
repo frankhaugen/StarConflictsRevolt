@@ -331,6 +331,22 @@ public static class HttpApiClientExtensions
         return await client.GetAsync<TopPlayersDto>($"/leaderboard/top?count={count}", cancellationToken);
     }
 
+    /// <summary>Gets the 2D star map (real galaxy, discified). Optional query: maxDistance (pc), maxZ (pc), maxStars.</summary>
+    public static async Task<IReadOnlyList<StarMapPointDto>?> GetStarMapAsync(
+        this IHttpApiClient client,
+        double? maxDistance = null,
+        double? maxZ = null,
+        int? maxStars = null,
+        CancellationToken cancellationToken = default)
+    {
+        var q = new List<string>();
+        if (maxDistance.HasValue) q.Add($"maxDistance={maxDistance.Value}");
+        if (maxZ.HasValue) q.Add($"maxZ={maxZ.Value}");
+        if (maxStars.HasValue) q.Add($"maxStars={maxStars.Value}");
+        var query = q.Count > 0 ? "?" + string.Join("&", q) : "";
+        return await client.GetAsync<List<StarMapPointDto>>("/game/starmap" + query, cancellationToken);
+    }
+
     /// <summary>Gets current simulation (game) speed and pause state.</summary>
     public static async Task<SimulationStateDto?> GetSimulationStateAsync(
         this IHttpApiClient client,

@@ -27,4 +27,8 @@
         <ProjectReference Include="..\StarConflictsRevolt.Server.Storage.LiteDb\StarConflictsRevolt.Server.Storage.LiteDb.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="starsystems.json" />
+    </ItemGroup>
+
 </Project>

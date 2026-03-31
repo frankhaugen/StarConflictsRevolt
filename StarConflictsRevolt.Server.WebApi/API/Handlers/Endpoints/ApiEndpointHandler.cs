@@ -31,6 +31,9 @@ public static class ApiEndpointHandler
         // Event and snapshot endpoints
         EventEndpointHandler.MapEndpoints(app);
 
+        // 2D star map (real galaxy, discified)
+        StarMapEndpointHandler.MapEndpoints(app);
+
         // Button/action reporting (click sent to backend and executed/logged)
         ActionEndpointHandler.MapEndpoints(app);
     }

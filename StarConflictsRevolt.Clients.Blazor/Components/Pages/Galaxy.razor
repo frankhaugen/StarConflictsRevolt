@@ -1,8 +1,12 @@
 @page "/galaxy"
 @rendermode InteractiveServer
+@using StarConflictsRevolt.Clients.Blazor.Components.Game
+@using StarConflictsRevolt.Clients.Blazor.Components.Shared
 @using StarConflictsRevolt.Clients.Blazor.Services
 @using StarConflictsRevolt.Clients.Models
+@using StarConflictsRevolt.Clients.Shared.Http
 @inject IGameStateService GameState
+@inject IHttpApiClient Api
 @inject NavigationManager Navigation
 
 <PageTitle>Galaxy</PageTitle>
@@ -12,7 +16,7 @@
         <GameSessionInfo Session="GameState.CurrentSession" />
     </SessionInfo>
     <SidebarContent>
-        <GameSidebarSystems Systems="GameState.CurrentWorld?.Galaxy?.StarSystems" />
+        <GameSidebarSystems Systems="DisplaySystems" />
     </SidebarContent>
     <QuickActions>
         <button type="button" class="btn btn-outline-primary btn-sm"><i class="fas fa-ship"></i> Fleet</button>
@@ -21,11 +25,11 @@
     </QuickActions>
     <ChildContent>
         <div data-testid="galaxy-container" class="position-relative min-vh-100" style="background: linear-gradient(45deg, var(--scr-map-bg-start), var(--scr-map-bg-end));">
-            <GalaxyMap Systems="GameState.CurrentWorld?.Galaxy?.StarSystems"
+            <GalaxyMap Systems="DisplaySystems"
                        OnSelect="OnSystemSelected"
                        ShowEmptyMessage="true"
-                       ShowLoading="GameState.CurrentWorld?.Galaxy?.StarSystems == null"
-                       LoadingMessage="Loading…" />
+                       ShowLoading="_loading"
+                       LoadingMessage="@(_loading ? "Loading…" : "No star systems.")" />
             <SelectedSystemCard Selected="_selected" />
         </div>
     </ChildContent>
@@ -33,10 +37,37 @@
 
 @code {
     private StarSystemDto? _selected;
+    private List<StarSystemDto> _starMapAsSystems = new();
+    private bool _loading = true;
+
+    private IEnumerable<StarSystemDto>? DisplaySystems =>
+        GameState.CurrentWorld?.Galaxy?.StarSystems ?? (_starMapAsSystems.Count > 0 ? _starMapAsSystems : null);
 
     protected override void OnInitialized()
     {
         if (GameState.CurrentSession == null) _ = GameState.TryRestoreSessionAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            var gameSystems = GameState.CurrentWorld?.Galaxy?.StarSystems;
+            if (gameSystems != null)
+            {
+                _loading = false;
+                return;
+            }
+            var points = await Api.GetStarMapAsync(maxDistance: 500, maxStars: 4000);
+            _starMapAsSystems = (points ?? Array.Empty<StarMapPointDto>())
+                .Select(p => new StarSystemDto(Guid.Empty, p.Name, Array.Empty<PlanetDto>(), p.Coordinates))
+                .ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private void OnSystemSelected(StarSystemDto s) => _selected = s;

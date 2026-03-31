@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using StarConflictsRevolt.Server.EventStorage.RavenDB;
 using StarConflictsRevolt.Server.WebApi.API.Handlers.Endpoints;
+using StarConflictsRevolt.Server.WebApi.API.Services;
 using StarConflictsRevolt.Server.AI;
 using StarConflictsRevolt.Server.Combat;
 using StarConflictsRevolt.Server.Simulation.Engine;
@@ -83,6 +84,7 @@ public static class StartupHelper
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<WorldService>();
         builder.Services.AddScoped<LeaderboardService>();
+        builder.Services.AddSingleton<IStarMapService, StarMapService>();
 
         // Register CommandQueue
         builder.Services.AddSingleton<CommandQueue>();

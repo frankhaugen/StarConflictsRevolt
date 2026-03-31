@@ -12,7 +12,7 @@ dotnet run --project StarConflictsRevolt.Aspire.AppHost
 
 Or use the recommended command from [AGENTS.md](../../AGENTS.md): `aspire run`.
 
-**Docker required** when using containers. Redis and RavenDB run as containers when `Aspire:UseContainers` is true. Start Docker Desktop (and ensure it is healthy) before running the AppHost, or the database containers will not start and the webapi will log warnings and may fail on first DB use. The console prints the dashboard URL; open it to see resources, health, and logs.
+By default the AppHost **does not use containers** (`Aspire:UseContainers` defaults to false). WebApi uses connection strings for Redis and RavenDB (parameters/local instances). To use Docker containers for Redis and RavenDB, set `Aspire:UseContainers` to `true` (e.g. in launchSettings or user secrets); then start Docker Desktop before running the AppHost. The console prints the dashboard URL; open it to see resources, health, and logs.
 
 **Build note:** If you build the solution while the AppHost is running, the build can fail with “file is locked” (AppHost exe). Stop the AppHost process, then run `dotnet build StarConflictsRevolt.slnx` again.
 
@@ -34,7 +34,7 @@ Or use the recommended command from [AGENTS.md](../../AGENTS.md): `aspire run`.
 
 All use `ContainerLifetime.Persistent` so data survives AppHost restarts.
 
-**Don't overgenerate containers:** Containers are only started when `Aspire:UseContainers` is true (default). Set `Aspire:UseContainers` to `false` to use existing Redis/RavenDB instances: the AppHost will pass connection strings from parameters `redis-connection`, `ravendb-connection` (override via config or env).
+**Containers optional:** Containers are only started when `Aspire:UseContainers` is explicitly `true`. Default is no containers; the AppHost passes connection strings from parameters `redis-connection`, `ravendb-connection` (override via config or env).
 
 ## Projects
 

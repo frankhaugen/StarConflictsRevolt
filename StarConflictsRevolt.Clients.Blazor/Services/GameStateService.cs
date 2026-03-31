@@ -99,8 +99,7 @@ public class GameStateService : IGameStateService
                 if (_currentWorld == null)
                     _logger.LogWarning("Session created but server returned no world data for {SessionId}", sessionResponse.SessionId);
 
-                _logger.LogDebug("Joining SignalR session {SessionId}", sessionResponse.SessionId);
-                await _signalRService.JoinSessionAsync(sessionResponse.SessionId);
+                await EnsureSignalRThenJoinSessionAsync(sessionResponse.SessionId);
 
                 await _sessionStorage.SetSessionIdAsync(sessionResponse.SessionId);
                 var playerName = await _sessionStorage.GetPlayerNameAsync() ?? DefaultPlayerName;
@@ -164,8 +163,7 @@ public class GameStateService : IGameStateService
                 if (_currentWorld == null)
                     _logger.LogWarning("Joined session but server returned no world data for {SessionId}", sessionId);
 
-                _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
-                await _signalRService.JoinSessionAsync(sessionId);
+                await EnsureSignalRThenJoinSessionAsync(sessionId);
 
                 await _sessionStorage.SetSessionIdAsync(sessionId);
                 await _sessionStorage.SetPlayerNameAsync(playerName);
@@ -184,6 +182,33 @@ public class GameStateService : IGameStateService
             _logger.LogError(ex, "Error joining session {SessionId}: {ErrorMessage}", sessionId, ex.Message);
         }
         return false;
+    }
+
+    /// <summary>If SignalR is not connected, start it (e.g. server wasn't ready at app startup), then join the session group.</summary>
+    private async Task EnsureSignalRThenJoinSessionAsync(Guid sessionId)
+    {
+        if (_signalRService.IsConnected)
+        {
+            _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
+            await _signalRService.JoinSessionAsync(sessionId);
+            return;
+        }
+        _logger.LogInformation("SignalR not connected; starting connection before joining session {SessionId}", sessionId);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        try
+        {
+            await _signalRService.StartAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("SignalR start timed out; joining session anyway (JoinSessionAsync will wait for connection)");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SignalR start failed; joining session anyway");
+        }
+        _logger.LogDebug("Joining SignalR session {SessionId}", sessionId);
+        await _signalRService.JoinSessionAsync(sessionId);
     }
 
     public async Task<bool> LeaveSessionAsync()

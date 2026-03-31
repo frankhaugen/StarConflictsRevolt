@@ -261,7 +261,11 @@
                         <div class="col-12">
                             <div class="metric-item">
                                 <div class="metric-value small">@totalTicksReceived tick(s) received</div>
-                                <div class="metric-label">Tick log (join a session to receive ticks)</div>
+                                <div class="metric-label">@(GameState.CurrentSession != null && !signalRConnected
+                                    ? "You have a session but real-time connection is not active. Re-join the session or refresh to receive ticks."
+                                    : GameState.CurrentSession != null && signalRConnected
+                                        ? "Tick log (connected)"
+                                        : "Tick log (join a session to receive ticks)")</div>
                             </div>
                         </div>
                     </div>

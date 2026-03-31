@@ -3,10 +3,9 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Only start Redis, SQL Server, and RavenDB containers when requested (e.g. local dev).
-// Set Aspire:UseContainers to false to use existing instances and pass connection strings via config/env.
+// Default: no containers (works without Docker). Set Aspire:UseContainers=true to run Redis/RavenDB in containers.
 var useContainersRaw = builder.Configuration["Aspire:UseContainers"];
-var useContainers = useContainersRaw is null or "" || (bool.TryParse(useContainersRaw, out var uc) && uc);
+var useContainers = bool.TryParse(useContainersRaw, out var uc) && uc;
 
 var webapi = useContainers
     ? AddWebApiWithContainers(builder)
